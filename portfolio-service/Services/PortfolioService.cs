@@ -131,19 +131,21 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         var prices = symbols.Count > 0
             ? await marketClient.GetPricesAsync(symbols)
             : new List<MarketPriceResponse>();
-        var priceMap = prices.ToDictionary(p => p.Symbol, p => p.PriceInTry);
+        var priceMap = prices.ToDictionary(p => p.Symbol, p => p);
 
         var assetValues = portfolio.Assets.Select(a =>
         {
-            var price = priceMap.GetValueOrDefault(a.Symbol, 0m);
+            var marketPrice = priceMap.GetValueOrDefault(a.Symbol);
+            var priceInTry = marketPrice?.PriceInTry ?? 0m;
             return new AssetValueDto
             {
                 Id = a.Id,
                 Symbol = a.Symbol,
                 AssetType = a.AssetType,
                 Quantity = a.Quantity,
-                PriceInTry = price,
-                ValueInTry = a.Quantity * price
+                PriceInUsd = marketPrice?.PriceInUsd,
+                PriceInTry = priceInTry,
+                ValueInTry = a.Quantity * priceInTry
             };
         }).ToList();
 
@@ -181,6 +183,7 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
                 Symbol = a.Symbol,
                 AssetType = a.AssetType,
                 Quantity = a.Quantity,
+                PortfolioName = a.Portfolio?.Name ?? string.Empty,
                 CreatedAt = a.CreatedAt
             })
             .ToList();

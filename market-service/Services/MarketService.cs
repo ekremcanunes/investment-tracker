@@ -43,14 +43,15 @@ public class MarketService : IMarketService
             return JsonSerializer.Deserialize<MarketPrice>(cached);
         }
 
-        var price = await FetchPriceAsync(symbol, assetType);
-        if (price == null) return null;
+        var (priceInUsd, priceInTry) = await FetchPriceAsync(symbol, assetType);
+        if (priceInTry == null) return null;
 
         var marketPrice = new MarketPrice
         {
             Symbol = symbol,
             AssetType = assetType,
-            PriceInTry = price.Value,
+            PriceInUsd = priceInUsd,
+            PriceInTry = priceInTry.Value,
             UpdatedAt = DateTime.UtcNow
         };
 
@@ -79,14 +80,21 @@ public class MarketService : IMarketService
         return null;
     }
 
-    private async Task<decimal?> FetchPriceAsync(string symbol, string assetType)
+    private async Task<(decimal? priceInUsd, decimal? priceInTry)> FetchPriceAsync(string symbol, string assetType)
     {
-        return assetType switch
+        if (assetType == "Currency")
         {
-            "Currency" => await _frankfurterClient.GetExchangeRateAsync(symbol),
+            var tryRate = await _frankfurterClient.GetExchangeRateAsync(symbol);
+            return (null, tryRate);
+        }
+
+        var result = assetType switch
+        {
             "Stock" => await _twelveDataClient.GetStockPriceAsync(symbol),
             "Crypto" => await _twelveDataClient.GetCryptoPriceAsync(symbol),
             _ => null
         };
+
+        return result == null ? (null, null) : (result.PriceInUsd, result.PriceInTry);
     }
 }

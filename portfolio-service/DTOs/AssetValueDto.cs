@@ -8,6 +8,7 @@ public class AssetValueDto
     public string Symbol { get; set; } = string.Empty;
     public AssetType AssetType { get; set; }
     public decimal Quantity { get; set; }
+    public decimal? PriceInUsd { get; set; }
     public decimal PriceInTry { get; set; }
     public decimal ValueInTry { get; set; }
 }

@@ -8,10 +8,93 @@ import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
 const formatTRY = (value) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value ?? 0)
 
-const assetTypeColors = {
-  Currency: 'bg-blue-100 text-blue-700 border-blue-200',
-  Stock: 'bg-green-100 text-green-700 border-green-200',
-  Crypto: 'bg-orange-100 text-orange-700 border-orange-200',
+const formatUSD = (value) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value ?? 0)
+
+function CurrencyTable({ assets, onDelete }) {
+  if (assets.length === 0) return null
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base">Currency</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (TRY)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (TRY)</th>
+                <th className="py-3 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {assets.map((asset) => (
+                <tr key={asset.id} className="border-b border-gray-100 last:border-0">
+                  <td className="py-3 px-2 font-medium text-gray-900">{asset.symbol}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{formatTRY(asset.priceInTry)}</td>
+                  <td className="py-3 px-2 text-right font-medium text-gray-900">{formatTRY(asset.valueInTry)}</td>
+                  <td className="py-3 px-2 text-right">
+                    <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(asset.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function MarketTable({ title, assets, onDelete }) {
+  if (assets.length === 0) return null
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle className="text-base">{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (USD)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (TRY)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (USD)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (TRY)</th>
+                <th className="py-3 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {assets.map((asset) => (
+                <tr key={asset.id} className="border-b border-gray-100 last:border-0">
+                  <td className="py-3 px-2 font-medium text-gray-900">{asset.symbol}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{formatUSD(asset.priceInUsd)}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{formatTRY(asset.priceInTry)}</td>
+                  <td className="py-3 px-2 text-right text-gray-700">{formatUSD((asset.priceInUsd ?? 0) * asset.quantity)}</td>
+                  <td className="py-3 px-2 text-right font-medium text-gray-900">{formatTRY(asset.valueInTry)}</td>
+                  <td className="py-3 px-2 text-right">
+                    <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(asset.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function PortfolioDetail() {
@@ -29,9 +112,7 @@ export default function PortfolioDetail() {
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => {
-    fetchSummary()
-  }, [id])
+  useEffect(() => { fetchSummary() }, [id])
 
   const handleDeleteAsset = async (assetId) => {
     try {
@@ -49,6 +130,11 @@ export default function PortfolioDetail() {
   const totalValue = summary?.totalValueInTry ?? 0
   const portfolioName = summary?.name ?? 'Portfolio'
 
+  const currencies = assets.filter(a => a.assetType === 'Currency')
+  const stocks = assets.filter(a => a.assetType === 'Stock')
+  const cryptos = assets.filter(a => a.assetType === 'Crypto')
+  const hasAssets = assets.length > 0
+
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
@@ -65,58 +151,19 @@ export default function PortfolioDetail() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Assets</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {assets.length === 0 ? (
-            <p className="text-gray-500 text-sm py-4">
-              No assets yet. Add your first asset.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
-                    <th className="text-left py-3 px-2 font-medium text-gray-500">Type</th>
-                    <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
-                    <th className="text-right py-3 px-2 font-medium text-gray-500">Price (TRY)</th>
-                    <th className="text-right py-3 px-2 font-medium text-gray-500">Value (TRY)</th>
-                    <th className="py-3 px-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {assets.map((asset) => (
-                    <tr key={asset.id} className="border-b border-gray-100 last:border-0">
-                      <td className="py-3 px-2 font-medium text-gray-900">{asset.symbol}</td>
-                      <td className="py-3 px-2">
-                        <span className={`inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold ${assetTypeColors[asset.assetType] ?? 'bg-gray-100 text-gray-700'}`}>
-                          {asset.assetType}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
-                      <td className="py-3 px-2 text-right text-gray-700">{formatTRY(asset.priceInTry)}</td>
-                      <td className="py-3 px-2 text-right font-medium text-gray-900">{formatTRY(asset.valueInTry)}</td>
-                      <td className="py-3 px-2 text-right">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteAsset(asset.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {!hasAssets ? (
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-gray-500 text-sm text-center">No assets yet. Add your first asset.</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          <CurrencyTable assets={currencies} onDelete={handleDeleteAsset} />
+          <MarketTable title="Stocks" assets={stocks} onDelete={handleDeleteAsset} />
+          <MarketTable title="Crypto" assets={cryptos} onDelete={handleDeleteAsset} />
+        </>
+      )}
     </div>
   )
 }

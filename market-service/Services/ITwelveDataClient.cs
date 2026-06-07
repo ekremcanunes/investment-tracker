@@ -1,7 +1,9 @@
 namespace market_service.Services;
 
+public record TwelveDataPrice(decimal PriceInUsd, decimal PriceInTry);
+
 public interface ITwelveDataClient
 {
-    Task<decimal?> GetStockPriceAsync(string symbol, string? exchange = null);
-    Task<decimal?> GetCryptoPriceAsync(string symbol);
+    Task<TwelveDataPrice?> GetStockPriceAsync(string symbol, string? exchange = null);
+    Task<TwelveDataPrice?> GetCryptoPriceAsync(string symbol);
 }

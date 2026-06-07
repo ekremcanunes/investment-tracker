@@ -7,7 +7,7 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
 {
     private readonly string _apiKey = configuration["TwelveData:ApiKey"] ?? string.Empty;
 
-    public async Task<decimal?> GetStockPriceAsync(string symbol, string? exchange = null)
+    public async Task<TwelveDataPrice?> GetStockPriceAsync(string symbol, string? exchange = null)
     {
         try
         {
@@ -26,7 +26,7 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
                 var usdPrice = decimal.Parse(price.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
                 var usdTryRate = await frankfurterClient.GetExchangeRateAsync("USD");
                 if (usdTryRate == null) return null;
-                return usdPrice * usdTryRate.Value;
+                return new TwelveDataPrice(usdPrice, usdPrice * usdTryRate.Value);
             }
 
             logger.LogWarning("No price returned from Twelve Data for {Symbol}", symbol);
@@ -39,7 +39,7 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
         }
     }
 
-    public async Task<decimal?> GetCryptoPriceAsync(string symbol)
+    public async Task<TwelveDataPrice?> GetCryptoPriceAsync(string symbol)
     {
         try
         {
@@ -56,7 +56,7 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
                 var usdPrice = decimal.Parse(price.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
                 var usdTryRate = await frankfurterClient.GetExchangeRateAsync("USD");
                 if (usdTryRate == null) return null;
-                return usdPrice * usdTryRate.Value;
+                return new TwelveDataPrice(usdPrice, usdPrice * usdTryRate.Value);
             }
 
             logger.LogWarning("No price returned from Twelve Data for {Symbol}", symbol);

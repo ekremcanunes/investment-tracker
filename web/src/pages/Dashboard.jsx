@@ -83,7 +83,7 @@ export default function Dashboard() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
+                    <th className="text-left py-3 px-2 font-medium text-gray-500">Asset</th>
                     <th className="text-left py-3 px-2 font-medium text-gray-500">Type</th>
                     <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
                     <th className="text-left py-3 px-2 font-medium text-gray-500">Portfolio</th>
@@ -99,7 +99,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
-                      <td className="py-3 px-2 text-gray-600">{asset.portfolio_name}</td>
+                      <td className="py-3 px-2 text-gray-600">{asset.portfolioName}</td>
                     </tr>
                   ))}
                 </tbody>
