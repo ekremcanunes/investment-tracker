@@ -139,7 +139,7 @@ Neon Database      Market Service
                +---------+---------+
                |                   |
                v                   v
-         Frankfurter API    Alpha Vantage API
+         Frankfurter API     Twelve Data API
 ```
 
 ---
@@ -232,21 +232,18 @@ Examples:
 
 ---
 
-## Alpha Vantage API
+## Twelve Data API
 
 Used for:
 
-* Stock market prices
+* Stock market prices (US and BIST)
 * Cryptocurrency prices
 
 Examples:
 
-* AAPL
-* MSFT
-* NVDA
-* BTC
-* ETH
-* SOL
+* AAPL, MSFT, NVDA, GOOGL
+* THYAO, GARAN, ASELS
+* BTC, ETH, SOL
 
 ---
 
@@ -369,7 +366,7 @@ Technology:
 ## External APIs
 
 * Frankfurter API
-* Alpha Vantage API
+* Twelve Data API
 
 ---
 

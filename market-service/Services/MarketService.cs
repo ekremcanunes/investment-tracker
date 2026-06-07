@@ -12,16 +12,16 @@ public class MarketService : IMarketService
 
     private readonly IDistributedCache _cache;
     private readonly IFrankfurterClient _frankfurterClient;
-    private readonly IAlphaVantageClient _alphaVantageClient;
+    private readonly ITwelveDataClient _twelveDataClient;
     private readonly ILogger<MarketService> _logger;
     private readonly int _ttlMinutes;
 
     public MarketService(IDistributedCache cache, IFrankfurterClient frankfurterClient,
-        IAlphaVantageClient alphaVantageClient, IConfiguration configuration, ILogger<MarketService> logger)
+        ITwelveDataClient twelveDataClient, IConfiguration configuration, ILogger<MarketService> logger)
     {
         _cache = cache;
         _frankfurterClient = frankfurterClient;
-        _alphaVantageClient = alphaVantageClient;
+        _twelveDataClient = twelveDataClient;
         _logger = logger;
         _ttlMinutes = configuration.GetValue<int>("Cache:TtlMinutes", 5);
     }
@@ -84,8 +84,8 @@ public class MarketService : IMarketService
         return assetType switch
         {
             "Currency" => await _frankfurterClient.GetExchangeRateAsync(symbol),
-            "Stock" => await _alphaVantageClient.GetStockPriceAsync(symbol),
-            "Crypto" => await _alphaVantageClient.GetCryptoPriceAsync(symbol),
+            "Stock" => await _twelveDataClient.GetStockPriceAsync(symbol),
+            "Crypto" => await _twelveDataClient.GetCryptoPriceAsync(symbol),
             _ => null
         };
     }
