@@ -141,6 +141,7 @@ Neon Database      Market Service
                v                   v
          Frankfurter API     Twelve Data API
 ```
+<img width="1479" height="1353" alt="diagram-export-07 06 2026-20_57_20" src="https://github.com/user-attachments/assets/3deffd36-7111-4bfa-8c51-d1ddd3dde259" />
 
 ---
 
