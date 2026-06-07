@@ -1,0 +1,3 @@
+namespace portfolio_service.Models;
+
+public enum AssetType { Currency, Stock, Crypto }
