@@ -1,85 +1,84 @@
 # CLAUDE.md
 ---
-## 1. Kodlamadan Önce Düşün
+## 1. Think Before You Code
 
-> Varsayım yapma. Belirsizliği gizleme. Alternatifleri açıkça belirt.
+> Don't assume. Don't hide ambiguity. State alternatives explicitly.
 
-- Varsayımlarını açıkça belirt.
-- Emin olmadığın durumlarda soru sor.
-- Birden fazla çözüm mümkünse bunları kullanıcıya sun; sessizce birini seçme.
-- Daha basit bir çözüm varsa belirt.
-- Önerilen yaklaşıma itiraz etmekten çekinme.
-- Bir konu net değilse ilerleme. Neyin belirsiz olduğunu açıkça ifade et ve açıklama iste.
+- State your assumptions clearly.
+- Ask questions when uncertain.
+- If multiple solutions are possible, present them to the user — don't silently pick one.
+- If a simpler solution exists, say so.
+- Don't hesitate to push back on a proposed approach.
+- If something is unclear, don't proceed. Explicitly state what is ambiguous and ask for clarification.
 
-## 2. Önce Oku, Sonra Yaz
+## 2. Read First, Then Write
 
-> Değiştireceğin kodu anlamadan değiştirme.
+> Don't modify code you don't understand.
 
-- Bir dosyayı düzenlemeden önce ilgili bölümünü oku. Hafızadan çalışma.
-- İlişkili dosyaları (importlar, tipler, testler) kontrol et.
-- Mevcut kodun neden o şekilde yazıldığını anlamaya çalış; "daha iyi biliyorum" varsayımıyla üzerine yazma.
-- Projenin kullandığı dil, framework ve kütüphane sürümlerini kontrol et; var olmayan API'ler kullanma.
+- Before editing a file, read the relevant section. Don't work from memory.
+- Check related files (imports, types, tests).
+- Try to understand why the existing code was written that way — don't overwrite it with a "I know better" assumption.
+- Check the language, framework, and library versions the project uses — don't use APIs that don't exist.
 
-## 3. Önce Basitlik
+## 3. Simplicity First
 
-> Problemi çözen en küçük ve en basit çözümü üret. Gereksiz hiçbir şey ekleme.
+> Produce the smallest and simplest solution that solves the problem. Add nothing unnecessary.
 
-- Talep edilenden fazlasını geliştirme.
-- Tek kullanım için gereksiz soyutlamalar oluşturma.
-- İstenmemiş esneklik veya yapılandırılabilirlik ekleme.
-- Gerçekçi olmayan senaryolar için gereksiz hata yönetimi yazma.
-- 200 satır yazdıysan ve aynı iş 50 satırda çözülebiliyorsa kodu sadeleştir.
+- Don't build more than what was asked.
+- Don't create unnecessary abstractions for single-use cases.
+- Don't add unsolicited flexibility or configurability.
+- Don't write error handling for unrealistic scenarios.
+- If you wrote 200 lines and the same work can be done in 50, simplify.
 
-Kendine şu soruyu sor: *"Deneyimli bir mühendis bu çözümün gereğinden fazla karmaşık olduğunu söyler miydi?"* Cevap evetse basitleştir.
+Ask yourself: *"Would an experienced engineer say this solution is more complex than it needs to be?"* If yes, simplify.
 
-## 4. Cerrahi Değişiklikler Yap
+## 4. Make Surgical Changes
 
-> Sadece gerekli olanı değiştir. Sadece kendi oluşturduğun sorunları temizle.
+> Only change what is necessary. Only clean up problems you created.
 
-- Yakındaki kodları, yorumları veya biçimlendirmeyi "iyileştirmeye" çalışma.
-- Çalışan yapıları gereksiz yere refactor etme.
-- Farklı tercih ediyor olsan bile mevcut proje stiline uy.
-- İlgisiz veya kullanılmayan kod fark edersen belirt; silme.
-- Kendi değişikliklerinin kullanılmaz hale getirdiği importları ve değişkenleri kaldır.
-- Önceden var olan kullanılmayan kodları kullanıcı istemedikçe silme.
+- Don't try to "improve" nearby code, comments, or formatting.
+- Don't refactor working structures unnecessarily.
+- Follow the existing project style even if you'd personally prefer otherwise.
+- If you notice unrelated or unused code, point it out — don't delete it.
+- Remove imports and variables that your own changes rendered unused.
+- Don't delete pre-existing unused code unless the user asks.
 
-**Kontrol:** Değiştirilen her satır doğrudan kullanıcının talebiyle ilişkilendirilebilmelidir.
+**Check:** Every changed line must be directly traceable to the user's request.
 
-## 5. Hedef Odaklı Çalış
+## 5. Work Goal-Oriented
 
-> Başarı kriterlerini tanımla ve doğrulanana kadar ilerlemeye devam et.
+> Define success criteria and keep going until verified.
 
-Görevleri doğrulanabilir hedeflere dönüştür:
+Translate tasks into verifiable goals:
 
-- "Validasyon ekle" → Geçersiz girdiler için test yaz, ardından testleri geçir.
-- "Hatayı düzelt" → Hatayı yeniden üreten bir test yaz, ardından testi geçir.
-- "X'i refactor et" → Refactor öncesi ve sonrası tüm testlerin geçtiğini doğrula.
+- "Add validation" → Write a test for invalid inputs, then make it pass.
+- "Fix the bug" → Write a test that reproduces the bug, then make it pass.
+- "Refactor X" → Verify all tests pass before and after the refactor.
 
-Birden fazla adım içeren görevlerde kısa bir plan oluştur:
+For tasks with multiple steps, create a short plan:
 
-1. [Adım] → Doğrulama: [Kontrol]
-2. [Adım] → Doğrulama: [Kontrol]
-3. [Adım] → Doğrulama: [Kontrol]
+1. [Step] → Verification: [Check]
+2. [Step] → Verification: [Check]
+3. [Step] → Verification: [Check]
 
-## 6. Doğrula, Varsayma
+## 6. Verify, Don't Assume
 
-> İşini bitirdiğinde çalıştığını kanıtla.
+> When you're done, prove it works.
 
-- Kod yazdıktan sonra derleme/lint hatası olmadığını kontrol et.
-- Test varsa çalıştır. Testin geçtiğini gördükten sonra "bitti" de.
-- Hata alırsan düzeltmeyi dene; düzeltemiyorsan hatayı açıkça raporla, gizleme.
-- Bir değişiklik bekleneni yapmadıysa sessizce başka şeyler deneyerek sapmak yerine dur ve durumu bildir.
+- After writing code, check that there are no build/lint errors.
+- If tests exist, run them. Only say "done" after seeing them pass.
+- If you get an error, try to fix it — if you can't, report it clearly, don't hide it.
+- If a change didn't do what was expected, stop and report — don't silently try other things and drift.
 
-## 7. Yapma Listesi
+## 7. Never Do List
 
-> Bunları asla yapma.
+> Never do these.
 
-- **Halüsinasyon:** Var olmayan fonksiyon, API, dosya veya kütüphane kullanma. Emin değilsen kontrol et.
-- **Sahte çıktı:** Test çalıştırmadan "testler geçiyor" deme. Derlemeden "derleniyor" deme.
-- **Sessiz silme:** Anlamadığın veya gereksiz gördüğün kodu sessizce silme.
-- **Yığın değişiklik:** Tek bir commit'e birbirinden bağımsız birden fazla değişiklik sıkıştırma.
-- **Hata gizleme:** try/catch ile hatayı yutup boş sonuç döndürme.
-- **Sonsuz döngü:** Aynı hatayı aynı yaklaşımla tekrar tekrar düzeltmeye çalışma. İki denemeden sonra farklı bir strateji öner veya sor.
+- **Hallucination:** Don't use functions, APIs, files, or libraries that don't exist. If unsure, check.
+- **Fake output:** Don't say "tests pass" without running them. Don't say "it compiles" without compiling.
+- **Silent deletion:** Don't silently delete code you don't understand or consider unnecessary.
+- **Bulk changes:** Don't pack multiple independent changes into a single commit.
+- **Error suppression:** Don't swallow errors with try/catch and return empty results.
+- **Infinite loop:** Don't keep trying to fix the same error with the same approach. After two attempts, suggest a different strategy or ask.
 
 ---
-
