@@ -166,7 +166,7 @@ Responsibilities:
 
 Technology:
 
-* .NET 8 Web API
+* .NET 9 Web API
 * Entity Framework Core
 * Neon Database (PostgreSQL)
 
@@ -184,7 +184,7 @@ Responsibilities:
 
 Technology:
 
-* .NET 8 Web API
+* .NET 9 Web API
 * HttpClient
 * Redis Cache
 
@@ -259,10 +259,12 @@ The frontend provides the user interface for managing and monitoring investment 
 
 Technology:
 
-* React
+* React 19
 * Vite
 * Axios
 * Recharts
+* Tailwind CSS
+* Shadcn/ui
 
 ---
 
@@ -329,50 +331,9 @@ Displays:
 
 ---
 
-# Database
+## Login / Register
 
-The application uses Neon Database, a serverless PostgreSQL platform.
-
-Technology:
-
-* Neon Database
-* PostgreSQL
-* Entity Framework Core
-
----
-
-# Technology Stack
-
-## Backend
-
-* .NET 8
-* ASP.NET Core Web API
-* Entity Framework Core
-
-## Frontend
-
-* React
-* Vite
-* Axios
-* Recharts
-
-## Database
-
-* Neon Database (PostgreSQL)
-
-## Caching
-
-* Redis
-
-## Architecture
-
-* Microservices Architecture
-* REST APIs
-
-## External APIs
-
-* Frankfurter API
-* Twelve Data API
+Authentication pages powered by Ory Kratos.
 
 ---
 
@@ -422,11 +383,13 @@ docker compose up --build
 # Technology Stack
 
 ## Backend
+
 * .NET 9
 * ASP.NET Core Web API
 * Entity Framework Core
 
 ## Frontend
+
 * React 19
 * Vite
 * Axios
@@ -435,21 +398,26 @@ docker compose up --build
 * Shadcn/ui
 
 ## Database
+
 * Neon Database (PostgreSQL) — portfolio data
 * PostgreSQL (Docker) — Kratos identity data
 
 ## Caching
+
 * Redis
 
 ## Authentication
+
 * Ory Kratos
 
 ## Architecture
+
 * Microservices Architecture
 * REST APIs
 * Docker / Docker Compose
 
 ## External APIs
+
 * Frankfurter API
 * Twelve Data API
 
