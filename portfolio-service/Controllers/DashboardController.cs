@@ -11,6 +11,7 @@ public class DashboardController(IPortfolioService portfolioService) : Controlle
     [HttpGet]
     public async Task<ActionResult<DashboardDto>> GetDashboard()
     {
-        return Ok(await portfolioService.GetDashboardAsync());
+        var userId = HttpContext.Items["UserId"]?.ToString()!;
+        return Ok(await portfolioService.GetDashboardAsync(userId));
     }
 }

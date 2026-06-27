@@ -8,57 +8,59 @@ namespace portfolio_service.Controllers;
 [Route("api/portfolios")]
 public class PortfolioController(IPortfolioService portfolioService) : ControllerBase
 {
+    private string UserId => HttpContext.Items["UserId"]?.ToString()!;
+
     [HttpGet]
     public async Task<ActionResult<List<PortfolioDto>>> GetAll()
     {
-        return Ok(await portfolioService.GetAllAsync());
+        return Ok(await portfolioService.GetAllAsync(UserId));
     }
 
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<PortfolioDto>> GetById(Guid id)
     {
-        var portfolio = await portfolioService.GetByIdAsync(id);
+        var portfolio = await portfolioService.GetByIdAsync(id, UserId);
         return portfolio is null ? NotFound() : Ok(portfolio);
     }
 
     [HttpPost]
     public async Task<ActionResult<PortfolioDto>> Create(CreatePortfolioDto dto)
     {
-        var portfolio = await portfolioService.CreateAsync(dto);
+        var portfolio = await portfolioService.CreateAsync(dto, UserId);
         return CreatedAtAction(nameof(GetById), new { id = portfolio.Id }, portfolio);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await portfolioService.DeleteAsync(id);
+        var deleted = await portfolioService.DeleteAsync(id, UserId);
         return deleted ? NoContent() : NotFound();
     }
 
     [HttpGet("{id:guid}/assets")]
     public async Task<ActionResult<List<AssetDto>>> GetAssets(Guid id)
     {
-        return Ok(await portfolioService.GetAssetsAsync(id));
+        return Ok(await portfolioService.GetAssetsAsync(id, UserId));
     }
 
     [HttpPost("{id:guid}/assets")]
     public async Task<ActionResult<AssetDto>> AddAsset(Guid id, CreateAssetDto dto)
     {
-        var asset = await portfolioService.AddAssetAsync(id, dto);
+        var asset = await portfolioService.AddAssetAsync(id, dto, UserId);
         return CreatedAtAction(nameof(GetAssets), new { id }, asset);
     }
 
     [HttpDelete("{id:guid}/assets/{assetId:guid}")]
     public async Task<IActionResult> DeleteAsset(Guid id, Guid assetId)
     {
-        var deleted = await portfolioService.DeleteAssetAsync(id, assetId);
+        var deleted = await portfolioService.DeleteAssetAsync(id, assetId, UserId);
         return deleted ? NoContent() : NotFound();
     }
 
     [HttpGet("{id:guid}/summary")]
     public async Task<ActionResult<PortfolioSummaryDto>> GetSummary(Guid id)
     {
-        var summary = await portfolioService.GetSummaryAsync(id);
+        var summary = await portfolioService.GetSummaryAsync(id, UserId);
         return summary is null ? NotFound() : Ok(summary);
     }
 }

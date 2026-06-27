@@ -7,9 +7,10 @@ namespace portfolio_service.Services;
 
 public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient) : IPortfolioService
 {
-    public async Task<List<PortfolioDto>> GetAllAsync()
+    public async Task<List<PortfolioDto>> GetAllAsync(string userId)
     {
         return await db.Portfolios
+            .Where(p => p.UserId == userId)
             .Select(p => new PortfolioDto
             {
                 Id = p.Id,
@@ -21,10 +22,10 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             .ToListAsync();
     }
 
-    public async Task<PortfolioDto?> GetByIdAsync(Guid id)
+    public async Task<PortfolioDto?> GetByIdAsync(Guid id, string userId)
     {
         return await db.Portfolios
-            .Where(p => p.Id == id)
+            .Where(p => p.Id == id && p.UserId == userId)
             .Select(p => new PortfolioDto
             {
                 Id = p.Id,
@@ -36,14 +37,15 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             .FirstOrDefaultAsync();
     }
 
-    public async Task<PortfolioDto> CreateAsync(CreatePortfolioDto dto)
+    public async Task<PortfolioDto> CreateAsync(CreatePortfolioDto dto, string userId)
     {
         var portfolio = new Portfolio
         {
             Id = Guid.NewGuid(),
             Name = dto.Name,
             Description = dto.Description,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            UserId = userId
         };
 
         db.Portfolios.Add(portfolio);
@@ -59,9 +61,9 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         };
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(Guid id, string userId)
     {
-        var portfolio = await db.Portfolios.FindAsync(id);
+        var portfolio = await db.Portfolios.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
         if (portfolio is null) return false;
 
         db.Portfolios.Remove(portfolio);
@@ -69,8 +71,11 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         return true;
     }
 
-    public async Task<List<AssetDto>> GetAssetsAsync(Guid portfolioId)
+    public async Task<List<AssetDto>> GetAssetsAsync(Guid portfolioId, string userId)
     {
+        var portfolio = await db.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId && p.UserId == userId);
+        if (portfolio is null) return [];
+
         return await db.Assets
             .Where(a => a.PortfolioId == portfolioId)
             .Select(a => new AssetDto
@@ -84,8 +89,11 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             .ToListAsync();
     }
 
-    public async Task<AssetDto> AddAssetAsync(Guid portfolioId, CreateAssetDto dto)
+    public async Task<AssetDto> AddAssetAsync(Guid portfolioId, CreateAssetDto dto, string userId)
     {
+        var portfolio = await db.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId && p.UserId == userId);
+        if (portfolio is null) throw new UnauthorizedAccessException();
+
         var asset = new Asset
         {
             Id = Guid.NewGuid(),
@@ -109,8 +117,11 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         };
     }
 
-    public async Task<bool> DeleteAssetAsync(Guid portfolioId, Guid assetId)
+    public async Task<bool> DeleteAssetAsync(Guid portfolioId, Guid assetId, string userId)
     {
+        var portfolio = await db.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId && p.UserId == userId);
+        if (portfolio is null) return false;
+
         var asset = await db.Assets.FirstOrDefaultAsync(a => a.Id == assetId && a.PortfolioId == portfolioId);
         if (asset is null) return false;
 
@@ -119,11 +130,11 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         return true;
     }
 
-    public async Task<PortfolioSummaryDto?> GetSummaryAsync(Guid portfolioId)
+    public async Task<PortfolioSummaryDto?> GetSummaryAsync(Guid portfolioId, string userId)
     {
         var portfolio = await db.Portfolios
             .Include(p => p.Assets)
-            .FirstOrDefaultAsync(p => p.Id == portfolioId);
+            .FirstOrDefaultAsync(p => p.Id == portfolioId && p.UserId == userId);
 
         if (portfolio is null) return null;
 
@@ -159,9 +170,12 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         };
     }
 
-    public async Task<DashboardDto> GetDashboardAsync()
+    public async Task<DashboardDto> GetDashboardAsync(string userId)
     {
-        var portfolios = await db.Portfolios.Include(p => p.Assets).ToListAsync();
+        var portfolios = await db.Portfolios
+            .Where(p => p.UserId == userId)
+            .Include(p => p.Assets)
+            .ToListAsync();
 
         var allAssets = portfolios.SelectMany(p => p.Assets).ToList();
         var symbols = allAssets.Select(a => a.Symbol).Distinct();

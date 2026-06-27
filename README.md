@@ -17,6 +17,8 @@ The purpose of this project is to demonstrate:
 * Caching Strategies
 * React Frontend Development
 * Real-Time Portfolio Valuation
+* Containerization with Docker
+* Authentication with Ory Kratos (OIDC / Self-Service Flows)
 
 The project focuses on investment portfolio management while keeping the architecture simple and maintainable.
 
@@ -124,6 +126,9 @@ The application is built using a microservices architecture.
 ```text
 React Frontend
        |
+       | (cookie session)
+       v
+  Ory Kratos ──────────── Postgres (Kratos DB)
        |
        v
 Portfolio Service
@@ -133,13 +138,13 @@ Portfolio Service
        v                v
 Neon Database      Market Service
 (PostgreSQL)           |
-                         v
-                       Redis
-                         |
-               +---------+---------+
-               |                   |
-               v                   v
-         Frankfurter API     Twelve Data API
+                       v
+                     Redis
+                       |
+             +---------+---------+
+             |                   |
+             v                   v
+       Frankfurter API     Twelve Data API
 ```
 <img width="1479" height="1353" alt="diagram-export-07 06 2026-20_57_20" src="https://github.com/user-attachments/assets/3deffd36-7111-4bfa-8c51-d1ddd3dde259" />
 
@@ -371,21 +376,91 @@ Technology:
 
 ---
 
-# MVP Scope
+# Authentication
 
-The following features are intentionally excluded from the MVP version:
+Authentication is handled by Ory Kratos, a modern open-source identity management system.
 
-* Authentication
-* Authorization
-* JWT
-* User Management
-* Notifications
-* Email Service
-* RabbitMQ
-* Kafka
+Features:
+* User registration
+* User login / logout
+* Cookie-based session management
+* Each user sees only their own portfolios
+
+Flow:
+1. User visits the app → redirected to `/login`
+2. Kratos handles the self-service login/registration flow
+3. On success, Kratos sets a session cookie
+4. Every API request forwards the cookie to Kratos (`/sessions/whoami`)
+5. Kratos returns the identity ID → used to filter portfolio data
+
+Services:
+* **Kratos** — public API on port 4433, admin API on port 4434
+* **Postgres** — dedicated database for Kratos (separate from Neon DB)
+
+---
+
+# Containerization
+
+All services run as Docker containers orchestrated with Docker Compose.
+
+| Container | Image | Port |
+|---|---|---|
+| web | custom (nginx) | 80 |
+| portfolio-service | custom (.NET 9) | 5001 |
+| market-service | custom (.NET 9) | 5002 |
+| kratos | oryd/kratos:v1.2.0 | 4433, 4434 |
+| postgres | postgres:16-alpine | 5432 |
+| redis | redis:alpine | 6379 |
+
+To start all services:
+```bash
+docker compose up --build
+```
+
+---
+
+# Technology Stack
+
+## Backend
+* .NET 9
+* ASP.NET Core Web API
+* Entity Framework Core
+
+## Frontend
+* React 19
+* Vite
+* Axios
+* Recharts
+* Tailwind CSS
+* Shadcn/ui
+
+## Database
+* Neon Database (PostgreSQL) — portfolio data
+* PostgreSQL (Docker) — Kratos identity data
+
+## Caching
+* Redis
+
+## Authentication
+* Ory Kratos
+
+## Architecture
+* Microservices Architecture
+* REST APIs
+* Docker / Docker Compose
+
+## External APIs
+* Frankfurter API
+* Twelve Data API
+
+---
+
+# Out of Scope
+
+* Email verification
+* Password reset
+* Role-based authorization
 * API Gateway
-* Background Jobs
-* Audit Logging
-* Role Management
-
-The primary goal of this project is to demonstrate investment portfolio management, microservices communication, caching, external API integrations, and modern full-stack application development using .NET and React.
+* Message queues (RabbitMQ, Kafka)
+* Background jobs
+* Audit logging
