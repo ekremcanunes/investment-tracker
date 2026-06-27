@@ -2,7 +2,7 @@ using market_service.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://localhost:5002");
+builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://0.0.0.0:5002");
 
 builder.Services.AddCors(options =>
 {
@@ -12,7 +12,8 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = builder.Configuration.GetConnectionString("Redis");
+    options.Configuration = Environment.GetEnvironmentVariable("REDIS_CONNECTION")
+        ?? builder.Configuration.GetConnectionString("Redis");
 });
 
 builder.Services.AddHttpClient<IFrankfurterClient, FrankfurterClient>();

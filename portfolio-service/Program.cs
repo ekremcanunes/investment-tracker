@@ -30,7 +30,7 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddOpenApi();
 }
 
-builder.WebHost.UseUrls("http://localhost:5001");
+builder.WebHost.UseUrls(builder.Configuration["ASPNETCORE_URLS"] ?? "http://0.0.0.0:5001");
 
 var app = builder.Build();
 
