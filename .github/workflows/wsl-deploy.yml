@@ -13,14 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy .env
+      - name: Copy secrets
         run: |
-          cp ~/investment-tracker/.env $GITHUB_WORKSPACE/.env
-
-      - name: Copy appsettings.Development.json files
-        run: |
-          cp ~/investment-tracker/portfolio-service/appsettings.Development.json $GITHUB_WORKSPACE/portfolio-service/appsettings.Development.json
-          cp ~/investment-tracker/market-service/appsettings.Development.json $GITHUB_WORKSPACE/market-service/appsettings.Development.json
+          cp ~/secrets/.env $GITHUB_WORKSPACE/.env
+          cp ~/secrets/portfolio-appsettings.Development.json $GITHUB_WORKSPACE/portfolio-service/appsettings.Development.json
+          cp ~/secrets/market-appsettings.Development.json $GITHUB_WORKSPACE/market-service/appsettings.Development.json
 
       - name: Deploy
         run: |
