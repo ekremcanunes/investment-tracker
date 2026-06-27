@@ -21,130 +21,6 @@ The purpose of this project is to demonstrate:
 The project focuses on investment portfolio management while keeping the architecture simple and maintainable.
 
 ---
-
-# Features
-
-## Portfolio Management
-
-Users can create and manage multiple investment portfolios.
-
-Examples:
-
-* Tech Portfolio
-* Crypto Portfolio
-* Long-Term Portfolio
-* Retirement Portfolio
-
-Users can:
-
-* Create portfolios
-* View portfolios
-* Delete portfolios
-* View portfolio details
-
----
-
-## Asset Management
-
-Users can add investment assets to their portfolios.
-
-Supported asset types:
-
-### Currency
-
-* USD
-* EUR
-* GBP
-
-### Stocks
-
-* AAPL
-* MSFT
-* NVDA
-* GOOGL
-
-### Cryptocurrency
-
-* BTC
-* ETH
-* SOL
-
-Each asset contains:
-
-* Symbol
-* Asset Type
-* Quantity
-
----
-
-## Real-Time Portfolio Valuation
-
-The system retrieves current market prices and calculates the total portfolio value.
-
-Example:
-
-| Asset | Quantity |
-| ----- | -------- |
-| USD   | 500      |
-| BTC   | 0.10     |
-| AAPL  | 10       |
-
-The application:
-
-* Retrieves current exchange rates
-* Retrieves current stock prices
-* Retrieves current cryptocurrency prices
-* Calculates asset values
-* Calculates total portfolio value
-
----
-
-## Portfolio Analytics
-
-Users can visualize their investments through charts and summary dashboards.
-
-Examples:
-
-### Asset Allocation
-
-* Stocks 50%
-* Cryptocurrency 30%
-* Currency 20%
-
-### Portfolio Distribution
-
-Portfolio value breakdown by asset.
-
----
-
-# System Architecture
-
-The application is built using a microservices architecture.
-
-```text
-React Frontend
-       |
-       |
-       v
-Portfolio Service
-       |
-       +----------------+
-       |                |
-       v                v
-Neon Database      Market Service
-(PostgreSQL)           |
-                         v
-                       Redis
-                         |
-               +---------+---------+
-               |                   |
-               v                   v
-         Frankfurter API     Twelve Data API
-```
-<img width="1479" height="1353" alt="diagram-export-07 06 2026-20_57_20" src="https://github.com/user-attachments/assets/3deffd36-7111-4bfa-8c51-d1ddd3dde259" />
-
----
-
 # Services
 
 ## Portfolio Service
@@ -196,24 +72,32 @@ Benefits:
 * Lower risk of hitting API rate limits
 * Improved application performance
 
-Example cache keys:
+---
+# System Architecture
+
+The application is built using a microservices architecture.
 
 ```text
-currency:USD
-currency:EUR
-
-stock:AAPL
-stock:MSFT
-
-crypto:BTC
-crypto:ETH
+React Frontend
+       |
+       |
+       v
+Portfolio Service
+       |
+       +----------------+
+       |                |
+       v                v
+Neon Database      Market Service
+(PostgreSQL)           |
+                         v
+                       Redis
+                         |
+               +---------+---------+
+               |                   |
+               v                   v
+         Frankfurter API     Twelve Data API
 ```
-
-Cache expiration:
-
-```text
-5 Minutes
-```
+<img width="1479" height="1353" alt="diagram-export-07 06 2026-20_57_20" src="https://github.com/user-attachments/assets/3deffd36-7111-4bfa-8c51-d1ddd3dde259" />
 
 ---
 
@@ -224,13 +108,7 @@ Cache expiration:
 Used for:
 
 * Real-time currency exchange rates
-
-Examples:
-
-* USD/TRY
-* EUR/TRY
-* GBP/TRY
-
+* 
 ---
 
 ## Twelve Data API
@@ -239,13 +117,7 @@ Used for:
 
 * Stock market prices (US and BIST)
 * Cryptocurrency prices
-
-Examples:
-
-* AAPL, MSFT, NVDA, GOOGL
-* THYAO, GARAN, ASELS
-* BTC, ETH, SOL
-
+* 
 ---
 
 # Frontend
