@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { TrendingUp, LayoutDashboard, Briefcase, BarChart2 } from 'lucide-react'
+import { TrendingUp, LayoutDashboard, Briefcase, BarChart2, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
 
 const navLinks = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -9,6 +10,8 @@ const navLinks = [
 ]
 
 export default function Layout() {
+  const { logout } = useAuth()
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
@@ -40,6 +43,17 @@ export default function Layout() {
             </NavLink>
           ))}
         </nav>
+
+        {/* Logout */}
+        <div className="px-3 py-4 border-t border-gray-200">
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-md text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors"
+          >
+            <LogOut className="h-5 w-5" />
+            Sign out
+          </button>
+        </div>
       </aside>
 
       {/* Main content */}
