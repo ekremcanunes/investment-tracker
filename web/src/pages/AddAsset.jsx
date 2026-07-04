@@ -30,6 +30,7 @@ export default function AddAsset() {
   const [assetType, setAssetType] = useState('')
   const [symbol, setSymbol] = useState('')
   const [quantity, setQuantity] = useState('')
+  const [purchasePrice, setPurchasePrice] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -47,6 +48,7 @@ export default function AddAsset() {
         assetType,
         symbol,
         quantity: parseFloat(quantity),
+        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
       })
       navigate('/assets')
     } catch (err) {
@@ -109,7 +111,7 @@ export default function AddAsset() {
 
             {/* Quantity */}
             <div className="space-y-1.5">
-              <Label htmlFor="quantity">{t('common.amount')}</Label>
+              <Label htmlFor="quantity">{t('assets.quantity')}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -119,6 +121,20 @@ export default function AddAsset() {
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 required
+              />
+            </div>
+
+            {/* Purchase Price */}
+            <div className="space-y-1.5">
+              <Label htmlFor="purchasePrice">{t('assets.purchasePrice')}</Label>
+              <Input
+                id="purchasePrice"
+                type="number"
+                min="0"
+                step="any"
+                placeholder="0.00"
+                value={purchasePrice}
+                onChange={(e) => setPurchasePrice(e.target.value)}
               />
             </div>
 

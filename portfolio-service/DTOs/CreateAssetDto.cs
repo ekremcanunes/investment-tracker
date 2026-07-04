@@ -7,4 +7,5 @@ public class CreateAssetDto
     public string Symbol { get; set; } = string.Empty;
     public AssetType AssetType { get; set; }
     public decimal Quantity { get; set; }
+    public decimal? PurchasePrice { get; set; }
 }

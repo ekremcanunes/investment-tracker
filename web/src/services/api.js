@@ -9,6 +9,7 @@ export const portfolioApi = {
   delete: (id) => api.delete(`/api/portfolios/${id}`),
   getAssets: (id) => api.get(`/api/portfolios/${id}/assets`),
   addAsset: (id, data) => api.post(`/api/portfolios/${id}/assets`, data),
+  updateAsset: (portfolioId, assetId, data) => api.put(`/api/portfolios/${portfolioId}/assets/${assetId}`, data),
   deleteAsset: (portfolioId, assetId) => api.delete(`/api/portfolios/${portfolioId}/assets/${assetId}`),
   getSummary: (id) => api.get(`/api/portfolios/${id}/summary`),
 }

@@ -102,6 +102,7 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             Symbol = dto.Symbol,
             AssetType = dto.AssetType,
             Quantity = dto.Quantity,
+            AvgCostBasis = dto.PurchasePrice,
             CreatedAt = DateTime.UtcNow
         };
 
@@ -120,6 +121,30 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             AssetId = asset.Id
         };
         db.Transactions.Add(transaction);
+
+        await db.SaveChangesAsync();
+
+        return new AssetDto
+        {
+            Id = asset.Id,
+            Symbol = asset.Symbol,
+            AssetType = asset.AssetType,
+            Quantity = asset.Quantity,
+            AvgCostBasis = asset.AvgCostBasis,
+            CreatedAt = asset.CreatedAt
+        };
+    }
+
+    public async Task<AssetDto?> UpdateAssetAsync(Guid portfolioId, Guid assetId, UpdateAssetDto dto, string userId)
+    {
+        var portfolio = await db.Portfolios.FirstOrDefaultAsync(p => p.Id == portfolioId && p.UserId == userId);
+        if (portfolio is null) return null;
+
+        var asset = await db.Assets.FirstOrDefaultAsync(a => a.Id == assetId && a.PortfolioId == portfolioId);
+        if (asset is null) return null;
+
+        if (dto.Quantity.HasValue) asset.Quantity = dto.Quantity.Value;
+        if (dto.PurchasePrice.HasValue) asset.AvgCostBasis = dto.PurchasePrice.Value;
 
         await db.SaveChangesAsync();
 
@@ -165,15 +190,24 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         {
             var marketPrice = priceMap.GetValueOrDefault(a.Symbol);
             var priceInTry = marketPrice?.PriceInTry ?? 0m;
+            var valueInTry = a.Quantity * priceInTry;
+            var costInTry = a.AvgCostBasis.HasValue ? a.Quantity * a.AvgCostBasis.Value : (decimal?)null;
+            var pl = costInTry.HasValue ? valueInTry - costInTry.Value : (decimal?)null;
+            var plPercent = costInTry is > 0 ? (pl!.Value / costInTry.Value) * 100 : (decimal?)null;
+
             return new AssetValueDto
             {
                 Id = a.Id,
                 Symbol = a.Symbol,
                 AssetType = a.AssetType,
                 Quantity = a.Quantity,
+                AvgCostBasis = a.AvgCostBasis,
                 PriceInUsd = marketPrice?.PriceInUsd,
                 PriceInTry = priceInTry,
-                ValueInTry = a.Quantity * priceInTry
+                ValueInTry = valueInTry,
+                CostInTry = costInTry,
+                ProfitLossInTry = pl,
+                ProfitLossPercent = plPercent
             };
         }).ToList();
 

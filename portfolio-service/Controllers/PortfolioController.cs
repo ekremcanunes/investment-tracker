@@ -50,6 +50,18 @@ public class PortfolioController(IPortfolioService portfolioService) : Controlle
         return CreatedAtAction(nameof(GetAssets), new { id }, asset);
     }
 
+    [HttpPut("{id:guid}/assets/{assetId:guid}")]
+    public async Task<ActionResult<AssetDto>> UpdateAsset(Guid id, Guid assetId, UpdateAssetDto dto)
+    {
+        if (dto.Quantity is <= 0)
+            return BadRequest(new { error = new { code = "VALIDATION_ERROR", message = "Quantity must be greater than zero" } });
+        if (dto.PurchasePrice is < 0)
+            return BadRequest(new { error = new { code = "VALIDATION_ERROR", message = "Purchase price cannot be negative" } });
+
+        var result = await portfolioService.UpdateAssetAsync(id, assetId, dto, UserId);
+        return result is null ? NotFound() : Ok(result);
+    }
+
     [HttpDelete("{id:guid}/assets/{assetId:guid}")]
     public async Task<IActionResult> DeleteAsset(Guid id, Guid assetId)
     {
