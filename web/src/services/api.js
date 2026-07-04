@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: 'http://localhost:5001', withCredentials: true })
+const api = axios.create({ baseURL: '', withCredentials: true })
 
 export const portfolioApi = {
   getAll: () => api.get('/api/portfolios'),

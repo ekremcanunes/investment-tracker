@@ -31,14 +31,14 @@ export default function Overview() {
     return <div className="text-gray-400 text-sm">{t('common.loading')}</div>
   }
 
-  const totalValue = dashboard?.totalValue ?? 0
+  const totalValue = dashboard?.totalValueInTry ?? 0
   const totalIncome = summary?.totalIncome ?? 0
   const totalExpense = summary?.totalExpense ?? 0
   const netFlow = summary?.netFlow ?? 0
 
-  const cashValue = dashboard?.assets?.filter(a => a.assetType === 'Currency').reduce((s, a) => s + (a.currentValue ?? 0), 0) ?? 0
-  const stockValue = dashboard?.assets?.filter(a => a.assetType === 'Stock').reduce((s, a) => s + (a.currentValue ?? 0), 0) ?? 0
-  const cryptoValue = dashboard?.assets?.filter(a => a.assetType === 'Crypto').reduce((s, a) => s + (a.currentValue ?? 0), 0) ?? 0
+  const cashValue = dashboard?.cashValueInTry ?? 0
+  const stockValue = dashboard?.stockValueInTry ?? 0
+  const cryptoValue = dashboard?.cryptoValueInTry ?? 0
 
   const formatCurrency = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val)
 

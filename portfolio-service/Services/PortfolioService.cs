@@ -198,11 +198,22 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         var symbols = allAssets.Select(a => a.Symbol).Distinct();
 
         decimal totalValue = 0;
+        decimal cashValue = 0, stockValue = 0, cryptoValue = 0;
         if (allAssets.Count > 0)
         {
             var prices = await marketClient.GetPricesAsync(symbols);
             var priceMap = prices.ToDictionary(p => p.Symbol, p => p.PriceInTry);
-            totalValue = allAssets.Sum(a => a.Quantity * priceMap.GetValueOrDefault(a.Symbol, 0m));
+            foreach (var a in allAssets)
+            {
+                var val = a.Quantity * priceMap.GetValueOrDefault(a.Symbol, 0m);
+                totalValue += val;
+                switch (a.AssetType)
+                {
+                    case Models.AssetType.Currency: cashValue += val; break;
+                    case Models.AssetType.Stock: stockValue += val; break;
+                    case Models.AssetType.Crypto: cryptoValue += val; break;
+                }
+            }
         }
 
         var recentAssets = allAssets
@@ -224,6 +235,9 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             TotalValueInTry = totalValue,
             PortfolioCount = portfolios.Count,
             AssetCount = allAssets.Count,
+            CashValueInTry = cashValue,
+            StockValueInTry = stockValue,
+            CryptoValueInTry = cryptoValue,
             RecentAssets = recentAssets
         };
     }
