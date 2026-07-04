@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { portfolioApi } from '@/services/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -100,6 +101,7 @@ function MarketTable({ title, assets, onDelete }) {
 export default function PortfolioDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [summary, setSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -123,8 +125,8 @@ export default function PortfolioDetail() {
     }
   }
 
-  if (loading) return <div className="text-gray-400">Loading...</div>
-  if (error) return <div className="text-red-400">Error: {error}</div>
+  if (loading) return <div className="text-gray-400">{t('common.loading')}</div>
+  if (error) return <div className="text-red-400">{t('common.error')}: {error}</div>
 
   const assets = summary?.assets ?? []
   const totalValue = summary?.totalValueInTry ?? 0
@@ -138,23 +140,23 @@ export default function PortfolioDetail() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/portfolios')}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-white">{portfolioName}</h1>
-          <p className="text-sm text-gray-400">Total Value: {formatTRY(totalValue)}</p>
+          <p className="text-sm text-gray-400">{t('common.total')}: {formatTRY(totalValue)}</p>
         </div>
-        <Button onClick={() => navigate(`/portfolios/${id}/add-asset`)}>
+        <Button onClick={() => navigate(`/assets/${id}/add`)}>
           <Plus className="h-4 w-4" />
-          Add Asset
+          {t('assets.addAsset')}
         </Button>
       </div>
 
       {!hasAssets ? (
         <Card>
           <CardContent className="py-8">
-            <p className="text-gray-400 text-sm text-center">No assets yet. Add your first asset.</p>
+            <p className="text-gray-400 text-sm text-center">{t('transactions.noResults')}</p>
           </CardContent>
         </Card>
       ) : (

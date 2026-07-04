@@ -19,8 +19,14 @@ export default function Assets() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    portfolioApi.getAll().then(res => {
-      setPortfolios(res.data)
+    portfolioApi.getAll().then(async (res) => {
+      const portfoliosWithAssets = await Promise.all(
+        res.data.map(async (p) => {
+          const assetsRes = await portfolioApi.getAssets(p.id)
+          return { ...p, assets: assetsRes.data }
+        })
+      )
+      setPortfolios(portfoliosWithAssets)
       setLoading(false)
     })
   }, [])

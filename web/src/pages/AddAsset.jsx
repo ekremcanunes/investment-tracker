@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useLanguage } from '@/contexts/LanguageContext'
 import { portfolioApi } from '@/services/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -25,6 +26,7 @@ const assetTypes = ['Currency', 'Stock', 'Crypto']
 export default function AddAsset() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useLanguage()
   const [assetType, setAssetType] = useState('')
   const [symbol, setSymbol] = useState('')
   const [quantity, setQuantity] = useState('')
@@ -46,7 +48,7 @@ export default function AddAsset() {
         symbol,
         quantity: parseFloat(quantity),
       })
-      navigate(`/portfolios/${id}`)
+      navigate('/assets')
     } catch (err) {
       setError(err.message)
       setSubmitting(false)
@@ -58,15 +60,15 @@ export default function AddAsset() {
   return (
     <div>
       <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate(`/portfolios/${id}`)}>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-white">Add Asset</h1>
+        <h1 className="text-2xl font-bold text-white">{t('assets.addAsset')}</h1>
       </div>
 
       <Card className="max-w-md">
         <CardHeader>
-          <CardTitle className="text-base">Asset Details</CardTitle>
+          <CardTitle className="text-base">{t('assets.addAsset')}</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -77,10 +79,10 @@ export default function AddAsset() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Asset Type */}
             <div className="space-y-1.5">
-              <Label>Asset Type</Label>
+              <Label>{t('common.type')}</Label>
               <Select value={assetType} onValueChange={handleTypeChange}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select type..." />
+                  <SelectValue placeholder={t('common.type')} />
                 </SelectTrigger>
                 <SelectContent>
                   {assetTypes.map((t) => (
@@ -95,7 +97,7 @@ export default function AddAsset() {
               <Label>Symbol</Label>
               <Select value={symbol} onValueChange={setSymbol} disabled={!assetType}>
                 <SelectTrigger>
-                  <SelectValue placeholder={assetType ? 'Select symbol...' : 'Select type first'} />
+                  <SelectValue placeholder="Symbol" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableSymbols.map((s) => (
@@ -107,7 +109,7 @@ export default function AddAsset() {
 
             {/* Quantity */}
             <div className="space-y-1.5">
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">{t('common.amount')}</Label>
               <Input
                 id="quantity"
                 type="number"
@@ -122,10 +124,10 @@ export default function AddAsset() {
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={submitting || !assetType || !symbol || !quantity}>
-                {submitting ? 'Adding...' : 'Add Asset'}
+                {submitting ? '...' : t('common.save')}
               </Button>
-              <Button type="button" variant="outline" onClick={() => navigate(`/portfolios/${id}`)}>
-                Cancel
+              <Button type="button" variant="outline" onClick={() => navigate('/assets')}>
+                {t('common.cancel')}
               </Button>
             </div>
           </form>
