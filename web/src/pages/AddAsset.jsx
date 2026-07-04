@@ -61,7 +61,7 @@ export default function AddAsset() {
         <Button variant="ghost" size="icon" onClick={() => navigate(`/portfolios/${id}`)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-gray-900">Add Asset</h1>
+        <h1 className="text-2xl font-bold text-white">Add Asset</h1>
       </div>
 
       <Card className="max-w-md">
@@ -70,7 +70,7 @@ export default function AddAsset() {
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+            <div className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
               {error}
             </div>
           )}

@@ -22,23 +22,23 @@ function CurrencyTable({ assets, onDelete }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (TRY)</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (TRY)</th>
+              <tr className="border-b border-gray-800">
+                <th className="text-left py-3 px-2 font-medium text-gray-400">Symbol</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Quantity</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Price (TRY)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Total (TRY)</th>
                 <th className="py-3 px-2"></th>
               </tr>
             </thead>
             <tbody>
               {assets.map((asset) => (
-                <tr key={asset.id} className="border-b border-gray-100 last:border-0">
-                  <td className="py-3 px-2 font-medium text-gray-900">{asset.symbol}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{formatTRY(asset.priceInTry)}</td>
-                  <td className="py-3 px-2 text-right font-medium text-gray-900">{formatTRY(asset.valueInTry)}</td>
+                <tr key={asset.id} className="border-b border-gray-800/50 last:border-0">
+                  <td className="py-3 px-2 font-medium text-white">{asset.symbol}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{asset.quantity}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{formatTRY(asset.priceInTry)}</td>
+                  <td className="py-3 px-2 text-right font-medium text-white">{formatTRY(asset.valueInTry)}</td>
                   <td className="py-3 px-2 text-right">
-                    <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(asset.id)}>
+                    <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => onDelete(asset.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
@@ -63,27 +63,27 @@ function MarketTable({ title, assets, onDelete }) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-200">
-                <th className="text-left py-3 px-2 font-medium text-gray-500">Symbol</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Quantity</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (USD)</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Price (TRY)</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (USD)</th>
-                <th className="text-right py-3 px-2 font-medium text-gray-500">Total (TRY)</th>
+              <tr className="border-b border-gray-800">
+                <th className="text-left py-3 px-2 font-medium text-gray-400">Symbol</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Quantity</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Price (USD)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Price (TRY)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Total (USD)</th>
+                <th className="text-right py-3 px-2 font-medium text-gray-400">Total (TRY)</th>
                 <th className="py-3 px-2"></th>
               </tr>
             </thead>
             <tbody>
               {assets.map((asset) => (
-                <tr key={asset.id} className="border-b border-gray-100 last:border-0">
-                  <td className="py-3 px-2 font-medium text-gray-900">{asset.symbol}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{asset.quantity}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{formatUSD(asset.priceInUsd)}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{formatTRY(asset.priceInTry)}</td>
-                  <td className="py-3 px-2 text-right text-gray-700">{formatUSD((asset.priceInUsd ?? 0) * asset.quantity)}</td>
-                  <td className="py-3 px-2 text-right font-medium text-gray-900">{formatTRY(asset.valueInTry)}</td>
+                <tr key={asset.id} className="border-b border-gray-800/50 last:border-0">
+                  <td className="py-3 px-2 font-medium text-white">{asset.symbol}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{asset.quantity}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{formatUSD(asset.priceInUsd)}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{formatTRY(asset.priceInTry)}</td>
+                  <td className="py-3 px-2 text-right text-gray-300">{formatUSD((asset.priceInUsd ?? 0) * asset.quantity)}</td>
+                  <td className="py-3 px-2 text-right font-medium text-white">{formatTRY(asset.valueInTry)}</td>
                   <td className="py-3 px-2 text-right">
-                    <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => onDelete(asset.id)}>
+                    <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300 hover:bg-red-500/10" onClick={() => onDelete(asset.id)}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
@@ -123,8 +123,8 @@ export default function PortfolioDetail() {
     }
   }
 
-  if (loading) return <div className="text-gray-500">Loading...</div>
-  if (error) return <div className="text-red-500">Error: {error}</div>
+  if (loading) return <div className="text-gray-400">Loading...</div>
+  if (error) return <div className="text-red-400">Error: {error}</div>
 
   const assets = summary?.assets ?? []
   const totalValue = summary?.totalValueInTry ?? 0
@@ -142,8 +142,8 @@ export default function PortfolioDetail() {
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">{portfolioName}</h1>
-          <p className="text-sm text-gray-500">Total Value: {formatTRY(totalValue)}</p>
+          <h1 className="text-2xl font-bold text-white">{portfolioName}</h1>
+          <p className="text-sm text-gray-400">Total Value: {formatTRY(totalValue)}</p>
         </div>
         <Button onClick={() => navigate(`/portfolios/${id}/add-asset`)}>
           <Plus className="h-4 w-4" />
@@ -154,7 +154,7 @@ export default function PortfolioDetail() {
       {!hasAssets ? (
         <Card>
           <CardContent className="py-8">
-            <p className="text-gray-500 text-sm text-center">No assets yet. Add your first asset.</p>
+            <p className="text-gray-400 text-sm text-center">No assets yet. Add your first asset.</p>
           </CardContent>
         </Card>
       ) : (

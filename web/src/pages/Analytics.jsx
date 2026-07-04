@@ -26,6 +26,13 @@ const TYPE_COLORS = {
 
 const PIE_COLORS = ['#3b82f6', '#22c55e', '#f97316', '#a855f7', '#ec4899']
 
+const CHART_TOOLTIP_STYLE = {
+  backgroundColor: '#111827',
+  border: '1px solid #374151',
+  borderRadius: '0.5rem',
+  color: '#f9fafb',
+}
+
 export default function Analytics() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -74,12 +81,12 @@ export default function Analytics() {
     fetchAll()
   }, [])
 
-  if (loading) return <div className="text-gray-500">Loading...</div>
-  if (error) return <div className="text-red-500">Error: {error}</div>
+  if (loading) return <div className="text-gray-400">Loading...</div>
+  if (error) return <div className="text-red-400">Error: {error}</div>
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Analytics</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Analytics</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie chart */}
@@ -89,7 +96,7 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             {pieData.length === 0 ? (
-              <p className="text-gray-500 text-sm py-8 text-center">No data available.</p>
+              <p className="text-gray-400 text-sm py-8 text-center">No data available.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -109,6 +116,7 @@ export default function Analytics() {
                     ))}
                   </Pie>
                   <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
                     formatter={(value, name, props) => [
                       `${value}% (${formatTRY(props.payload.absValue)})`,
                       name,
@@ -128,19 +136,24 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             {barData.length === 0 ? (
-              <p className="text-gray-500 text-sm py-8 text-center">No data available.</p>
+              <p className="text-gray-400 text-sm py-8 text-center">No data available.</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={barData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+                  <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#9ca3af' }} stroke="#374151" />
                   <YAxis
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    stroke="#374151"
                     tickFormatter={(v) =>
                       new Intl.NumberFormat('tr-TR', { notation: 'compact' }).format(v)
                     }
                   />
-                  <Tooltip formatter={(value) => [formatTRY(value), 'Value']} />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    cursor={{ fill: '#ffffff0d' }}
+                    formatter={(value) => [formatTRY(value), 'Value']}
+                  />
                   <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

@@ -53,13 +53,13 @@ export default function Portfolios() {
     }
   }
 
-  if (loading) return <div className="text-gray-500">Loading...</div>
-  if (error) return <div className="text-red-500">Error: {error}</div>
+  if (loading) return <div className="text-gray-400">Loading...</div>
+  if (error) return <div className="text-red-400">Error: {error}</div>
 
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Portfolios</h1>
+        <h1 className="text-2xl font-bold text-white">Portfolios</h1>
         <Button onClick={() => setShowForm((v) => !v)}>
           <Plus className="h-4 w-4" />
           New Portfolio
@@ -109,7 +109,7 @@ export default function Portfolios() {
       {/* Portfolio list */}
       {portfolios.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-gray-500">
+          <CardContent className="py-12 text-center text-gray-400">
             No portfolios yet. Create your first portfolio above.
           </CardContent>
         </Card>
@@ -124,7 +124,7 @@ export default function Portfolios() {
                 )}
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-1 text-sm text-gray-500 mb-4">
+                <div className="flex items-center gap-1 text-sm text-gray-400 mb-4">
                   <Package className="h-4 w-4" />
                   <span>{portfolio.assetCount ?? 0} assets</span>
                 </div>
