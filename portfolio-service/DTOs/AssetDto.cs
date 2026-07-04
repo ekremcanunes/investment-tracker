@@ -8,6 +8,7 @@ public class AssetDto
     public string Symbol { get; set; } = string.Empty;
     public AssetType AssetType { get; set; }
     public decimal Quantity { get; set; }
+    public decimal? AvgCostBasis { get; set; }
     public string PortfolioName { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }

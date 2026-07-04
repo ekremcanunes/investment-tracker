@@ -84,6 +84,7 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
                 Symbol = a.Symbol,
                 AssetType = a.AssetType,
                 Quantity = a.Quantity,
+                AvgCostBasis = a.AvgCostBasis,
                 CreatedAt = a.CreatedAt
             })
             .ToListAsync();
@@ -105,6 +106,21 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
         };
 
         db.Assets.Add(asset);
+
+        var transaction = new Transaction
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Type = TransactionType.AssetBuy,
+            Amount = dto.Quantity,
+            Currency = "TRY",
+            Category = dto.AssetType.ToString(),
+            Description = $"{dto.Symbol} x {dto.Quantity}",
+            Date = DateTime.UtcNow,
+            AssetId = asset.Id
+        };
+        db.Transactions.Add(transaction);
+
         await db.SaveChangesAsync();
 
         return new AssetDto
@@ -113,6 +129,7 @@ public class PortfolioService(AppDbContext db, IMarketServiceClient marketClient
             Symbol = asset.Symbol,
             AssetType = asset.AssetType,
             Quantity = asset.Quantity,
+            AvgCostBasis = asset.AvgCostBasis,
             CreatedAt = asset.CreatedAt
         };
     }

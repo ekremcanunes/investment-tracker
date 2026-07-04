@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using portfolio_service.Data;
@@ -12,9 +13,11 @@ using portfolio_service.Data;
 namespace portfolio_service.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260704152352_AddTransactions")]
+    partial class AddTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -32,10 +35,6 @@ namespace portfolio_service.Migrations
                     b.Property<string>("AssetType")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<decimal?>("AvgCostBasis")
-                        .HasPrecision(18, 8)
-                        .HasColumnType("numeric(18,8)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -165,16 +164,10 @@ namespace portfolio_service.Migrations
             modelBuilder.Entity("portfolio_service.Models.Transaction", b =>
                 {
                     b.HasOne("portfolio_service.Models.Asset", "Asset")
-                        .WithMany("Transactions")
-                        .HasForeignKey("AssetId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .WithMany()
+                        .HasForeignKey("AssetId");
 
                     b.Navigation("Asset");
-                });
-
-            modelBuilder.Entity("portfolio_service.Models.Asset", b =>
-                {
-                    b.Navigation("Transactions");
                 });
 
             modelBuilder.Entity("portfolio_service.Models.Portfolio", b =>
