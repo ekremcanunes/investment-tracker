@@ -101,12 +101,12 @@ export default function AddAsset() {
               </Select>
             </div>
 
-            {/* Symbol */}
+            {/* Asset / Symbol */}
             <div className="space-y-1.5">
-              <Label>{t('assets.symbol')}</Label>
+              <Label>{t('assets.name')}</Label>
               <Select value={symbol} onValueChange={setSymbol} disabled={!assetType}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t('assets.symbol')} />
+                  <SelectValue placeholder={t('assets.name')} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableSymbols.map((s) => (
@@ -134,7 +134,7 @@ export default function AddAsset() {
             {/* Unit price + currency */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="unitPrice">{t('assets.unitPrice')}</Label>
+                <Label htmlFor="unitPrice">{t('assets.purchasePrice')}</Label>
                 <Input
                   id="unitPrice"
                   type="number"
@@ -147,7 +147,7 @@ export default function AddAsset() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label>{t('assets.currency')}</Label>
+                <Label>{t('assets.currencyLabel')}</Label>
                 <Select value={currency} onValueChange={setCurrency}>
                   <SelectTrigger>
                     <SelectValue />
@@ -161,9 +161,9 @@ export default function AddAsset() {
               </div>
             </div>
 
-            {/* Date */}
+            {/* Purchase date */}
             <div className="space-y-1.5">
-              <Label htmlFor="date">{t('common.date')}</Label>
+              <Label htmlFor="date">{t('assets.purchaseDate')}</Label>
               <Input
                 id="date"
                 type="date"

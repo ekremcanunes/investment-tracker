@@ -125,11 +125,12 @@ export default function Assets() {
                 <thead>
                   <tr className="border-b border-gray-800/50 text-xs text-gray-400">
                     <th className="text-left px-4 py-2 font-medium">{t('common.type')}</th>
-                    <th className="text-left px-4 py-2 font-medium">{t('assets.symbol')}</th>
+                    <th className="text-left px-4 py-2 font-medium">{t('assets.name')}</th>
                     <th className="text-right px-4 py-2 font-medium">{t('assets.quantity')}</th>
-                    <th className="text-right px-4 py-2 font-medium">{t('assets.avgCost')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.purchasePrice')}</th>
                     <th className="text-right px-4 py-2 font-medium">{t('assets.currentPrice')}</th>
-                    <th className="text-right px-4 py-2 font-medium">{t('assets.value')} (TRY)</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.cost')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.currentValue')}</th>
                     <th className="text-right px-4 py-2 font-medium">{t('assets.profitLoss')}</th>
                     <th className="px-4 py-2"></th>
                   </tr>
@@ -143,6 +144,7 @@ export default function Assets() {
                     const pl = h.unrealizedProfitLoss
                     const plColor = pl > 0 ? 'text-green-400' : pl < 0 ? 'text-red-400' : 'text-gray-400'
                     const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
+                    const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
 
                     return (
                       <tr key={h.id} className="border-b border-gray-800/30 hover:bg-gray-800/20">
@@ -155,47 +157,47 @@ export default function Assets() {
                         <td className="px-4 py-3 text-sm text-white font-medium">{h.symbol}</td>
 
                         {isActive ? (
-                          <>
-                            <td className="px-4 py-3">
-                              <Input
-                                type="number" min="0" step="any"
-                                value={form.quantity}
-                                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                                className="w-24 h-7 text-xs text-right ml-auto"
-                              />
-                            </td>
-                            <td className="px-4 py-3">
-                              <Input
-                                type="number" min="0" step="any"
-                                value={form.price}
-                                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                                className="w-28 h-7 text-xs text-right ml-auto"
-                                placeholder={isSell ? t('assets.unitPrice') : t('assets.avgCost')}
-                              />
-                            </td>
-                            <td className="px-4 py-3 text-xs text-right text-gray-500">
-                              {isSell ? t('assets.sell') : t('assets.edit')} ({h.currency})
-                            </td>
-                            <td className="px-4 py-3 text-sm text-right text-white font-medium">{formatMoney(h.valueInTry)}</td>
-                            <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  size="sm" variant="ghost" onClick={handleConfirm}
-                                  disabled={saving || !form.quantity || (isSell && !form.price)}
-                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 w-7 p-0"
-                                >
-                                  <Check className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  size="sm" variant="ghost" onClick={() => setEditing(null)}
-                                  className="text-gray-400 hover:text-gray-300 h-7 w-7 p-0"
-                                >
-                                  <X className="h-4 w-4" />
-                                </Button>
+                          <td colSpan={7} className="px-4 py-3">
+                            <div className="flex items-center justify-end gap-3 flex-wrap">
+                              <span className="text-xs text-gray-500">
+                                {isSell ? t('assets.sellAsset') : t('assets.edit')} · {h.symbol} ({h.currency})
+                              </span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-400">{t('assets.quantity')}</span>
+                                <Input
+                                  type="number" min="0" step="any"
+                                  value={form.quantity}
+                                  onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                                  className="w-24 h-7 text-xs text-right"
+                                />
                               </div>
-                            </td>
-                          </>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-xs text-gray-400">
+                                  {isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}
+                                </span>
+                                <Input
+                                  type="number" min="0" step="any"
+                                  value={form.price}
+                                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                                  className="w-28 h-7 text-xs text-right"
+                                  placeholder="0.00"
+                                />
+                              </div>
+                              <Button
+                                size="sm" variant="ghost" onClick={handleConfirm}
+                                disabled={saving || !form.quantity || (isSell && !form.price)}
+                                className="text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 w-7 p-0"
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm" variant="ghost" onClick={() => setEditing(null)}
+                                className="text-gray-400 hover:text-gray-300 h-7 w-7 p-0"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </td>
                         ) : (
                           <>
                             <td className="px-4 py-3 text-sm text-right text-gray-300">{h.quantity}</td>
@@ -210,9 +212,8 @@ export default function Assets() {
                                 </span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-sm text-right text-white font-medium">
-                              {h.priceAvailable ? formatMoney(h.valueInTry) : '—'}
-                            </td>
+                            <td className="px-4 py-3 text-sm text-right text-gray-300">{formatMoney(h.totalCost, h.currency)}</td>
+                            <td className="px-4 py-3 text-sm text-right text-white font-medium">{formatMoney(currentTotal, h.currency)}</td>
                             <td className="px-4 py-3 text-sm text-right">
                               {pl != null ? (
                                 <div>
