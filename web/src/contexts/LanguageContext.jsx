@@ -70,6 +70,16 @@ const translations = {
     'assets.profitLoss': 'Kâr/Zarar',
     'assets.edit': 'Düzenle',
     'assets.noAssets': 'Henüz varlık eklenmedi.',
+    'assets.buy': 'Al',
+    'assets.sell': 'Sat',
+    'assets.buyAsset': 'Varlık Al',
+    'assets.sellAsset': 'Varlık Sat',
+    'assets.unitPrice': 'Birim Fiyat',
+    'assets.currency': 'Para Birimi',
+    'assets.avgCost': 'Ort. Maliyet',
+    'assets.priceUnavailable': 'Fiyat alınamadı',
+    'assets.realizedPL': 'Gerçekleşen K/Z',
+    'assets.confirmDelete': 'Bu varlığı silmek istediğine emin misin?',
 
     // Common
     'common.save': 'Kaydet',
@@ -92,6 +102,10 @@ const translations = {
     'installment.total': 'Toplam Taksit',
     'installment.current': 'Mevcut Taksit',
     'installment.monthly': 'Aylık Tutar',
+
+    // Analytics
+    'analytics.allocation': 'Varlık Dağılımı',
+    'analytics.expenseByCategory': 'Kategoriye Göre Giderler',
 
     // Filters
     'filter.all': 'Tümü',
@@ -145,6 +159,16 @@ const translations = {
     'assets.profitLoss': 'Profit/Loss',
     'assets.edit': 'Edit',
     'assets.noAssets': 'No assets added yet.',
+    'assets.buy': 'Buy',
+    'assets.sell': 'Sell',
+    'assets.buyAsset': 'Buy Asset',
+    'assets.sellAsset': 'Sell Asset',
+    'assets.unitPrice': 'Unit Price',
+    'assets.currency': 'Currency',
+    'assets.avgCost': 'Avg. Cost',
+    'assets.priceUnavailable': 'Price unavailable',
+    'assets.realizedPL': 'Realized P/L',
+    'assets.confirmDelete': 'Are you sure you want to delete this asset?',
     'common.save': 'Save',
     'common.cancel': 'Cancel',
     'common.delete': 'Delete',
@@ -163,6 +187,8 @@ const translations = {
     'installment.total': 'Total Installments',
     'installment.current': 'Current Installment',
     'installment.monthly': 'Monthly Amount',
+    'analytics.allocation': 'Asset Allocation',
+    'analytics.expenseByCategory': 'Expenses by Category',
     'filter.all': 'All',
     'filter.thisMonth': 'This Month',
     'filter.thisYear': 'This Year',

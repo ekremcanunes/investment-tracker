@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { portfolioApi } from '@/services/api'
+import { assetApi } from '@/services/api'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Plus, Wallet, TrendingUp, Coins, Pencil, Trash2, X, Check } from 'lucide-react'
+import { Plus, Wallet, TrendingUp, Coins, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
 const TYPE_CONFIG = {
   Currency: { icon: Wallet, color: 'text-green-400', bg: 'bg-green-500/10' },
@@ -14,226 +13,250 @@ const TYPE_CONFIG = {
   Crypto: { icon: Coins, color: 'text-orange-400', bg: 'bg-orange-500/10' },
 }
 
-const formatTRY = (v) => v != null ? new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(v) : '—'
-const formatUSD = (v) => v != null ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v) : '—'
-const formatPercent = (v) => v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '—'
+const formatMoney = (v, currency = 'TRY') =>
+  v != null
+    ? new Intl.NumberFormat(currency === 'TRY' ? 'tr-TR' : 'en-US', { style: 'currency', currency }).format(v)
+    : '—'
+
+const formatPercent = (v) => (v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '')
 
 export default function Assets() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const [portfolios, setPortfolios] = useState([])
+  const [holdings, setHoldings] = useState([])
   const [loading, setLoading] = useState(true)
-  const [editingAsset, setEditingAsset] = useState(null)
-  const [editForm, setEditForm] = useState({ quantity: '', purchasePrice: '' })
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(null) // { id, mode: 'edit' | 'sell' }
+  const [form, setForm] = useState({ quantity: '', price: '' })
   const [saving, setSaving] = useState(false)
 
   const fetchData = async () => {
-    setLoading(true)
     try {
-      const res = await portfolioApi.getAll()
-      const portfoliosWithSummary = await Promise.all(
-        res.data.map(async (p) => {
-          try {
-            const summaryRes = await portfolioApi.getSummary(p.id)
-            return { ...p, summary: summaryRes.data }
-          } catch {
-            return { ...p, summary: null }
-          }
-        })
-      )
-      setPortfolios(portfoliosWithSummary)
-    } catch { /* ignore */ }
-    setLoading(false)
+      const res = await assetApi.getAll()
+      setHoldings(res.data)
+      setError(null)
+    } catch (err) {
+      setError(err.response?.data?.error?.message ?? err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { fetchData() }, [])
 
-  const handleEdit = (portfolioId, asset) => {
-    setEditingAsset({ portfolioId, assetId: asset.id })
-    setEditForm({
-      quantity: String(asset.quantity),
-      purchasePrice: asset.avgCostBasis != null ? String(asset.avgCostBasis) : '',
-    })
+  const startEdit = (asset) => {
+    setEditing({ id: asset.id, mode: 'edit' })
+    setForm({ quantity: String(asset.quantity), price: asset.avgCostBasis != null ? String(asset.avgCostBasis) : '' })
   }
 
-  const handleSave = async () => {
-    if (!editingAsset) return
+  const startSell = (asset) => {
+    setEditing({ id: asset.id, mode: 'sell' })
+    setForm({ quantity: String(asset.quantity), price: '' })
+  }
+
+  const handleConfirm = async () => {
+    if (!editing) return
     setSaving(true)
     try {
-      await portfolioApi.updateAsset(editingAsset.portfolioId, editingAsset.assetId, {
-        quantity: parseFloat(editForm.quantity),
-        purchasePrice: editForm.purchasePrice ? parseFloat(editForm.purchasePrice) : null,
-      })
-      setEditingAsset(null)
+      if (editing.mode === 'sell') {
+        await assetApi.sell(editing.id, {
+          quantity: parseFloat(form.quantity),
+          unitPrice: parseFloat(form.price),
+        })
+      } else {
+        await assetApi.update(editing.id, {
+          quantity: parseFloat(form.quantity),
+          purchasePrice: form.price ? parseFloat(form.price) : null,
+        })
+      }
+      setEditing(null)
+      setError(null)
       await fetchData()
-    } catch { /* ignore */ }
-    setSaving(false)
+    } catch (err) {
+      setError(err.response?.data?.error?.message ?? err.message)
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleDelete = async (portfolioId, assetId) => {
+  const handleDelete = async (id) => {
+    if (!window.confirm(t('assets.confirmDelete'))) return
     try {
-      await portfolioApi.deleteAsset(portfolioId, assetId)
+      await assetApi.delete(id)
       await fetchData()
-    } catch { /* ignore */ }
+    } catch (err) {
+      setError(err.response?.data?.error?.message ?? err.message)
+    }
   }
 
   if (loading) return <div className="text-gray-400 text-sm">{t('common.loading')}</div>
 
-  const defaultPortfolio = portfolios[0]
+  const totalValue = holdings.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-white">{t('assets.title')}</h1>
-        {defaultPortfolio && (
-          <Button onClick={() => navigate(`/assets/${defaultPortfolio.id}/add`)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('assets.addAsset')}
-          </Button>
-        )}
+        <div>
+          <h1 className="text-2xl font-bold text-white">{t('assets.title')}</h1>
+          <p className="text-gray-400 text-sm mt-1">{t('common.total')}: {formatMoney(totalValue)}</p>
+        </div>
+        <Button onClick={() => navigate('/assets/buy')}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t('assets.buy')}
+        </Button>
       </div>
 
-      {portfolios.length === 0 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="text-gray-500 mb-4">{t('assets.noAssets')}</p>
-            <Button onClick={async () => {
-              const res = await portfolioApi.create({ name: 'Varlıklarım', description: 'Varsayılan portföy' })
-              navigate(`/assets/${res.data.id}/add`)
-            }}>
-              {t('assets.addAsset')}
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        portfolios.map(p => {
-          const assets = p.summary?.assets ?? []
-          const totalValue = p.summary?.totalValueInTry ?? 0
-
-          return (
-            <Card key={p.id}>
-              <CardContent className="p-0">
-                <div className="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-medium text-white">{p.name}</span>
-                    <span className="ml-3 text-xs text-gray-400">{t('common.total')}: {formatTRY(totalValue)}</span>
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => navigate(`/assets/${p.id}/add`)}>
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {assets.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-gray-500 text-sm">{t('assets.noAssets')}</div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-gray-800/50 text-xs text-gray-400">
-                          <th className="text-left px-4 py-2 font-medium">{t('common.type')}</th>
-                          <th className="text-left px-4 py-2 font-medium">{t('assets.symbol')}</th>
-                          <th className="text-right px-4 py-2 font-medium">{t('assets.quantity')}</th>
-                          <th className="text-right px-4 py-2 font-medium">{t('assets.purchasePrice')}</th>
-                          <th className="text-right px-4 py-2 font-medium">{t('assets.currentPrice')}</th>
-                          <th className="text-right px-4 py-2 font-medium">{t('assets.value')}</th>
-                          <th className="text-right px-4 py-2 font-medium">{t('assets.profitLoss')}</th>
-                          <th className="px-4 py-2"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {assets.map(a => {
-                          const cfg = TYPE_CONFIG[a.assetType] || TYPE_CONFIG.Currency
-                          const Icon = cfg.icon
-                          const isEditing = editingAsset?.assetId === a.id
-                          const plColor = a.profitLossInTry > 0 ? 'text-green-400' : a.profitLossInTry < 0 ? 'text-red-400' : 'text-gray-400'
-
-                          return (
-                            <tr key={a.id} className="border-b border-gray-800/30 hover:bg-gray-800/20">
-                              <td className="px-4 py-3 text-sm">
-                                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs ${cfg.bg} ${cfg.color}`}>
-                                  <Icon className="h-3 w-3" />
-                                  {t(`assets.${a.assetType.toLowerCase()}`) || a.assetType}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 text-sm text-white font-medium">{a.symbol}</td>
-
-                              {isEditing ? (
-                                <>
-                                  <td className="px-4 py-3">
-                                    <Input
-                                      type="number" min="0" step="any"
-                                      value={editForm.quantity}
-                                      onChange={e => setEditForm(f => ({ ...f, quantity: e.target.value }))}
-                                      className="w-24 h-7 text-xs text-right"
-                                    />
-                                  </td>
-                                  <td className="px-4 py-3">
-                                    <Input
-                                      type="number" min="0" step="any"
-                                      value={editForm.purchasePrice}
-                                      onChange={e => setEditForm(f => ({ ...f, purchasePrice: e.target.value }))}
-                                      className="w-28 h-7 text-xs text-right"
-                                      placeholder="—"
-                                    />
-                                  </td>
-                                  <td className="px-4 py-3 text-sm text-right text-gray-300">{formatTRY(a.priceInTry)}</td>
-                                  <td className="px-4 py-3 text-sm text-right text-white font-medium">{formatTRY(a.valueInTry)}</td>
-                                  <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
-                                  <td className="px-4 py-3 text-right">
-                                    <div className="flex items-center justify-end gap-1">
-                                      <Button size="sm" variant="ghost" onClick={handleSave} disabled={saving}
-                                        className="text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 w-7 p-0">
-                                        <Check className="h-4 w-4" />
-                                      </Button>
-                                      <Button size="sm" variant="ghost" onClick={() => setEditingAsset(null)}
-                                        className="text-gray-400 hover:text-gray-300 h-7 w-7 p-0">
-                                        <X className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </>
-                              ) : (
-                                <>
-                                  <td className="px-4 py-3 text-sm text-right text-gray-300">{a.quantity}</td>
-                                  <td className="px-4 py-3 text-sm text-right text-gray-300">{formatTRY(a.avgCostBasis)}</td>
-                                  <td className="px-4 py-3 text-sm text-right text-gray-300">{formatTRY(a.priceInTry)}</td>
-                                  <td className="px-4 py-3 text-sm text-right text-white font-medium">{formatTRY(a.valueInTry)}</td>
-                                  <td className="px-4 py-3 text-sm text-right">
-                                    {a.profitLossInTry != null ? (
-                                      <div>
-                                        <span className={`font-medium ${plColor}`}>{formatTRY(a.profitLossInTry)}</span>
-                                        <span className={`ml-1 text-xs ${plColor}`}>{formatPercent(a.profitLossPercent)}</span>
-                                      </div>
-                                    ) : (
-                                      <span className="text-gray-500">—</span>
-                                    )}
-                                  </td>
-                                  <td className="px-4 py-3 text-right">
-                                    <div className="flex items-center justify-end gap-1">
-                                      <Button size="sm" variant="ghost" onClick={() => handleEdit(p.id, a)}
-                                        className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 w-7 p-0">
-                                        <Pencil className="h-3.5 w-3.5" />
-                                      </Button>
-                                      <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id, a.id)}
-                                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7 p-0">
-                                        <Trash2 className="h-3.5 w-3.5" />
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </>
-                              )}
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })
+      {error && (
+        <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+          {error}
+        </div>
       )}
+
+      <Card>
+        <CardContent className="p-0">
+          {holdings.length === 0 ? (
+            <div className="px-4 py-12 text-center">
+              <p className="text-gray-500 mb-4">{t('assets.noAssets')}</p>
+              <Button onClick={() => navigate('/assets/buy')}>{t('assets.buy')}</Button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-gray-800/50 text-xs text-gray-400">
+                    <th className="text-left px-4 py-2 font-medium">{t('common.type')}</th>
+                    <th className="text-left px-4 py-2 font-medium">{t('assets.symbol')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.quantity')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.avgCost')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.currentPrice')}</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.value')} (TRY)</th>
+                    <th className="text-right px-4 py-2 font-medium">{t('assets.profitLoss')}</th>
+                    <th className="px-4 py-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {holdings.map((h) => {
+                    const cfg = TYPE_CONFIG[h.assetType] || TYPE_CONFIG.Currency
+                    const Icon = cfg.icon
+                    const isActive = editing?.id === h.id
+                    const isSell = isActive && editing.mode === 'sell'
+                    const pl = h.unrealizedProfitLoss
+                    const plColor = pl > 0 ? 'text-green-400' : pl < 0 ? 'text-red-400' : 'text-gray-400'
+                    const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
+
+                    return (
+                      <tr key={h.id} className="border-b border-gray-800/30 hover:bg-gray-800/20">
+                        <td className="px-4 py-3 text-sm">
+                          <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs ${cfg.bg} ${cfg.color}`}>
+                            <Icon className="h-3 w-3" />
+                            {t(`assets.${h.assetType.toLowerCase()}`)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-white font-medium">{h.symbol}</td>
+
+                        {isActive ? (
+                          <>
+                            <td className="px-4 py-3">
+                              <Input
+                                type="number" min="0" step="any"
+                                value={form.quantity}
+                                onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
+                                className="w-24 h-7 text-xs text-right ml-auto"
+                              />
+                            </td>
+                            <td className="px-4 py-3">
+                              <Input
+                                type="number" min="0" step="any"
+                                value={form.price}
+                                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
+                                className="w-28 h-7 text-xs text-right ml-auto"
+                                placeholder={isSell ? t('assets.unitPrice') : t('assets.avgCost')}
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-xs text-right text-gray-500">
+                              {isSell ? t('assets.sell') : t('assets.edit')} ({h.currency})
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right text-white font-medium">{formatMoney(h.valueInTry)}</td>
+                            <td className="px-4 py-3 text-sm text-right text-gray-400">—</td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  size="sm" variant="ghost" onClick={handleConfirm}
+                                  disabled={saving || !form.quantity || (isSell && !form.price)}
+                                  className="text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 w-7 p-0"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm" variant="ghost" onClick={() => setEditing(null)}
+                                  className="text-gray-400 hover:text-gray-300 h-7 w-7 p-0"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-4 py-3 text-sm text-right text-gray-300">{h.quantity}</td>
+                            <td className="px-4 py-3 text-sm text-right text-gray-300">{formatMoney(h.avgCostBasis, h.currency)}</td>
+                            <td className="px-4 py-3 text-sm text-right text-gray-300">
+                              {h.priceAvailable ? (
+                                formatMoney(currentUnit, h.currency)
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-yellow-500 text-xs">
+                                  <AlertTriangle className="h-3 w-3" />
+                                  {t('assets.priceUnavailable')}
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right text-white font-medium">
+                              {h.priceAvailable ? formatMoney(h.valueInTry) : '—'}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-right">
+                              {pl != null ? (
+                                <div>
+                                  <span className={`font-medium ${plColor}`}>{formatMoney(pl, h.currency)}</span>
+                                  <span className={`ml-1 text-xs ${plColor}`}>{formatPercent(h.unrealizedProfitLossPercent)}</span>
+                                </div>
+                              ) : (
+                                <span className="text-gray-500">—</span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  size="sm" variant="ghost" onClick={() => startSell(h)}
+                                  className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 h-7 px-2 text-xs"
+                                >
+                                  <ArrowDownRight className="h-3.5 w-3.5 mr-1" />
+                                  {t('assets.sell')}
+                                </Button>
+                                <Button
+                                  size="sm" variant="ghost" onClick={() => startEdit(h)}
+                                  className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 h-7 w-7 p-0"
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button
+                                  size="sm" variant="ghost" onClick={() => handleDelete(h.id)}
+                                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 h-7 w-7 p-0"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

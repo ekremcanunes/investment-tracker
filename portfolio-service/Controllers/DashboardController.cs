@@ -6,12 +6,12 @@ namespace portfolio_service.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-public class DashboardController(IPortfolioService portfolioService) : ControllerBase
+public class DashboardController(IAssetService assetService) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<DashboardDto>> GetDashboard()
     {
         var userId = HttpContext.Items["UserId"]?.ToString()!;
-        return Ok(await portfolioService.GetDashboardAsync(userId));
+        return Ok(await assetService.GetDashboardAsync(userId));
     }
 }

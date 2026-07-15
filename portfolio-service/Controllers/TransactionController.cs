@@ -26,6 +26,8 @@ public class TransactionController(ITransactionService transactionService) : Con
     [HttpPost]
     public async Task<ActionResult<TransactionDto>> Create(CreateTransactionDto dto)
     {
+        if (dto.Type is Models.TransactionType.AssetBuy or Models.TransactionType.AssetSell)
+            return BadRequest(new { error = new { code = "VALIDATION_ERROR", message = "Asset transactions must go through /api/assets/buy or /api/assets/{id}/sell" } });
         if (dto.Amount <= 0)
             return BadRequest(new { error = new { code = "VALIDATION_ERROR", message = "Amount must be greater than zero" } });
         if (string.IsNullOrWhiteSpace(dto.Category))

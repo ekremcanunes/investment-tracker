@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { portfolioApi } from '@/services/api'
+import { assetApi } from '@/services/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -22,15 +22,17 @@ const symbolsByType = {
 }
 
 const assetTypes = ['Currency', 'Stock', 'Crypto']
+const currencies = ['TRY', 'USD']
 
 export default function AddAsset() {
-  const { id } = useParams()
   const navigate = useNavigate()
   const { t } = useLanguage()
   const [assetType, setAssetType] = useState('')
   const [symbol, setSymbol] = useState('')
   const [quantity, setQuantity] = useState('')
-  const [purchasePrice, setPurchasePrice] = useState('')
+  const [unitPrice, setUnitPrice] = useState('')
+  const [currency, setCurrency] = useState('TRY')
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -41,18 +43,21 @@ export default function AddAsset() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!assetType || !symbol || !quantity) return
+    if (!assetType || !symbol || !quantity || !unitPrice) return
     setSubmitting(true)
+    setError(null)
     try {
-      await portfolioApi.addAsset(id, {
+      await assetApi.buy({
         assetType,
         symbol,
         quantity: parseFloat(quantity),
-        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : null,
+        unitPrice: parseFloat(unitPrice),
+        currency,
+        date: new Date(date).toISOString(),
       })
       navigate('/assets')
     } catch (err) {
-      setError(err.message)
+      setError(err.response?.data?.error?.message ?? err.message)
       setSubmitting(false)
     }
   }
@@ -65,12 +70,12 @@ export default function AddAsset() {
         <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-white">{t('assets.addAsset')}</h1>
+        <h1 className="text-2xl font-bold text-white">{t('assets.buyAsset')}</h1>
       </div>
 
       <Card className="max-w-md">
         <CardHeader>
-          <CardTitle className="text-base">{t('assets.addAsset')}</CardTitle>
+          <CardTitle className="text-base">{t('assets.buyAsset')}</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
@@ -87,8 +92,10 @@ export default function AddAsset() {
                   <SelectValue placeholder={t('common.type')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {assetTypes.map((t) => (
-                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  {assetTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {t(`assets.${type.toLowerCase()}`)}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -96,10 +103,10 @@ export default function AddAsset() {
 
             {/* Symbol */}
             <div className="space-y-1.5">
-              <Label>Symbol</Label>
+              <Label>{t('assets.symbol')}</Label>
               <Select value={symbol} onValueChange={setSymbol} disabled={!assetType}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Symbol" />
+                  <SelectValue placeholder={t('assets.symbol')} />
                 </SelectTrigger>
                 <SelectContent>
                   {availableSymbols.map((s) => (
@@ -124,23 +131,51 @@ export default function AddAsset() {
               />
             </div>
 
-            {/* Purchase Price */}
+            {/* Unit price + currency */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="unitPrice">{t('assets.unitPrice')}</Label>
+                <Input
+                  id="unitPrice"
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="0.00"
+                  value={unitPrice}
+                  onChange={(e) => setUnitPrice(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>{t('assets.currency')}</Label>
+                <Select value={currency} onValueChange={setCurrency}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencies.map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Date */}
             <div className="space-y-1.5">
-              <Label htmlFor="purchasePrice">{t('assets.purchasePrice')}</Label>
+              <Label htmlFor="date">{t('common.date')}</Label>
               <Input
-                id="purchasePrice"
-                type="number"
-                min="0"
-                step="any"
-                placeholder="0.00"
-                value={purchasePrice}
-                onChange={(e) => setPurchasePrice(e.target.value)}
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
               />
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button type="submit" disabled={submitting || !assetType || !symbol || !quantity}>
-                {submitting ? '...' : t('common.save')}
+              <Button type="submit" disabled={submitting || !assetType || !symbol || !quantity || !unitPrice}>
+                {submitting ? '...' : t('assets.buy')}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/assets')}>
                 {t('common.cancel')}

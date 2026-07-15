@@ -143,6 +143,10 @@ public class TransactionService(AppDbContext db) : ITransactionService
         InstallmentTotal = t.InstallmentTotal,
         InstallmentCurrent = t.InstallmentCurrent,
         InstallmentMonthlyAmount = t.InstallmentMonthlyAmount,
+        Symbol = t.Symbol,
+        Quantity = t.Quantity,
+        UnitPrice = t.UnitPrice,
+        RealizedProfitLoss = t.RealizedProfitLoss,
         AssetId = t.AssetId,
         CreatedAt = t.CreatedAt
     };

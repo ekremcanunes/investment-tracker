@@ -43,7 +43,8 @@ export default function Transactions() {
 
   useEffect(load, [filters])
 
-  const formatCurrency = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val)
+  const formatCurrency = (val, currency = 'TRY') =>
+    new Intl.NumberFormat(currency === 'TRY' ? 'tr-TR' : 'en-US', { style: 'currency', currency }).format(val)
   const formatDate = (d) => new Date(d).toLocaleDateString('tr-TR')
 
   return (
@@ -110,14 +111,30 @@ export default function Transactions() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-400">{tx.category}</td>
-                      <td className="px-4 py-3 text-sm text-gray-400">{tx.description || '-'}</td>
+                      <td className="px-4 py-3 text-sm text-gray-400">
+                        {tx.symbol ? (
+                          <div>
+                            <span className="text-white font-medium">{tx.symbol}</span>
+                            <span className="ml-2 text-xs text-gray-500">
+                              {tx.quantity} × {formatCurrency(tx.unitPrice, tx.currency)}
+                            </span>
+                            {tx.realizedProfitLoss != null && (
+                              <span className={`ml-2 text-xs font-medium ${tx.realizedProfitLoss >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                K/Z: {tx.realizedProfitLoss >= 0 ? '+' : ''}{formatCurrency(tx.realizedProfitLoss, tx.currency)}
+                              </span>
+                            )}
+                          </div>
+                        ) : (
+                          tx.description || '-'
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-sm">
                         {tx.tags?.map(tag => (
                           <span key={tag} className="bg-gray-800 text-gray-300 px-2 py-0.5 rounded text-xs mr-1">{tag}</span>
                         ))}
                       </td>
                       <td className={`px-4 py-3 text-sm text-right font-medium ${isNegative ? 'text-red-400' : 'text-green-400'}`}>
-                        {isNegative ? '-' : '+'}{formatCurrency(tx.amount)}
+                        {isNegative ? '-' : '+'}{formatCurrency(tx.amount, tx.currency)}
                       </td>
                     </tr>
                   )

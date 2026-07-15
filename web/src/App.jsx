@@ -8,7 +8,6 @@ import Income from './pages/Income'
 import Expenses from './pages/Expenses'
 import Transactions from './pages/Transactions'
 import Assets from './pages/Assets'
-import AssetDetail from './pages/AssetDetail'
 import AddAsset from './pages/AddAsset'
 import Analytics from './pages/Analytics'
 import Login from './pages/Login'
@@ -34,8 +33,7 @@ export default function App() {
               <Route path="/expenses" element={<Expenses />} />
               <Route path="/transactions" element={<Transactions />} />
               <Route path="/assets" element={<Assets />} />
-              <Route path="/assets/:id" element={<AssetDetail />} />
-              <Route path="/assets/:id/add" element={<AddAsset />} />
+              <Route path="/assets/buy" element={<AddAsset />} />
               <Route path="/analytics" element={<Analytics />} />
               {/* Eski route'lar yönlendirmesi */}
               <Route path="/portfolios" element={<Navigate to="/assets" replace />} />

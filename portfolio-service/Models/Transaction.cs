@@ -14,6 +14,12 @@ public class Transaction
     public int? InstallmentTotal { get; set; }
     public int? InstallmentCurrent { get; set; }
     public decimal? InstallmentMonthlyAmount { get; set; }
+    // Varlık işlemleri (AssetBuy/AssetSell) için: Amount = Quantity * UnitPrice
+    public string? Symbol { get; set; }
+    public decimal? Quantity { get; set; }
+    public decimal? UnitPrice { get; set; }
+    // Sadece AssetSell: (satış fiyatı - ort. maliyet) * miktar, işlem para biriminde
+    public decimal? RealizedProfitLoss { get; set; }
     public Guid? AssetId { get; set; }
     public Asset? Asset { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
