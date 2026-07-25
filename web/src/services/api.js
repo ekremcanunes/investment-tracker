@@ -19,3 +19,7 @@ export const transactionApi = {
   getById: (id) => api.get(`/api/transactions/${id}`),
   delete: (id) => api.delete(`/api/transactions/${id}`),
 }
+
+export const marketApi = {
+  search: (q) => api.get('/api/market/search', { params: { q } }),
+}

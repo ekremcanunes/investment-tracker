@@ -1,13 +1,14 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { assetApi } from '@/services/api'
+import { assetApi, marketApi } from '@/services/api'
 import { todayString, toApiDate } from '@/lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { MoneyInput } from '@/components/ui/money-input'
 import { DatePicker } from '@/components/ui/date-picker'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -15,14 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft } from 'lucide-react'
-
-const symbolsByType = {
-  Currency: ['USD', 'EUR', 'GBP'],
-  Stock: ['AAPL', 'MSFT', 'NVDA', 'GOOGL'],
-}
+import { ArrowLeft, Search, X } from 'lucide-react'
 
 const assetTypes = ['Currency', 'Stock']
+const currencySymbols = ['USD', 'EUR', 'GBP']
 const currencies = ['TRY', 'USD']
 
 export default function AddAsset() {
@@ -30,6 +27,10 @@ export default function AddAsset() {
   const { t } = useLanguage()
   const [assetType, setAssetType] = useState('')
   const [symbol, setSymbol] = useState('')
+  const [selectedName, setSelectedName] = useState('')
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState([])
+  const [searching, setSearching] = useState(false)
   const [quantity, setQuantity] = useState('')
   const [unitPrice, setUnitPrice] = useState('')
   const [currency, setCurrency] = useState('TRY')
@@ -37,9 +38,47 @@ export default function AddAsset() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
+  // Hisse araması — debounce (300ms, min 2 karakter). Seçim yapıldıysa arama durur.
+  useEffect(() => {
+    if (assetType !== 'Stock' || symbol) return
+    const q = query.trim()
+    if (q.length < 2) {
+      setResults([])
+      return
+    }
+    setSearching(true)
+    const handle = setTimeout(async () => {
+      try {
+        const res = await marketApi.search(q)
+        setResults(res.data)
+      } catch {
+        setResults([])
+      } finally {
+        setSearching(false)
+      }
+    }, 300)
+    return () => clearTimeout(handle)
+  }, [query, assetType, symbol])
+
   const handleTypeChange = (val) => {
     setAssetType(val)
     setSymbol('')
+    setSelectedName('')
+    setQuery('')
+    setResults([])
+  }
+
+  const handleSelectResult = (r) => {
+    setSymbol(r.symbol)
+    setSelectedName(r.name)
+    setResults([])
+    if (r.currency === 'USD' || r.currency === 'TRY') setCurrency(r.currency)
+  }
+
+  const handleClearSymbol = () => {
+    setSymbol('')
+    setSelectedName('')
+    setQuery('')
   }
 
   const handleSubmit = async (e) => {
@@ -62,8 +101,6 @@ export default function AddAsset() {
       setSubmitting(false)
     }
   }
-
-  const availableSymbols = assetType ? symbolsByType[assetType] ?? [] : []
 
   return (
     <div>
@@ -105,16 +142,75 @@ export default function AddAsset() {
             {/* Asset / Symbol */}
             <div className="space-y-1.5">
               <Label>{t('assets.name')}</Label>
-              <Select value={symbol} onValueChange={setSymbol} disabled={!assetType}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('assets.name')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableSymbols.map((s) => (
-                    <SelectItem key={s} value={s}>{s}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+
+              {assetType === 'Currency' && (
+                <Select value={symbol} onValueChange={setSymbol}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('assets.name')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currencySymbols.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {assetType === 'Stock' && symbol && (
+                <div className="flex items-center justify-between gap-2 rounded-md border border-gray-700 bg-gray-900 px-3 py-2">
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium text-white">{symbol}</div>
+                    <div className="truncate text-xs text-gray-400">{selectedName}</div>
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" onClick={handleClearSymbol}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+
+              {assetType === 'Stock' && !symbol && (
+                <div className="relative">
+                  <div className="relative">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                    <Input
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      placeholder={t('assets.searchPlaceholder')}
+                      className="pl-9"
+                      autoComplete="off"
+                    />
+                  </div>
+                  {(searching || results.length > 0) && (
+                    <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-gray-700 bg-gray-900 shadow-lg">
+                      {searching && (
+                        <div className="px-3 py-2 text-sm text-gray-400">{t('common.loading')}</div>
+                      )}
+                      {!searching && results.map((r) => (
+                        <button
+                          key={`${r.symbol}-${r.exchange}`}
+                          type="button"
+                          onClick={() => handleSelectResult(r)}
+                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-gray-800"
+                        >
+                          <div className="min-w-0">
+                            <div className="text-sm font-medium text-white">{r.symbol}</div>
+                            <div className="truncate text-xs text-gray-400">{r.name}</div>
+                          </div>
+                          <span className="shrink-0 text-xs text-gray-500">{r.exchange}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {!assetType && (
+                <Select disabled>
+                  <SelectTrigger>
+                    <SelectValue placeholder={t('assets.name')} />
+                  </SelectTrigger>
+                </Select>
+              )}
             </div>
 
             {/* Quantity */}

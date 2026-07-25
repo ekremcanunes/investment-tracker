@@ -26,6 +26,7 @@ builder.Services.AddHttpClient<ITwelveDataClient, TwelveDataClient>();
 builder.Services.AddHttpClient("Kratos");
 
 builder.Services.AddScoped<IMarketService, MarketService>();
+builder.Services.AddScoped<ISymbolSearchService, SymbolSearchService>();
 
 builder.Services.AddControllers();
 

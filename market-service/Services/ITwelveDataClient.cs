@@ -1,3 +1,5 @@
+using market_service.Models;
+
 namespace market_service.Services;
 
 public record TwelveDataPrice(decimal PriceInUsd, decimal PriceInTry);
@@ -5,4 +7,10 @@ public record TwelveDataPrice(decimal PriceInUsd, decimal PriceInTry);
 public interface ITwelveDataClient
 {
     Task<TwelveDataPrice?> GetStockPriceAsync(string symbol, string? exchange = null);
+
+    // BIST borsasındaki tüm hisseleri döndürür (sembol + isim)
+    Task<List<SymbolSearchResult>> GetBistStocksAsync();
+
+    // Twelve Data global sembol araması (US/diğer borsalar için)
+    Task<List<SymbolSearchResult>> SearchSymbolsAsync(string query);
 }

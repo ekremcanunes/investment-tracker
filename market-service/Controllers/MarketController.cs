@@ -9,10 +9,12 @@ namespace market_service.Controllers;
 public class MarketController : ControllerBase
 {
     private readonly IMarketService _marketService;
+    private readonly ISymbolSearchService _searchService;
 
-    public MarketController(IMarketService marketService)
+    public MarketController(IMarketService marketService, ISymbolSearchService searchService)
     {
         _marketService = marketService;
+        _searchService = searchService;
     }
 
     [HttpGet("prices")]
@@ -30,5 +32,14 @@ public class MarketController : ControllerBase
         var price = await _marketService.GetPriceAsync(symbol);
         if (price == null) return NotFound();
         return Ok(price);
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult<List<SymbolSearchResult>>> Search([FromQuery] string? q)
+    {
+        if (string.IsNullOrWhiteSpace(q) || q.Trim().Length < 2)
+            return Ok(new List<SymbolSearchResult>());
+        var results = await _searchService.SearchAsync(q.Trim());
+        return Ok(results);
     }
 }
