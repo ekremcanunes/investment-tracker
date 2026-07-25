@@ -1,434 +1,76 @@
 # Investment Tracker
 
-Investment Tracker is a microservices-based investment portfolio tracking application that enables users to manage their investments and monitor their portfolio value using real-time market data.
+Kişisel finans takibi için yazdığım bir web uygulaması. Başka platformlar üzerinden aldığım hisse, kripto ve dövizi burada kayıt altında tutuyorum: neyi kaçtan aldım, kaçtan sattım, şu an ne durumda, toplam bakiyeme nasıl yansıyor. Yanına bir de gelir/gider takibi ekledim, böylece aylık nakit akışını da aynı yerden görebiliyorum.
 
-The application allows users to create portfolios, add investment assets, retrieve live market prices, and analyze portfolio performance through a modern dashboard interface.
+Aynı zamanda bir öğrenme projesi — mikroservis mimarisi, Docker, kimlik doğrulama ve CI/CD gibi konuları gerçek bir uygulama üzerinde denemek için kullanıyorum. O yüzden bazı yerler bilinçli olarak "üretim standardının" altında, bazı yerler ise bir kişisel projeye göre fazla detaylı.
 
----
+## Ne yapıyor
 
-# Project Goals
+**Varlık takibi:** Bir varlığı alırken adet, alış fiyatı, para birimi (TRY/USD) ve alım tarihi girilir. Aynı varlıktan tekrar alınca ortalama maliyet ağırlıklı olarak güncellenir. Satışta gerçekleşen kâr/zarar hesaplanıp kaydedilir. Güncel fiyatlar dış API'lerden çekilir; her varlık için alış fiyatı, güncel fiyat, maliyet, güncel değer ve kâr/zarar tabloda görünür.
 
-The purpose of this project is to demonstrate:
+**Gelir/gider takibi:** Kategorili gelir ve gider kaydı, giderlerde etiket ve taksit bilgisi tutulabiliyor. Genel bakış sayfası aylık gelir, gider ve net akışı gösteriyor.
 
-* Microservices Architecture
-* REST API Development
-* External API Integrations
-* Database Design
-* Caching Strategies
-* React Frontend Development
-* Real-Time Portfolio Valuation
-* Containerization with Docker
-* Authentication with Ory Kratos (OIDC / Self-Service Flows)
+**İşlem defteri:** Her alış, satış, gelir ve gider arka planda tek bir transaction tablosuna yazılır. Varlık silinse bile işlem geçmişi kalır. Uygulamanın veri modeli bu tabloya dayanıyor — ileride analiz özellikleri bunun üzerine kurulacak.
 
-The project focuses on investment portfolio management while keeping the architecture simple and maintainable.
+**Diğer:** Türkçe/İngilizce arayüz, varlık dağılımı ve kategori bazlı gider grafikleri.
 
----
-
-# Features
-
-## Portfolio Management
-
-Users can create and manage multiple investment portfolios.
-
-Examples:
-
-* Tech Portfolio
-* Crypto Portfolio
-* Long-Term Portfolio
-* Retirement Portfolio
-
-Users can:
-
-* Create portfolios
-* View portfolios
-* Delete portfolios
-* View portfolio details
-
----
-
-## Asset Management
-
-Users can add investment assets to their portfolios.
-
-Supported asset types:
-
-### Currency
-
-* USD
-* EUR
-* GBP
-
-### Stocks
-
-* AAPL
-* MSFT
-* NVDA
-* GOOGL
-
-### Cryptocurrency
-
-* BTC
-* ETH
-* SOL
-
-Each asset contains:
-
-* Symbol
-* Asset Type
-* Quantity
-
----
-
-## Real-Time Portfolio Valuation
-
-The system retrieves current market prices and calculates the total portfolio value.
-
-Example:
-
-| Asset | Quantity |
-| ----- | -------- |
-| USD   | 500      |
-| BTC   | 0.10     |
-| AAPL  | 10       |
-
-The application:
-
-* Retrieves current exchange rates
-* Retrieves current stock prices
-* Retrieves current cryptocurrency prices
-* Calculates asset values
-* Calculates total portfolio value
-
----
-
-## Portfolio Analytics
-
-Users can visualize their investments through charts and summary dashboards.
-
-Examples:
-
-### Asset Allocation
-
-* Stocks 50%
-* Cryptocurrency 30%
-* Currency 20%
-
-### Portfolio Distribution
-
-Portfolio value breakdown by asset.
-
----
-
-# System Architecture
-
-The application is built using a microservices architecture.
+## Mimari
 
 ```text
-React Frontend
-       |
-       | (cookie session)
-       v
-  Ory Kratos ──────────── Postgres (Kratos DB)
-       |
-       v
-Portfolio Service
-       |
-       +----------------+
-       |                |
-       v                v
-Neon Database      Market Service
-(PostgreSQL)           |
-                       v
-                     Redis
-                       |
-             +---------+---------+
-             |                   |
-             v                   v
-       Frankfurter API     Twelve Data API
-```
-<img width="1479" height="1353" alt="diagram-export-07 06 2026-20_57_20" src="https://github.com/user-attachments/assets/3deffd36-7111-4bfa-8c51-d1ddd3dde259" />
-
----
-
-# Services
-
-## Portfolio Service
-
-Portfolio Service is responsible for managing investment data and portfolio calculations.
-
-Responsibilities:
-
-* Portfolio CRUD operations
-* Asset CRUD operations
-* Portfolio summary generation
-* Portfolio valuation calculations
-* Database access
-
-Technology:
-
-* .NET 9 Web API
-* Entity Framework Core
-* Neon Database (PostgreSQL)
-
----
-
-## Market Service
-
-Market Service is responsible for retrieving market data from external providers.
-
-Responsibilities:
-
-* Currency exchange rates
-* Stock prices
-* Cryptocurrency prices
-
-Technology:
-
-* .NET 9 Web API
-* HttpClient
-* Redis Cache
-
----
-
-## Redis
-
-Redis is used as a caching layer for market data.
-
-Benefits:
-
-* Faster response times
-* Reduced external API calls
-* Lower risk of hitting API rate limits
-* Improved application performance
-
-Example cache keys:
-
-```text
-currency:USD
-currency:EUR
-
-stock:AAPL
-stock:MSFT
-
-crypto:BTC
-crypto:ETH
+Tarayıcı
+   |
+   v
+Nginx (web container, :80)
+   |  /api/  -> portfolio-service
+   |  /.ory/ -> kratos
+   |  diğer  -> React static dosyaları
+   |
+   +--> Ory Kratos ---- Postgres (Kratos DB)
+   |
+   +--> Portfolio Service ---- Neon (PostgreSQL)
+              |
+              v
+        Market Service ---- Redis (5 dk cache)
+              |
+              +--> Frankfurter API (döviz kurları)
+              +--> Twelve Data API (hisse ve kripto fiyatları)
 ```
 
-Cache expiration:
+İki backend servisi var:
 
-```text
-5 Minutes
+- **portfolio-service** (.NET 9, EF Core): varlıklar, işlemler, gelir/gider, dashboard hesapları. Veriyi Neon'daki PostgreSQL'de tutar.
+- **market-service** (.NET 9): dış API'lerden fiyat çeker. Sonuçları 5 dakikalığına Redis'e yazar; böylece ücretsiz API limitlerine takılmadan sık sık fiyat gösterilebiliyor.
+
+Kimlik doğrulama **Ory Kratos** ile: cookie tabanlı session, her istekte servisler cookie'yi Kratos'a doğrulatır (`/sessions/whoami`) ve dönen kimlik ID'siyle kullanıcının kendi verisi filtrelenir. Kayıt/giriş akışları Kratos'un self-service flow'larıyla çalışır.
+
+Frontend React 19 + Vite, Tailwind CSS v4 ve shadcn/ui bileşenleriyle yazıldı. Grafikler için Recharts kullanılıyor.
+
+## Çalıştırma
+
+Tüm servisler Docker Compose ile ayağa kalkar:
+
+```bash
+docker compose up --build -d
 ```
 
----
-
-# External Integrations
-
-## Frankfurter API
-
-Used for:
-
-* Real-time currency exchange rates
-
-Examples:
-
-* USD/TRY
-* EUR/TRY
-* GBP/TRY
-
----
-
-## Twelve Data API
-
-Used for:
-
-* Stock market prices (US and BIST)
-* Cryptocurrency prices
-
-Examples:
-
-* AAPL, MSFT, NVDA, GOOGL
-* THYAO, GARAN, ASELS
-* BTC, ETH, SOL
-
----
-
-# Frontend
-
-The frontend provides the user interface for managing and monitoring investment portfolios.
-
-Technology:
-
-* React 19
-* Vite
-* Axios
-* Recharts
-* Tailwind CSS
-* Shadcn/ui
-
----
-
-# Application Pages
-
-## Dashboard
-
-Main overview page.
-
-Displays:
-
-* Total Portfolio Value
-* Total Portfolio Count
-* Total Asset Count
-* Recent Assets
-
----
-
-## Portfolios
-
-Portfolio management page.
-
-Features:
-
-* Create Portfolio
-* View Portfolio
-* Delete Portfolio
-
----
-
-## Portfolio Details
-
-Detailed portfolio view.
-
-Displays:
-
-* Asset List
-* Asset Quantities
-* Current Market Values
-* Total Portfolio Value
-
----
-
-## Add Asset
-
-Asset creation page.
-
-Supported asset types:
-
-* Currency
-* Stock
-* Cryptocurrency
-
----
-
-## Analytics
-
-Analytics and visualization page.
-
-Displays:
-
-* Asset Allocation Chart
-* Portfolio Distribution Chart
-
----
-
-## Login / Register
-
-Authentication pages powered by Ory Kratos.
-
----
-
-# Authentication
-
-Authentication is handled by Ory Kratos, a modern open-source identity management system.
-
-Features:
-* User registration
-* User login / logout
-* Cookie-based session management
-* Each user sees only their own portfolios
-
-Flow:
-1. User visits the app → redirected to `/login`
-2. Kratos handles the self-service login/registration flow
-3. On success, Kratos sets a session cookie
-4. Every API request forwards the cookie to Kratos (`/sessions/whoami`)
-5. Kratos returns the identity ID → used to filter portfolio data
-
-Services:
-* **Kratos** — public API on port 4433, admin API on port 4434
-* **Postgres** — dedicated database for Kratos (separate from Neon DB)
-
----
-
-# Containerization
-
-All services run as Docker containers orchestrated with Docker Compose.
-
-| Container | Image | Port |
+| Container | İmaj | Port |
 |---|---|---|
-| web | custom (nginx) | 80 |
-| portfolio-service | custom (.NET 9) | 5001 |
-| market-service | custom (.NET 9) | 5002 |
+| web | nginx (custom) | 80 |
+| portfolio-service | .NET 9 (custom) | 5001 |
+| market-service | .NET 9 (custom) | 5002 |
 | kratos | oryd/kratos:v1.2.0 | 4433, 4434 |
 | postgres | postgres:16-alpine | 5432 |
 | redis | redis:alpine | 6379 |
 
-To start all services:
-```bash
-docker compose up --build
-```
+Gerekli ortam değişkenleri (`.env`): `DB_CONNECTION_STRING` (Neon bağlantısı) ve `TWELVEDATA_API_KEY`.
 
----
+Deploy için basit bir kurulum var: `test` branch'ine push atınca WSL üzerinde çalışan self-hosted GitHub Actions runner'ı projeyi çekip `docker compose up --build -d` çalıştırıyor. EF Core migration'ları servis açılışında otomatik uygulanıyor.
 
-# Technology Stack
+## Kapsam dışı
 
-## Backend
+Bu proje kişisel kullanım için; şunlar bilinçli olarak yok:
 
-* .NET 9
-* ASP.NET Core Web API
-* Entity Framework Core
-
-## Frontend
-
-* React 19
-* Vite
-* Axios
-* Recharts
-* Tailwind CSS
-* Shadcn/ui
-
-## Database
-
-* Neon Database (PostgreSQL) — portfolio data
-* PostgreSQL (Docker) — Kratos identity data
-
-## Caching
-
-* Redis
-
-## Authentication
-
-* Ory Kratos
-
-## Architecture
-
-* Microservices Architecture
-* REST APIs
-* Docker / Docker Compose
-
-## External APIs
-
-* Frankfurter API
-* Twelve Data API
-
----
-
-# Out of Scope
-
-* Email verification
-* Password reset
-* Role-based authorization
-* API Gateway
-* Message queues (RabbitMQ, Kafka)
-* Background jobs
-* Audit logging
+- E-posta doğrulama, şifre sıfırlama
+- Rol bazlı yetkilendirme
+- API Gateway, message queue, background job
+- Sembol arama (desteklenen semboller şimdilik sabit bir liste: USD/EUR/GBP, AAPL/MSFT/NVDA/GOOGL, BTC/ETH/SOL)
