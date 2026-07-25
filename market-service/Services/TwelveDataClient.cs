@@ -11,26 +11,42 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
     {
         try
         {
-            var url = $"https://api.twelvedata.com/price?symbol={symbol}&apikey={_apiKey}";
+            // /quote fiyatın yanında para birimini de döndürür (BIST=TRY, US=USD) — çeviriyi buna göre yaparız
+            var url = $"https://api.twelvedata.com/quote?symbol={Uri.EscapeDataString(symbol)}&apikey={_apiKey}";
             if (!string.IsNullOrEmpty(exchange))
-                url += $"&exchange={exchange}";
+                url += $"&exchange={Uri.EscapeDataString(exchange)}";
 
             var response = await httpClient.GetAsync(url);
             response.EnsureSuccessStatusCode();
 
             var json = await response.Content.ReadAsStringAsync();
             using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
 
-            if (doc.RootElement.TryGetProperty("price", out var price))
+            if (!root.TryGetProperty("close", out var closeEl) ||
+                !root.TryGetProperty("currency", out var currencyEl))
             {
-                var usdPrice = decimal.Parse(price.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
-                var usdTryRate = await frankfurterClient.GetExchangeRateAsync("USD");
-                if (usdTryRate == null) return null;
-                return new TwelveDataPrice(usdPrice, usdPrice * usdTryRate.Value);
+                logger.LogWarning("No quote returned from Twelve Data for {Symbol}", symbol);
+                return null;
             }
 
-            logger.LogWarning("No price returned from Twelve Data for {Symbol}", symbol);
-            return null;
+            var price = decimal.Parse(closeEl.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
+            var currency = currencyEl.GetString()!;
+
+            var usdTryRate = await frankfurterClient.GetExchangeRateAsync("USD");
+            if (usdTryRate == null) return null;
+
+            if (currency.Equals("TRY", StringComparison.OrdinalIgnoreCase))
+                return new TwelveDataPrice(price / usdTryRate.Value, price);
+
+            if (currency.Equals("USD", StringComparison.OrdinalIgnoreCase))
+                return new TwelveDataPrice(price, price * usdTryRate.Value);
+
+            // Diğer para birimleri (EUR, GBP...) → önce TRY'ye, oradan USD'ye
+            var currencyTryRate = await frankfurterClient.GetExchangeRateAsync(currency);
+            if (currencyTryRate == null) return null;
+            var priceInTry = price * currencyTryRate.Value;
+            return new TwelveDataPrice(priceInTry / usdTryRate.Value, priceInTry);
         }
         catch (Exception ex)
         {

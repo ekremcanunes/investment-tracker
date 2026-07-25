@@ -7,7 +7,6 @@ namespace market_service.Services;
 public class MarketService : IMarketService
 {
     private static readonly HashSet<string> CurrencySymbols = new(StringComparer.OrdinalIgnoreCase) { "USD", "EUR", "GBP" };
-    private static readonly HashSet<string> StockSymbols = new(StringComparer.OrdinalIgnoreCase) { "AAPL", "MSFT", "NVDA", "GOOGL" };
 
     private readonly IDistributedCache _cache;
     private readonly IFrankfurterClient _frankfurterClient;
@@ -29,11 +28,6 @@ public class MarketService : IMarketService
     {
         symbol = symbol.ToUpperInvariant();
         var assetType = ResolveAssetType(symbol);
-        if (assetType == null)
-        {
-            _logger.LogWarning("Unknown symbol: {Symbol}", symbol);
-            return null;
-        }
 
         var cacheKey = $"{assetType.ToLower()}:{symbol}";
         var cached = await _cache.GetStringAsync(cacheKey);
@@ -71,11 +65,10 @@ public class MarketService : IMarketService
         return results.Where(r => r != null).Select(r => r!).ToList();
     }
 
-    private string? ResolveAssetType(string symbol)
+    private static string ResolveAssetType(string symbol)
     {
-        if (CurrencySymbols.Contains(symbol)) return "Currency";
-        if (StockSymbols.Contains(symbol)) return "Stock";
-        return null;
+        // Fiat para birimleri Frankfurter'dan çekilir; geri kalan her sembol hisse olarak Twelve Data'ya gider
+        return CurrencySymbols.Contains(symbol) ? "Currency" : "Stock";
     }
 
     private async Task<(decimal? priceInUsd, decimal? priceInTry)> FetchPriceAsync(string symbol, string assetType)
