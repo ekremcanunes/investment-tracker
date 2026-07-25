@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useLanguage } from '../contexts/LanguageContext'
 import { TrendingUp } from 'lucide-react'
 
 export default function Login() {
@@ -12,6 +13,7 @@ export default function Login() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const { setSession } = useAuth()
+  const { t } = useLanguage()
 
   useEffect(() => {
     const flowId = searchParams.get('flow')
@@ -57,7 +59,7 @@ export default function Login() {
 
   if (!flow) return (
     <div className="flex min-h-screen items-center justify-center bg-gray-950 text-gray-400 text-sm">
-      Redirecting...
+      {t('auth.redirecting')}
     </div>
   )
 
@@ -67,15 +69,15 @@ export default function Login() {
       <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-blue-950 to-gray-950">
         <div className="flex items-center gap-2">
           <TrendingUp className="h-6 w-6 text-blue-400" />
-          <span className="text-white font-semibold text-lg">Investment Tracker</span>
+          <span className="text-white font-semibold text-lg">{t('auth.appName')}</span>
         </div>
         <div>
           <p className="text-2xl font-semibold text-white leading-snug">
-            Track your portfolios.<br />Monitor your markets.<br />Stay ahead.
+            {t('auth.loginTagline1')}<br />{t('auth.loginTagline2')}<br />{t('auth.loginTagline3')}
           </p>
-          <p className="mt-3 text-gray-400 text-sm">Real-time data. Clean insights. Full control.</p>
+          <p className="mt-3 text-gray-400 text-sm">{t('auth.loginSubtagline')}</p>
         </div>
-        <p className="text-gray-600 text-xs">© 2025 Investment Tracker</p>
+        <p className="text-gray-600 text-xs">{t('auth.copyright')}</p>
       </div>
 
       {/* Right panel */}
@@ -83,11 +85,11 @@ export default function Login() {
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-blue-400" />
-            <span className="text-white font-semibold">Investment Tracker</span>
+            <span className="text-white font-semibold">{t('auth.appName')}</span>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-1">Welcome back</h1>
-          <p className="text-gray-400 text-sm mb-8">Sign in to your account</p>
+          <h1 className="text-2xl font-bold text-white mb-1">{t('auth.welcomeBack')}</h1>
+          <p className="text-gray-400 text-sm mb-8">{t('auth.signInSubtitle')}</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
@@ -97,7 +99,7 @@ export default function Login() {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300">Email</label>
+              <label className="text-sm font-medium text-gray-300">{t('auth.email')}</label>
               <input
                 type="email"
                 value={email}
@@ -109,7 +111,7 @@ export default function Login() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300">Password</label>
+              <label className="text-sm font-medium text-gray-300">{t('auth.password')}</label>
               <input
                 type="password"
                 value={password}
@@ -125,14 +127,14 @@ export default function Login() {
               disabled={loading}
               className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
           <p className="mt-6 text-center text-sm text-gray-500">
-            Don't have an account?{' '}
+            {t('auth.noAccount')}{' '}
             <Link to="/register" className="text-blue-400 hover:text-blue-300 transition-colors">
-              Create one
+              {t('auth.createOne')}
             </Link>
           </p>
         </div>

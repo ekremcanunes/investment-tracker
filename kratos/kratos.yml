@@ -46,9 +46,9 @@ selfservice:
             - hook: session             # kayıt sonrası otomatik login
 
 session:
-  lifespan: 720h                        # session süresi — 30 gün (örn. 24h, 168h=1hafta)
+  lifespan: 8h                          # session süresi — 8 saat
   cookie:
-    persistent: true                    # tarayıcı kapanınca cookie silinmesin
+    persistent: false                   # tarayıcı kapanınca cookie silinsin
 
 log:
   level: info
