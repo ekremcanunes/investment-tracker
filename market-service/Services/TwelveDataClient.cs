@@ -38,34 +38,4 @@ public class TwelveDataClient(HttpClient httpClient, IFrankfurterClient frankfur
             return null;
         }
     }
-
-    public async Task<TwelveDataPrice?> GetCryptoPriceAsync(string symbol)
-    {
-        try
-        {
-            var url = $"https://api.twelvedata.com/price?symbol={symbol}/USD&apikey={_apiKey}";
-
-            var response = await httpClient.GetAsync(url);
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-
-            if (doc.RootElement.TryGetProperty("price", out var price))
-            {
-                var usdPrice = decimal.Parse(price.GetString()!, System.Globalization.CultureInfo.InvariantCulture);
-                var usdTryRate = await frankfurterClient.GetExchangeRateAsync("USD");
-                if (usdTryRate == null) return null;
-                return new TwelveDataPrice(usdPrice, usdPrice * usdTryRate.Value);
-            }
-
-            logger.LogWarning("No price returned from Twelve Data for {Symbol}", symbol);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Failed to get crypto price for {Symbol}", symbol);
-            return null;
-        }
-    }
 }

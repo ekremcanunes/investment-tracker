@@ -12,9 +12,6 @@ public class TransactionDto
     public List<string> Tags { get; set; } = new();
     public string? Description { get; set; }
     public DateTime Date { get; set; }
-    public int? InstallmentTotal { get; set; }
-    public int? InstallmentCurrent { get; set; }
-    public decimal? InstallmentMonthlyAmount { get; set; }
     public string? Symbol { get; set; }
     public decimal? Quantity { get; set; }
     public decimal? UnitPrice { get; set; }

@@ -8,7 +8,6 @@ public class MarketService : IMarketService
 {
     private static readonly HashSet<string> CurrencySymbols = new(StringComparer.OrdinalIgnoreCase) { "USD", "EUR", "GBP" };
     private static readonly HashSet<string> StockSymbols = new(StringComparer.OrdinalIgnoreCase) { "AAPL", "MSFT", "NVDA", "GOOGL" };
-    private static readonly HashSet<string> CryptoSymbols = new(StringComparer.OrdinalIgnoreCase) { "BTC", "ETH", "SOL" };
 
     private readonly IDistributedCache _cache;
     private readonly IFrankfurterClient _frankfurterClient;
@@ -76,7 +75,6 @@ public class MarketService : IMarketService
     {
         if (CurrencySymbols.Contains(symbol)) return "Currency";
         if (StockSymbols.Contains(symbol)) return "Stock";
-        if (CryptoSymbols.Contains(symbol)) return "Crypto";
         return null;
     }
 
@@ -91,7 +89,6 @@ public class MarketService : IMarketService
         var result = assetType switch
         {
             "Stock" => await _twelveDataClient.GetStockPriceAsync(symbol),
-            "Crypto" => await _twelveDataClient.GetCryptoPriceAsync(symbol),
             _ => null
         };
 

@@ -20,10 +20,9 @@ import { ArrowLeft } from 'lucide-react'
 const symbolsByType = {
   Currency: ['USD', 'EUR', 'GBP'],
   Stock: ['AAPL', 'MSFT', 'NVDA', 'GOOGL'],
-  Crypto: ['BTC', 'ETH', 'SOL'],
 }
 
-const assetTypes = ['Currency', 'Stock', 'Crypto']
+const assetTypes = ['Currency', 'Stock']
 const currencies = ['TRY', 'USD']
 
 export default function AddAsset() {

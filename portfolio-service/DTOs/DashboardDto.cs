@@ -6,5 +6,4 @@ public class DashboardDto
     public int AssetCount { get; set; }
     public decimal CashValueInTry { get; set; }
     public decimal StockValueInTry { get; set; }
-    public decimal CryptoValueInTry { get; set; }
 }

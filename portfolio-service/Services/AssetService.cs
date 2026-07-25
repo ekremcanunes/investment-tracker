@@ -146,8 +146,7 @@ public class AssetService(AppDbContext db, IMarketServiceClient marketClient) : 
             TotalValueInTry = holdings.Sum(h => h.ValueInTry),
             AssetCount = holdings.Count,
             CashValueInTry = holdings.Where(h => h.AssetType == AssetType.Currency).Sum(h => h.ValueInTry),
-            StockValueInTry = holdings.Where(h => h.AssetType == AssetType.Stock).Sum(h => h.ValueInTry),
-            CryptoValueInTry = holdings.Where(h => h.AssetType == AssetType.Crypto).Sum(h => h.ValueInTry)
+            StockValueInTry = holdings.Where(h => h.AssetType == AssetType.Stock).Sum(h => h.ValueInTry)
         };
     }
 

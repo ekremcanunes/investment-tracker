@@ -11,9 +11,6 @@ public class Transaction
     public List<string> Tags { get; set; } = new();
     public string? Description { get; set; }
     public DateTime Date { get; set; }
-    public int? InstallmentTotal { get; set; }
-    public int? InstallmentCurrent { get; set; }
-    public decimal? InstallmentMonthlyAmount { get; set; }
     // Varlık işlemleri (AssetBuy/AssetSell) için: Amount = Quantity * UnitPrice
     public string? Symbol { get; set; }
     public decimal? Quantity { get; set; }

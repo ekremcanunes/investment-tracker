@@ -26,7 +26,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Transaction>(entity =>
         {
             entity.Property(t => t.Amount).HasPrecision(18, 2);
-            entity.Property(t => t.InstallmentMonthlyAmount).HasPrecision(18, 2);
             entity.Property(t => t.Quantity).HasPrecision(18, 8);
             entity.Property(t => t.UnitPrice).HasPrecision(18, 8);
             entity.Property(t => t.RealizedProfitLoss).HasPrecision(18, 2);
