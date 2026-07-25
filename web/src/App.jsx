@@ -6,7 +6,6 @@ import Layout from './components/Layout'
 import Overview from './pages/Overview'
 import Income from './pages/Income'
 import Expenses from './pages/Expenses'
-import Transactions from './pages/Transactions'
 import Assets from './pages/Assets'
 import AddAsset from './pages/AddAsset'
 import Analytics from './pages/Analytics'
@@ -31,13 +30,13 @@ export default function App() {
               <Route path="/" element={<Overview />} />
               <Route path="/income" element={<Income />} />
               <Route path="/expenses" element={<Expenses />} />
-              <Route path="/transactions" element={<Transactions />} />
               <Route path="/assets" element={<Assets />} />
               <Route path="/assets/buy" element={<AddAsset />} />
               <Route path="/analytics" element={<Analytics />} />
               {/* Eski route'lar yönlendirmesi */}
               <Route path="/portfolios" element={<Navigate to="/assets" replace />} />
               <Route path="/portfolios/:id" element={<Navigate to="/assets" replace />} />
+              <Route path="/transactions" element={<Navigate to="/assets" replace />} />
             </Route>
           </Routes>
         </BrowserRouter>

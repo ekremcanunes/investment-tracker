@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { assetApi } from '@/services/api'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { MoneyInput } from '@/components/ui/money-input'
 import { Plus, Wallet, TrendingUp, Coins, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
 const TYPE_CONFIG = {
@@ -164,23 +164,23 @@ export default function Assets() {
                               </span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-xs text-gray-400">{t('assets.quantity')}</span>
-                                <Input
-                                  type="number" min="0" step="any"
+                                <MoneyInput
                                   value={form.quantity}
-                                  onChange={(e) => setForm((f) => ({ ...f, quantity: e.target.value }))}
-                                  className="w-24 h-7 text-xs text-right"
+                                  onChange={(v) => setForm((f) => ({ ...f, quantity: v }))}
+                                  className="h-7 w-24 text-xs"
+                                  placeholder="0"
                                 />
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-xs text-gray-400">
                                   {isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}
                                 </span>
-                                <Input
-                                  type="number" min="0" step="any"
+                                <MoneyInput
+                                  currency={h.currency}
                                   value={form.price}
-                                  onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
-                                  className="w-28 h-7 text-xs text-right"
-                                  placeholder="0.00"
+                                  onChange={(v) => setForm((f) => ({ ...f, price: v }))}
+                                  className="h-7 w-28 text-xs"
+                                  placeholder="0,00"
                                 />
                               </div>
                               <Button

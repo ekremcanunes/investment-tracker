@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { TrendingUp, LayoutDashboard, ArrowUpCircle, ArrowDownCircle, Wallet, ArrowLeftRight, BarChart2, LogOut, Globe } from 'lucide-react'
+import { TrendingUp, LayoutDashboard, ArrowUpCircle, ArrowDownCircle, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -13,7 +13,6 @@ export default function Layout() {
     { to: '/income', label: t('nav.income'), icon: ArrowUpCircle },
     { to: '/expenses', label: t('nav.expenses'), icon: ArrowDownCircle },
     { to: '/assets', label: t('nav.assets'), icon: Wallet },
-    { to: '/transactions', label: t('nav.transactions'), icon: ArrowLeftRight },
     { to: '/analytics', label: t('nav.analytics'), icon: BarChart2 },
   ]
 

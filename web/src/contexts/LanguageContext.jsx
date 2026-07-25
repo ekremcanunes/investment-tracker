@@ -99,6 +99,10 @@ const translations = {
     'common.total': 'Toplam',
     'common.loading': 'Yükleniyor...',
     'common.error': 'Hata',
+    'common.selectDate': 'Tarih seçin',
+    'common.today': 'Bugün',
+    'common.clear': 'Temizle',
+    'common.optional': 'opsiyonel',
 
     // Installment
     'installment.title': 'Taksit',
@@ -189,6 +193,10 @@ const translations = {
     'common.total': 'Total',
     'common.loading': 'Loading...',
     'common.error': 'Error',
+    'common.selectDate': 'Pick a date',
+    'common.today': 'Today',
+    'common.clear': 'Clear',
+    'common.optional': 'optional',
     'installment.title': 'Installment',
     'installment.total': 'Total Installments',
     'installment.current': 'Current Installment',

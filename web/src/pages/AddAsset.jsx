@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { assetApi } from '@/services/api'
+import { todayString, toApiDate } from '@/lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { MoneyInput } from '@/components/ui/money-input'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Select,
   SelectContent,
@@ -32,7 +34,7 @@ export default function AddAsset() {
   const [quantity, setQuantity] = useState('')
   const [unitPrice, setUnitPrice] = useState('')
   const [currency, setCurrency] = useState('TRY')
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(todayString())
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
@@ -53,7 +55,7 @@ export default function AddAsset() {
         quantity: parseFloat(quantity),
         unitPrice: parseFloat(unitPrice),
         currency,
-        date: new Date(date).toISOString(),
+        date: toApiDate(date),
       })
       navigate('/assets')
     } catch (err) {
@@ -119,14 +121,11 @@ export default function AddAsset() {
             {/* Quantity */}
             <div className="space-y-1.5">
               <Label htmlFor="quantity">{t('assets.quantity')}</Label>
-              <Input
+              <MoneyInput
                 id="quantity"
-                type="number"
-                min="0"
-                step="any"
-                placeholder="0.00"
+                placeholder="0"
                 value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
+                onChange={setQuantity}
                 required
               />
             </div>
@@ -135,14 +134,12 @@ export default function AddAsset() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="unitPrice">{t('assets.purchasePrice')}</Label>
-                <Input
+                <MoneyInput
                   id="unitPrice"
-                  type="number"
-                  min="0"
-                  step="any"
-                  placeholder="0.00"
+                  currency={currency}
+                  placeholder="0,00"
                   value={unitPrice}
-                  onChange={(e) => setUnitPrice(e.target.value)}
+                  onChange={setUnitPrice}
                   required
                 />
               </div>
@@ -164,12 +161,12 @@ export default function AddAsset() {
             {/* Purchase date */}
             <div className="space-y-1.5">
               <Label htmlFor="date">{t('assets.purchaseDate')}</Label>
-              <Input
+              <DatePicker
                 id="date"
-                type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
+                onChange={setDate}
+                clearable={false}
+                disabledDates={{ after: new Date() }}
               />
             </div>
 
