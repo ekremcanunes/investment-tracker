@@ -1,8 +1,6 @@
 using System.Globalization;
 using System.Text;
-using System.Text.Json;
 using market_service.Models;
-using Microsoft.Extensions.Caching.Distributed;
 
 namespace market_service.Services;
 
@@ -13,7 +11,6 @@ public interface ISymbolSearchService
 
 public class SymbolSearchService : ISymbolSearchService
 {
-    private const string BistCacheKey = "bist:stocks";
     private const int MaxResults = 15;
 
     // Twelve Data'nın İngilizce isimle döndürdüğü BIST hisseleri için Türkçe arama takma adı
@@ -23,21 +20,18 @@ public class SymbolSearchService : ISymbolSearchService
     };
 
     private readonly ITwelveDataClient _twelveDataClient;
-    private readonly IDistributedCache _cache;
-    private readonly ILogger<SymbolSearchService> _logger;
+    private readonly IBistCatalog _bistCatalog;
 
-    public SymbolSearchService(ITwelveDataClient twelveDataClient, IDistributedCache cache,
-        ILogger<SymbolSearchService> logger)
+    public SymbolSearchService(ITwelveDataClient twelveDataClient, IBistCatalog bistCatalog)
     {
         _twelveDataClient = twelveDataClient;
-        _cache = cache;
-        _logger = logger;
+        _bistCatalog = bistCatalog;
     }
 
     public async Task<List<SymbolSearchResult>> SearchAsync(string query)
     {
         var q = Normalize(query);
-        var bist = await GetBistStocksAsync();
+        var bist = await _bistCatalog.GetAllAsync();
 
         // BIST: sembol, isim veya Türkçe takma ad üzerinde diakritik-duyarsız eşleşme
         var merged = bist
@@ -56,21 +50,6 @@ public class SymbolSearchService : ISymbolSearchService
         }
 
         return merged;
-    }
-
-    private async Task<List<SymbolSearchResult>> GetBistStocksAsync()
-    {
-        var cached = await _cache.GetStringAsync(BistCacheKey);
-        if (cached != null)
-            return JsonSerializer.Deserialize<List<SymbolSearchResult>>(cached) ?? [];
-
-        var stocks = await _twelveDataClient.GetBistStocksAsync();
-        if (stocks.Count > 0)
-        {
-            await _cache.SetStringAsync(BistCacheKey, JsonSerializer.Serialize(stocks),
-                new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24) });
-        }
-        return stocks;
     }
 
     // Diakritik-duyarsız normalize: NFD ile ayrıştır, birleşik işaretleri at, küçük harfe çevir.

@@ -42,7 +42,7 @@ export default function Overview() {
 
       {/* Asset Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets')}>
+        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets?type=Currency')}>
           <CardContent className="py-5 px-5 flex items-center gap-4">
             <div className="p-3 rounded-lg bg-green-500/10">
               <Wallet className="h-6 w-6 text-green-400" />
@@ -54,7 +54,7 @@ export default function Overview() {
           </CardContent>
         </Card>
 
-        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets')}>
+        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets?type=Stock')}>
           <CardContent className="py-5 px-5 flex items-center gap-4">
             <div className="p-3 rounded-lg bg-blue-500/10">
               <TrendingUp className="h-6 w-6 text-blue-400" />

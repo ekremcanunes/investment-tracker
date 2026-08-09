@@ -19,4 +19,15 @@ public class AssetHoldingDto
     public decimal? UnrealizedProfitLossPercent { get; set; }
     public bool PriceAvailable { get; set; }
     public DateTime CreatedAt { get; set; }
+
+    // Detay kartı için native (işlem para birimi) piyasa verileri
+    public string NativeCurrency { get; set; } = string.Empty;
+    public decimal? NativePrice { get; set; }
+    public decimal? PreviousClose { get; set; }
+    public decimal? DayHigh { get; set; }
+    public decimal? DayLow { get; set; }
+    public decimal? Week52High { get; set; }
+    public decimal? Week52Low { get; set; }
+    public long? Volume { get; set; }
+    public string Exchange { get; set; } = string.Empty;
 }

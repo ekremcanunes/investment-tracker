@@ -182,6 +182,10 @@ public class AssetService(AppDbContext db, IMarketServiceClient marketClient) : 
             ? unrealized.Value / totalCost.Value * 100
             : null;
 
+        // Native fiyat: BIST için TRY, US için USD (detay kartı istatistikleri bu birimde)
+        decimal? nativePrice = price is null ? null
+            : price.NativeCurrency == "USD" ? price.PriceInUsd : price.PriceInTry;
+
         return new AssetHoldingDto
         {
             Id = a.Id,
@@ -197,7 +201,16 @@ public class AssetService(AppDbContext db, IMarketServiceClient marketClient) : 
             UnrealizedProfitLoss = unrealized,
             UnrealizedProfitLossPercent = unrealizedPercent,
             PriceAvailable = price is not null,
-            CreatedAt = a.CreatedAt
+            CreatedAt = a.CreatedAt,
+            NativeCurrency = price?.NativeCurrency ?? string.Empty,
+            NativePrice = nativePrice,
+            PreviousClose = price?.PreviousClose,
+            DayHigh = price?.DayHigh,
+            DayLow = price?.DayLow,
+            Week52High = price?.Week52High,
+            Week52Low = price?.Week52Low,
+            Volume = price?.Volume,
+            Exchange = price?.Exchange ?? string.Empty
         };
     }
 

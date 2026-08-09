@@ -23,8 +23,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
 
 builder.Services.AddHttpClient<IFrankfurterClient, FrankfurterClient>();
 builder.Services.AddHttpClient<ITwelveDataClient, TwelveDataClient>();
+builder.Services.AddHttpClient<IYahooFinanceClient, YahooFinanceClient>();
 builder.Services.AddHttpClient("Kratos");
 
+builder.Services.AddScoped<IBistCatalog, BistCatalog>();
 builder.Services.AddScoped<IMarketService, MarketService>();
 builder.Services.AddScoped<ISymbolSearchService, SymbolSearchService>();
 

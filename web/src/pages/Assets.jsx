@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { assetApi } from '@/services/api'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { MoneyInput } from '@/components/ui/money-input'
+import StockDrawer from '@/components/StockDrawer'
 import { Plus, Wallet, TrendingUp, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
 const TYPE_CONFIG = {
@@ -22,12 +23,15 @@ const formatPercent = (v) => (v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
 export default function Assets() {
   const { t } = useLanguage()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const typeFilter = searchParams.get('type') // Overview kartından gelen tür filtresi
   const [holdings, setHoldings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(null) // { id, mode: 'edit' | 'sell' }
   const [form, setForm] = useState({ quantity: '', price: '' })
   const [saving, setSaving] = useState(false)
+  const [drawer, setDrawer] = useState(null) // açık detay drawer'ın holding'i
 
   const fetchData = async () => {
     try {
@@ -90,7 +94,8 @@ export default function Assets() {
 
   if (loading) return <div className="text-gray-400 text-sm">{t('common.loading')}</div>
 
-  const totalValue = holdings.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
+  const visible = typeFilter ? holdings.filter((h) => h.assetType === typeFilter) : holdings
+  const totalValue = visible.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
 
   return (
     <div className="space-y-6">
@@ -113,7 +118,7 @@ export default function Assets() {
 
       <Card>
         <CardContent className="p-0">
-          {holdings.length === 0 ? (
+          {visible.length === 0 ? (
             <div className="px-4 py-12 text-center">
               <p className="text-gray-500 mb-4">{t('assets.noAssets')}</p>
               <Button onClick={() => navigate('/assets/buy')}>{t('assets.buy')}</Button>
@@ -135,7 +140,7 @@ export default function Assets() {
                   </tr>
                 </thead>
                 <tbody>
-                  {holdings.map((h) => {
+                  {visible.map((h) => {
                     const cfg = TYPE_CONFIG[h.assetType] || TYPE_CONFIG.Currency
                     const Icon = cfg.icon
                     const isActive = editing?.id === h.id
@@ -144,9 +149,14 @@ export default function Assets() {
                     const plColor = pl > 0 ? 'text-green-400' : pl < 0 ? 'text-red-400' : 'text-gray-400'
                     const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
                     const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
+                    const clickable = h.assetType === 'Stock' && !isActive
 
                     return (
-                      <tr key={h.id} className="border-b border-gray-800/30 hover:bg-gray-800/20">
+                      <tr
+                        key={h.id}
+                        className={`border-b border-gray-800/30 hover:bg-gray-800/20 ${clickable ? 'cursor-pointer' : ''}`}
+                        onClick={() => clickable && setDrawer(h)}
+                      >
                         <td className="px-4 py-3 text-sm">
                           <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs ${cfg.bg} ${cfg.color}`}>
                             <Icon className="h-3 w-3" />
@@ -224,7 +234,7 @@ export default function Assets() {
                               )}
                             </td>
                             <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   size="sm" variant="ghost" onClick={() => startSell(h)}
                                   className="text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 h-7 px-2 text-xs"
@@ -257,6 +267,17 @@ export default function Assets() {
           )}
         </CardContent>
       </Card>
+
+      {drawer && (
+        <StockDrawer
+          holding={drawer}
+          onClose={() => setDrawer(null)}
+          onSell={(h) => {
+            setDrawer(null)
+            startSell(h)
+          }}
+        />
+      )}
     </div>
   )
 }
