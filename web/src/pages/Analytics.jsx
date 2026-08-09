@@ -15,17 +15,17 @@ const formatTRY = (value) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value ?? 0)
 
 const TYPE_COLORS = {
-  Currency: '#3b82f6',
-  Stock: '#22c55e',
+  Stock: '#c8a66a',   // pirinç
+  Currency: '#8f867a', // nötr
 }
 
-const PIE_COLORS = ['#3b82f6', '#22c55e', '#a855f7', '#ec4899']
+const PIE_COLORS = ['#c8a66a', '#8f867a', '#5cbf95', '#e2867a']
 
 const CHART_TOOLTIP_STYLE = {
-  backgroundColor: '#111827',
-  border: '1px solid #374151',
-  borderRadius: '0.5rem',
-  color: '#f9fafb',
+  backgroundColor: '#17140f',
+  border: '1px solid #2c261c',
+  borderRadius: '0.625rem',
+  color: '#ece4d6',
 }
 
 export default function Analytics() {
@@ -63,12 +63,12 @@ export default function Analytics() {
     fetchAll()
   }, [t])
 
-  if (loading) return <div className="text-gray-400">{t('common.loading')}</div>
-  if (error) return <div className="text-red-400">{t('common.error')}: {error}</div>
+  if (loading) return <div className="text-muted-foreground">{t('common.loading')}</div>
+  if (error) return <div className="text-down">{t('common.error')}: {error}</div>
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-white mb-6">{t('nav.analytics')}</h1>
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">{t('nav.analytics')}</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Varlık dağılımı */}
@@ -78,7 +78,7 @@ export default function Analytics() {
           </CardHeader>
           <CardContent>
             {pieData.length === 0 ? (
-              <p className="text-gray-400 text-sm py-8 text-center">{t('assets.noAssets')}</p>
+              <p className="py-8 text-center text-sm text-muted-foreground">{t('assets.noAssets')}</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>

@@ -15,6 +15,9 @@ const translations = {
     'overview.cash': 'Nakit',
     'overview.investments': 'Yatırımlar',
     'overview.quickAdd': 'Hızlı Ekle',
+    'overview.allocation': 'Dağılım',
+    'overview.allAssets': 'Tüm Varlıklar',
+    'overview.assetCount': 'varlık',
 
     // Transactions
     'transactions.title': 'Tüm İşlemler',
@@ -127,6 +130,9 @@ const translations = {
     'overview.netWorth': 'Net Worth',
     'overview.cash': 'Cash',
     'overview.investments': 'Investments',
+    'overview.allocation': 'Allocation',
+    'overview.allAssets': 'All Assets',
+    'overview.assetCount': 'assets',
     'overview.quickAdd': 'Quick Add',
     'transactions.title': 'All Transactions',
     'transactions.search': 'Search...',

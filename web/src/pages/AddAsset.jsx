@@ -157,10 +157,10 @@ export default function AddAsset() {
               )}
 
               {assetType === 'Stock' && symbol && (
-                <div className="flex items-center justify-between gap-2 rounded-md border border-gray-700 bg-gray-900 px-3 py-2">
+                <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-white">{symbol}</div>
-                    <div className="truncate text-xs text-gray-400">{selectedName}</div>
+                    <div className="text-sm font-medium text-foreground">{symbol}</div>
+                    <div className="truncate text-xs text-muted-foreground">{selectedName}</div>
                   </div>
                   <Button type="button" variant="ghost" size="icon" onClick={handleClearSymbol}>
                     <X className="h-4 w-4" />
@@ -171,7 +171,7 @@ export default function AddAsset() {
               {assetType === 'Stock' && !symbol && (
                 <div className="relative">
                   <div className="relative">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <Input
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
@@ -181,22 +181,22 @@ export default function AddAsset() {
                     />
                   </div>
                   {(searching || results.length > 0) && (
-                    <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-gray-700 bg-gray-900 shadow-lg">
+                    <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-border bg-popover shadow-lg">
                       {searching && (
-                        <div className="px-3 py-2 text-sm text-gray-400">{t('common.loading')}</div>
+                        <div className="px-3 py-2 text-sm text-muted-foreground">{t('common.loading')}</div>
                       )}
                       {!searching && results.map((r) => (
                         <button
                           key={`${r.symbol}-${r.exchange}`}
                           type="button"
                           onClick={() => handleSelectResult(r)}
-                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-gray-800"
+                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-secondary"
                         >
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-white">{r.symbol}</div>
-                            <div className="truncate text-xs text-gray-400">{r.name}</div>
+                            <div className="text-sm font-medium text-foreground">{r.symbol}</div>
+                            <div className="truncate text-xs text-muted-foreground">{r.name}</div>
                           </div>
-                          <span className="shrink-0 text-xs text-gray-500">{r.exchange}</span>
+                          <span className="tabular shrink-0 text-xs text-muted-foreground">{r.exchange}</span>
                         </button>
                       ))}
                     </div>

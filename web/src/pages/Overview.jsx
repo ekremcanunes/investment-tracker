@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { dashboardApi } from '@/services/api'
-import { Card, CardContent } from '@/components/ui/card'
-import { Wallet, TrendingUp } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
+
+const formatTry = (v) =>
+  new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v ?? 0)
 
 export default function Overview() {
   const { t } = useLanguage()
@@ -18,54 +20,67 @@ export default function Overview() {
     })
   }, [])
 
-  if (loading) {
-    return <div className="text-gray-400 text-sm">{t('common.loading')}</div>
-  }
+  if (loading) return <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
 
-  const totalValue = dashboard?.totalValueInTry ?? 0
-  const cashValue = dashboard?.cashValueInTry ?? 0
-  const stockValue = dashboard?.stockValueInTry ?? 0
-
-  const formatCurrency = (val) => new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(val)
+  const total = dashboard?.totalValueInTry ?? 0
+  const cash = dashboard?.cashValueInTry ?? 0
+  const stock = dashboard?.stockValueInTry ?? 0
+  const count = dashboard?.assetCount ?? 0
+  const pct = (v) => (total > 0 ? (v / total) * 100 : 0)
 
   return (
     <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-white">{t('overview.title')}</h1>
+      {/* Net Varlık */}
+      <section className="rounded-xl border border-border bg-card px-7 py-8">
+        <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          {t('overview.netWorth')}
+        </p>
+        <p className="tabular mt-2 text-4xl font-semibold text-foreground">{formatTry(total)}</p>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          {count} {t('overview.assetCount')}
+        </p>
+      </section>
 
-      {/* Net Worth */}
-      <Card className="bg-gradient-to-r from-blue-950 to-gray-900 border-blue-900/50">
-        <CardContent className="py-8 px-6">
-          <p className="text-sm text-blue-300">{t('overview.netWorth')}</p>
-          <p className="text-4xl font-bold text-white mt-1">{formatCurrency(totalValue)}</p>
-        </CardContent>
-      </Card>
+      {/* Dağılım */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold tracking-tight text-foreground">{t('overview.allocation')}</h2>
+          <button
+            onClick={() => navigate('/assets')}
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:opacity-80"
+          >
+            {t('overview.allAssets')}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
 
-      {/* Asset Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets?type=Currency')}>
-          <CardContent className="py-5 px-5 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-green-500/10">
-              <Wallet className="h-6 w-6 text-green-400" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-400">{t('overview.cash')}</p>
-              <p className="text-xl font-semibold text-white">{formatCurrency(cashValue)}</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Segment bar */}
+        <div className="flex h-2.5 overflow-hidden rounded-full border border-border">
+          <div className="bg-primary" style={{ width: `${pct(stock)}%` }} />
+          <div className="bg-muted-foreground/45" style={{ width: `${pct(cash)}%` }} />
+        </div>
 
-        <Card className="cursor-pointer hover:border-blue-700 transition-colors" onClick={() => navigate('/assets?type=Stock')}>
-          <CardContent className="py-5 px-5 flex items-center gap-4">
-            <div className="p-3 rounded-lg bg-blue-500/10">
-              <TrendingUp className="h-6 w-6 text-blue-400" />
+        {/* Tiles */}
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="rounded-lg border border-border bg-card px-4 py-3.5">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-primary" />
+              <span className="text-xs font-medium text-muted-foreground">{t('overview.investments')}</span>
+              <span className="tabular ml-auto text-xs text-muted-foreground">{pct(stock).toFixed(0)}%</span>
             </div>
-            <div>
-              <p className="text-sm text-gray-400">{t('overview.investments')}</p>
-              <p className="text-xl font-semibold text-white">{formatCurrency(stockValue)}</p>
+            <p className="tabular mt-1.5 text-xl font-semibold text-foreground">{formatTry(stock)}</p>
+          </div>
+
+          <div className="rounded-lg border border-border bg-card px-4 py-3.5">
+            <div className="flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-muted-foreground/45" />
+              <span className="text-xs font-medium text-muted-foreground">{t('overview.cash')}</span>
+              <span className="tabular ml-auto text-xs text-muted-foreground">{pct(cash).toFixed(0)}%</span>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+            <p className="tabular mt-1.5 text-xl font-semibold text-foreground">{formatTry(cash)}</p>
+          </div>
+        </div>
+      </section>
     </div>
   )
 }

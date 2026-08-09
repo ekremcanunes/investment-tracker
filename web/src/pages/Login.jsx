@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import { TrendingUp } from 'lucide-react'
+import { LineChart } from 'lucide-react'
 
 export default function Login() {
   const [flow, setFlow] = useState(null)
@@ -58,66 +58,70 @@ export default function Login() {
   }
 
   if (!flow) return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-950 text-gray-400 text-sm">
+    <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
       {t('auth.redirecting')}
     </div>
   )
 
   return (
-    <div className="flex min-h-screen bg-gray-950">
+    <div className="flex min-h-screen bg-background">
       {/* Left panel */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-blue-950 to-gray-950">
-        <div className="flex items-center gap-2">
-          <TrendingUp className="h-6 w-6 text-blue-400" />
-          <span className="text-white font-semibold text-lg">{t('auth.appName')}</span>
+      <div className="hidden w-1/2 flex-col justify-between border-r border-border bg-gradient-to-br from-primary/8 via-card to-background p-12 lg:flex">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15">
+            <LineChart className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <span className="text-lg font-semibold tracking-tight text-foreground">{t('auth.appName')}</span>
         </div>
         <div>
-          <p className="text-2xl font-semibold text-white leading-snug">
+          <p className="text-2xl font-semibold leading-snug text-foreground text-balance">
             {t('auth.loginTagline1')}<br />{t('auth.loginTagline2')}<br />{t('auth.loginTagline3')}
           </p>
-          <p className="mt-3 text-gray-400 text-sm">{t('auth.loginSubtagline')}</p>
+          <p className="mt-3 text-sm text-muted-foreground">{t('auth.loginSubtagline')}</p>
         </div>
-        <p className="text-gray-600 text-xs">{t('auth.copyright')}</p>
+        <p className="text-xs text-muted-foreground/70">{t('auth.copyright')}</p>
       </div>
 
       {/* Right panel */}
       <div className="flex flex-1 items-center justify-center px-6">
         <div className="w-full max-w-sm">
-          <div className="mb-8 lg:hidden flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-blue-400" />
-            <span className="text-white font-semibold">{t('auth.appName')}</span>
+          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15">
+              <LineChart className="h-4.5 w-4.5 text-primary" />
+            </div>
+            <span className="font-semibold tracking-tight text-foreground">{t('auth.appName')}</span>
           </div>
 
-          <h1 className="text-2xl font-bold text-white mb-1">{t('auth.welcomeBack')}</h1>
-          <p className="text-gray-400 text-sm mb-8">{t('auth.signInSubtitle')}</p>
+          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-foreground">{t('auth.welcomeBack')}</h1>
+          <p className="mb-8 text-sm text-muted-foreground">{t('auth.signInSubtitle')}</p>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-950 border border-red-800 text-red-400 text-sm px-4 py-3 rounded-lg">
+              <div className="rounded-lg border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 {error}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300">{t('auth.email')}</label>
+              <label className="text-sm font-medium text-foreground/80">{t('auth.email')}</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-input bg-secondary/40 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
                 required
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300">{t('auth.password')}</label>
+              <label className="text-sm font-medium text-foreground/80">{t('auth.password')}</label>
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                className="w-full rounded-lg border border-input bg-secondary/40 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
                 required
               />
             </div>
@@ -125,15 +129,15 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg text-sm transition-colors"
+              className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {loading ? t('auth.signingIn') : t('auth.signIn')}
             </button>
           </form>
 
-          <p className="mt-6 text-center text-sm text-gray-500">
+          <p className="mt-6 text-center text-sm text-muted-foreground">
             {t('auth.noAccount')}{' '}
-            <Link to="/register" className="text-blue-400 hover:text-blue-300 transition-colors">
+            <Link to="/register" className="text-primary transition-opacity hover:opacity-80">
               {t('auth.createOne')}
             </Link>
           </p>

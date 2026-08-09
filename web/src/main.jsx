@@ -1,4 +1,6 @@
 import { createRoot } from 'react-dom/client'
+import '@fontsource-variable/hanken-grotesk'
+import '@fontsource-variable/jetbrains-mono'
 import './index.css'
 import App from './App.jsx'
 

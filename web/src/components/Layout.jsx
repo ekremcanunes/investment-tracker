@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { TrendingUp, LayoutDashboard, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
+import { LineChart, LayoutDashboard, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
@@ -15,14 +15,16 @@ export default function Layout() {
   ]
 
   return (
-    <div className="flex h-screen bg-gray-950">
-      <aside className="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-        <div className="flex items-center gap-2 px-6 py-5 border-b border-gray-800">
-          <TrendingUp className="h-6 w-6 text-blue-400" />
-          <span className="font-bold text-white text-lg">Investment Tracker</span>
+    <div className="flex h-screen bg-background text-foreground">
+      <aside className="flex w-60 flex-col border-r border-border bg-card">
+        <div className="flex items-center gap-2.5 px-5 py-5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15">
+            <LineChart className="h-4.5 w-4.5 text-primary" />
+          </div>
+          <span className="font-semibold tracking-tight text-foreground">Investment Tracker</span>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 space-y-0.5 px-3 py-2">
           {navLinks.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -30,39 +32,39 @@ export default function Layout() {
               end={end}
               className={({ isActive }) =>
                 cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors',
+                  'flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium',
                   isActive
-                    ? 'bg-blue-500/10 text-blue-400'
-                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                    ? 'bg-primary/12 text-primary'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                 )
               }
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-[18px] w-[18px]" />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="px-3 py-4 border-t border-gray-800 space-y-1">
+        <div className="space-y-0.5 border-t border-border px-3 py-3">
           <button
             onClick={() => switchLang(lang === 'tr' ? 'en' : 'tr')}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-md text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
-            <Globe className="h-5 w-5" />
+            <Globe className="h-[18px] w-[18px]" />
             {lang === 'tr' ? 'English' : 'Türkçe'}
           </button>
           <button
             onClick={logout}
-            className="flex items-center gap-3 px-3 py-2.5 w-full rounded-md text-sm font-medium text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-[18px] w-[18px]" />
             {t('nav.logout')}
           </button>
         </div>
       </aside>
 
       <main className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="mx-auto max-w-5xl px-8 py-10">
           <Outlet />
         </div>
       </main>
