@@ -4,7 +4,7 @@ const translations = {
   tr: {
     // Navigation
     'nav.overview': 'Genel Bakış',
-    'nav.assets': 'Varlıklar',
+    'nav.assets': 'Portföy',
     'nav.transactions': 'İşlemler',
     'nav.analytics': 'Analiz',
     'nav.logout': 'Çıkış Yap',
@@ -28,7 +28,7 @@ const translations = {
     'transactions.assetSell': 'Satış',
 
     // Assets
-    'assets.title': 'Varlıklar',
+    'assets.title': 'Portföy',
     'assets.addAsset': 'Varlık Ekle',
     'assets.currency': 'Döviz',
     'assets.stock': 'Hisse',
@@ -122,7 +122,7 @@ const translations = {
   },
   en: {
     'nav.overview': 'Overview',
-    'nav.assets': 'Assets',
+    'nav.assets': 'Portfolio',
     'nav.transactions': 'Transactions',
     'nav.analytics': 'Analytics',
     'nav.logout': 'Logout',
@@ -140,7 +140,7 @@ const translations = {
     'transactions.noResults': 'No transactions found',
     'transactions.assetBuy': 'Buy',
     'transactions.assetSell': 'Sell',
-    'assets.title': 'Assets',
+    'assets.title': 'Portfolio',
     'assets.addAsset': 'Add Asset',
     'assets.currency': 'Currency',
     'assets.stock': 'Stock',

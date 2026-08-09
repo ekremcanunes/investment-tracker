@@ -29,7 +29,7 @@ export default function Overview() {
   const pct = (v) => (total > 0 ? (v / total) * 100 : 0)
 
   return (
-    <div className="space-y-8">
+    <div className="max-w-3xl space-y-8">
       {/* Net Varlık */}
       <section className="rounded-xl border border-border bg-card px-7 py-8">
         <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
