@@ -29,6 +29,11 @@ const translations = {
 
     // Assets
     'assets.title': 'Portföy',
+    'assets.gold': 'Altın',
+    'assets.goldSoon': 'Altın yakında eklenecek.',
+    'assets.goldGram': 'Altın (gram)',
+    'assets.grams': 'Gram',
+    'assets.pricePerGram': 'Gram Fiyatı',
     'assets.addAsset': 'Varlık Ekle',
     'assets.currency': 'Döviz',
     'assets.stock': 'Hisse',
@@ -141,6 +146,11 @@ const translations = {
     'transactions.assetBuy': 'Buy',
     'transactions.assetSell': 'Sell',
     'assets.title': 'Portfolio',
+    'assets.gold': 'Gold',
+    'assets.goldSoon': 'Gold coming soon.',
+    'assets.goldGram': 'Gold (gram)',
+    'assets.grams': 'Grams',
+    'assets.pricePerGram': 'Price / gram',
     'assets.addAsset': 'Add Asset',
     'assets.currency': 'Currency',
     'assets.stock': 'Stock',

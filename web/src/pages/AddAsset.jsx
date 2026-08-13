@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { assetApi, marketApi } from '@/services/api'
+import { marketApi } from '@/services/api'
+import { useBuyAsset } from '@/hooks/queries'
 import { todayString, toApiDate } from '@/lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -18,7 +19,7 @@ import {
 } from '@/components/ui/select'
 import { ArrowLeft, Search, X } from 'lucide-react'
 
-const assetTypes = ['Currency', 'Stock']
+const assetTypes = ['Stock', 'Currency', 'Gold']
 const currencySymbols = ['USD', 'EUR', 'GBP']
 const currencies = ['TRY', 'USD']
 
@@ -35,8 +36,8 @@ export default function AddAsset() {
   const [unitPrice, setUnitPrice] = useState('')
   const [currency, setCurrency] = useState('TRY')
   const [date, setDate] = useState(todayString())
-  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
+  const buyMutation = useBuyAsset()
 
   // Hisse araması — debounce (300ms, min 2 karakter). Seçim yapıldıysa arama durur.
   useEffect(() => {
@@ -62,10 +63,17 @@ export default function AddAsset() {
 
   const handleTypeChange = (val) => {
     setAssetType(val)
-    setSymbol('')
-    setSelectedName('')
     setQuery('')
     setResults([])
+    if (val === 'Gold') {
+      // Altın: sembol sabit (XAU), gram bazlı, her zaman TL
+      setSymbol('XAU')
+      setSelectedName(t('assets.gold'))
+      setCurrency('TRY')
+    } else {
+      setSymbol('')
+      setSelectedName('')
+    }
   }
 
   const handleSelectResult = (r) => {
@@ -84,10 +92,9 @@ export default function AddAsset() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!assetType || !symbol || !quantity || !unitPrice) return
-    setSubmitting(true)
     setError(null)
     try {
-      await assetApi.buy({
+      await buyMutation.mutateAsync({
         assetType,
         symbol,
         quantity: parseFloat(quantity),
@@ -98,7 +105,6 @@ export default function AddAsset() {
       navigate('/assets')
     } catch (err) {
       setError(err.response?.data?.error?.message ?? err.message)
-      setSubmitting(false)
     }
   }
 
@@ -117,7 +123,7 @@ export default function AddAsset() {
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-md px-3 py-2">
+            <div className="mb-4 rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
             </div>
           )}
@@ -204,6 +210,13 @@ export default function AddAsset() {
                 </div>
               )}
 
+              {assetType === 'Gold' && (
+                <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2">
+                  <span className="text-sm font-medium text-foreground">XAU</span>
+                  <span className="text-xs text-muted-foreground">· {t('assets.goldGram')}</span>
+                </div>
+              )}
+
               {!assetType && (
                 <Select disabled>
                   <SelectTrigger>
@@ -215,7 +228,7 @@ export default function AddAsset() {
 
             {/* Quantity */}
             <div className="space-y-1.5">
-              <Label htmlFor="quantity">{t('assets.quantity')}</Label>
+              <Label htmlFor="quantity">{assetType === 'Gold' ? t('assets.grams') : t('assets.quantity')}</Label>
               <MoneyInput
                 id="quantity"
                 placeholder="0"
@@ -228,7 +241,9 @@ export default function AddAsset() {
             {/* Unit price + currency */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="unitPrice">{t('assets.purchasePrice')}</Label>
+                <Label htmlFor="unitPrice">
+                  {assetType === 'Gold' ? t('assets.pricePerGram') : t('assets.purchasePrice')}
+                </Label>
                 <MoneyInput
                   id="unitPrice"
                   currency={currency}
@@ -240,7 +255,7 @@ export default function AddAsset() {
               </div>
               <div className="space-y-1.5">
                 <Label>{t('assets.currencyLabel')}</Label>
-                <Select value={currency} onValueChange={setCurrency}>
+                <Select value={currency} onValueChange={setCurrency} disabled={assetType === 'Gold'}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -266,8 +281,8 @@ export default function AddAsset() {
             </div>
 
             <div className="flex gap-2 pt-2">
-              <Button type="submit" disabled={submitting || !assetType || !symbol || !quantity || !unitPrice}>
-                {submitting ? '...' : t('assets.buy')}
+              <Button type="submit" disabled={buyMutation.isPending || !assetType || !symbol || !quantity || !unitPrice}>
+                {buyMutation.isPending ? '...' : t('assets.buy')}
               </Button>
               <Button type="button" variant="outline" onClick={() => navigate('/assets')}>
                 {t('common.cancel')}

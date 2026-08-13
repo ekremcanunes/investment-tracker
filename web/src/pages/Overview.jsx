@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { dashboardApi } from '@/services/api'
+import { useDashboard } from '@/hooks/queries'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ArrowRight } from 'lucide-react'
 
 const formatTry = (v) =>
@@ -10,17 +10,19 @@ const formatTry = (v) =>
 export default function Overview() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const [dashboard, setDashboard] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const { data: dashboard, isLoading } = useDashboard()
 
-  useEffect(() => {
-    dashboardApi.get().catch(() => ({ data: null })).then((res) => {
-      setDashboard(res.data)
-      setLoading(false)
-    })
-  }, [])
-
-  if (loading) return <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+  if (isLoading) {
+    return (
+      <div className="max-w-3xl space-y-8">
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Skeleton className="h-20 w-full rounded-lg" />
+          <Skeleton className="h-20 w-full rounded-lg" />
+        </div>
+      </div>
+    )
+  }
 
   const total = dashboard?.totalValueInTry ?? 0
   const cash = dashboard?.cashValueInTry ?? 0

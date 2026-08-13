@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { assetApi } from '@/services/api'
+import { useHoldings } from '@/hooks/queries'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   PieChart,
@@ -30,41 +30,25 @@ const CHART_TOOLTIP_STYLE = {
 
 export default function Analytics() {
   const { t } = useLanguage()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [pieData, setPieData] = useState([])
+  const { data: holdings = [], isLoading, error } = useHoldings()
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const assetsRes = await assetApi.getAll()
-
-        // Pie: varlık tipine göre dağılım
-        const typeValueMap = {}
-        for (const h of assetsRes.data ?? []) {
-          typeValueMap[h.assetType] = (typeValueMap[h.assetType] ?? 0) + (h.valueInTry ?? 0)
-        }
-        const totalAll = Object.values(typeValueMap).reduce((a, b) => a + b, 0)
-        setPieData(
-          Object.entries(typeValueMap).map(([name, value]) => ({
-            name: t(`assets.${name.toLowerCase()}`),
-            typeKey: name,
-            value: parseFloat(((value / (totalAll || 1)) * 100).toFixed(2)),
-            absValue: value,
-          }))
-        )
-      } catch (err) {
-        setError(err.response?.data?.error?.message ?? err.message)
-      } finally {
-        setLoading(false)
-      }
+  // Pie: varlık tipine göre dağılım
+  const pieData = useMemo(() => {
+    const typeValueMap = {}
+    for (const h of holdings) {
+      typeValueMap[h.assetType] = (typeValueMap[h.assetType] ?? 0) + (h.valueInTry ?? 0)
     }
+    const totalAll = Object.values(typeValueMap).reduce((a, b) => a + b, 0)
+    return Object.entries(typeValueMap).map(([name, value]) => ({
+      name: t(`assets.${name.toLowerCase()}`),
+      typeKey: name,
+      value: parseFloat(((value / (totalAll || 1)) * 100).toFixed(2)),
+      absValue: value,
+    }))
+  }, [holdings, t])
 
-    fetchAll()
-  }, [t])
-
-  if (loading) return <div className="text-muted-foreground">{t('common.loading')}</div>
-  if (error) return <div className="text-down">{t('common.error')}: {error}</div>
+  if (isLoading) return <div className="text-muted-foreground">{t('common.loading')}</div>
+  if (error) return <div className="text-down">{t('common.error')}: {error.message}</div>
 
   return (
     <div>

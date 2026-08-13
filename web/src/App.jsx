@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -10,11 +11,22 @@ import Analytics from './pages/Analytics'
 import Login from './pages/Login'
 import Register from './pages/Register'
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,        // 1 dk taze — geri gelince anında, arkada sessiz yenileme
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+})
+
 export default function App() {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AuthProvider>
+          <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
@@ -35,8 +47,9 @@ export default function App() {
               <Route path="/transactions" element={<Navigate to="/assets" replace />} />
             </Route>
           </Routes>
-        </BrowserRouter>
-      </AuthProvider>
-    </LanguageProvider>
+          </BrowserRouter>
+        </AuthProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
   )
 }

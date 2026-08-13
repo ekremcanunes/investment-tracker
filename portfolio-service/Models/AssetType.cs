@@ -1,3 +1,3 @@
 namespace portfolio_service.Models;
 
-public enum AssetType { Currency, Stock }
+public enum AssetType { Currency, Stock, Gold }

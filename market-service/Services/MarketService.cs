@@ -7,6 +7,8 @@ namespace market_service.Services;
 public class MarketService : IMarketService
 {
     private static readonly HashSet<string> CurrencySymbols = new(StringComparer.OrdinalIgnoreCase) { "USD", "EUR", "GBP" };
+    private const string GoldSymbol = "XAU";
+    private const decimal GramsPerOunce = 31.1034768m;
 
     private readonly IDistributedCache _cache;
     private readonly IFrankfurterClient _frankfurterClient;
@@ -37,9 +39,12 @@ public class MarketService : IMarketService
         if (cached != null)
             return JsonSerializer.Deserialize<MarketPrice>(cached);
 
-        var marketPrice = assetType == "Currency"
-            ? await FetchCurrencyAsync(symbol)
-            : await FetchStockAsync(symbol);
+        var marketPrice = assetType switch
+        {
+            "Currency" => await FetchCurrencyAsync(symbol),
+            "Gold" => await FetchGoldAsync(symbol),
+            _ => await FetchStockAsync(symbol)
+        };
         if (marketPrice == null) return null;
 
         var options = new DistributedCacheEntryOptions
@@ -60,8 +65,36 @@ public class MarketService : IMarketService
 
     private static string ResolveAssetType(string symbol)
     {
-        // Fiat para birimleri Frankfurter'dan çekilir; geri kalan her sembol hisse olarak Yahoo'ya gider
+        // XAU = altın; fiat para birimleri Frankfurter; geri kalan her sembol hisse (Yahoo)
+        if (symbol.Equals(GoldSymbol, StringComparison.OrdinalIgnoreCase)) return "Gold";
         return CurrencySymbols.Contains(symbol) ? "Currency" : "Stock";
+    }
+
+    // Altın: Yahoo GC=F (USD/ons) → gram başına TL. Miktar gram cinsinden tutulur.
+    private async Task<MarketPrice?> FetchGoldAsync(string symbol)
+    {
+        var quote = await _yahooClient.GetQuoteAsync("GC=F");
+        if (quote == null) return null;
+
+        var usdTryRate = await _frankfurterClient.GetExchangeRateAsync("USD");
+        if (usdTryRate == null) return null;
+
+        var usdPerGram = quote.Price / GramsPerOunce;
+        var tryPerGram = usdPerGram * usdTryRate.Value;
+
+        return new MarketPrice
+        {
+            Symbol = symbol,
+            AssetType = "Gold",
+            PriceInUsd = usdPerGram,
+            PriceInTry = tryPerGram,
+            NativeCurrency = "TRY",
+            PreviousClose = quote.PreviousClose.HasValue
+                ? quote.PreviousClose.Value / GramsPerOunce * usdTryRate.Value
+                : null,
+            Exchange = "GOLD",
+            UpdatedAt = DateTime.UtcNow
+        };
     }
 
     private async Task<MarketPrice?> FetchCurrencyAsync(string symbol)

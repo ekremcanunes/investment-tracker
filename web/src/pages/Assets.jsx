@@ -1,16 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { assetApi } from '@/services/api'
+import { useHoldings, useSellAsset, useUpdateAsset, useDeleteAsset } from '@/hooks/queries'
 import { Button } from '@/components/ui/button'
 import { MoneyInput } from '@/components/ui/money-input'
+import { Skeleton } from '@/components/ui/skeleton'
 import StockDrawer from '@/components/StockDrawer'
-import { Plus, Wallet, TrendingUp, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
-const TYPE_CONFIG = {
-  Currency: { icon: Wallet, cls: 'text-up' },
-  Stock: { icon: TrendingUp, cls: 'text-primary' },
-}
+const TABS = ['Stock', 'Currency', 'Gold']
 
 const formatMoney = (v, currency = 'TRY') =>
   v != null
@@ -22,27 +20,18 @@ const formatPercent = (v) => (v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%`
 export default function Assets() {
   const { t } = useLanguage()
   const navigate = useNavigate()
-  const [holdings, setHoldings] = useState([])
-  const [loading, setLoading] = useState(true)
+  const { data: holdings = [], isLoading, error: queryError } = useHoldings()
+  const sellMutation = useSellAsset()
+  const updateMutation = useUpdateAsset()
+  const deleteMutation = useDeleteAsset()
+
+  const [tab, setTab] = useState('Stock')
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(null) // { id, mode: 'edit' | 'sell' }
   const [form, setForm] = useState({ quantity: '', price: '' })
-  const [saving, setSaving] = useState(false)
   const [drawer, setDrawer] = useState(null)
 
-  const fetchData = async () => {
-    try {
-      const res = await assetApi.getAll()
-      setHoldings(res.data)
-      setError(null)
-    } catch (err) {
-      setError(err.response?.data?.error?.message ?? err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchData() }, [])
+  const saving = sellMutation.isPending || updateMutation.isPending
 
   const startEdit = (asset) => {
     setEditing({ id: asset.id, mode: 'edit' })
@@ -56,42 +45,38 @@ export default function Assets() {
 
   const handleConfirm = async () => {
     if (!editing) return
-    setSaving(true)
+    setError(null)
     try {
       if (editing.mode === 'sell') {
-        await assetApi.sell(editing.id, {
-          quantity: parseFloat(form.quantity),
-          unitPrice: parseFloat(form.price),
+        await sellMutation.mutateAsync({
+          id: editing.id,
+          data: { quantity: parseFloat(form.quantity), unitPrice: parseFloat(form.price) },
         })
       } else {
-        await assetApi.update(editing.id, {
-          quantity: parseFloat(form.quantity),
-          purchasePrice: form.price ? parseFloat(form.price) : null,
+        await updateMutation.mutateAsync({
+          id: editing.id,
+          data: { quantity: parseFloat(form.quantity), purchasePrice: form.price ? parseFloat(form.price) : null },
         })
       }
       setEditing(null)
-      setError(null)
-      await fetchData()
     } catch (err) {
       setError(err.response?.data?.error?.message ?? err.message)
-    } finally {
-      setSaving(false)
     }
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm(t('assets.confirmDelete'))) return
+    setError(null)
     try {
-      await assetApi.delete(id)
-      await fetchData()
+      await deleteMutation.mutateAsync(id)
     } catch (err) {
       setError(err.response?.data?.error?.message ?? err.message)
     }
   }
 
-  if (loading) return <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
-
-  const totalValue = holdings.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
+  const visible = holdings.filter((h) => h.assetType === tab)
+  const tabTotal = visible.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
+  const shownError = error ?? (queryError ? queryError.message : null)
 
   return (
     <div className="space-y-6">
@@ -99,7 +84,7 @@ export default function Assets() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('assets.title')}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {t('common.total')}: <span className="tabular text-foreground">{formatMoney(totalValue)}</span>
+            {t('common.total')}: <span className="tabular text-foreground">{formatMoney(tabTotal)}</span>
           </p>
         </div>
         <Button onClick={() => navigate('/assets/buy')}>
@@ -108,14 +93,36 @@ export default function Assets() {
         </Button>
       </div>
 
-      {error && (
+      {/* Tab bar */}
+      <div className="flex gap-6 border-b border-border">
+        {TABS.map((key) => (
+          <button
+            key={key}
+            onClick={() => { setTab(key); setEditing(null) }}
+            className={`relative -mb-px pb-2.5 text-sm font-medium transition-colors ${
+              tab === key
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {t(`assets.${key.toLowerCase()}`)}
+            {tab === key && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
+          </button>
+        ))}
+      </div>
+
+      {shownError && (
         <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          {error}
+          {shownError}
         </div>
       )}
 
       <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {holdings.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3 p-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+          </div>
+        ) : visible.length === 0 ? (
           <div className="px-4 py-16 text-center">
             <p className="mb-4 text-muted-foreground">{t('assets.noAssets')}</p>
             <Button onClick={() => navigate('/assets/buy')}>{t('assets.buy')}</Button>
@@ -125,7 +132,6 @@ export default function Assets() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-4 py-2.5 text-left font-medium">{t('common.type')}</th>
                   <th className="px-4 py-2.5 text-left font-medium">{t('assets.name')}</th>
                   <th className="px-4 py-2.5 text-right font-medium">{t('assets.quantity')}</th>
                   <th className="px-4 py-2.5 text-right font-medium">{t('assets.purchasePrice')}</th>
@@ -137,9 +143,7 @@ export default function Assets() {
                 </tr>
               </thead>
               <tbody>
-                {holdings.map((h) => {
-                  const cfg = TYPE_CONFIG[h.assetType] || TYPE_CONFIG.Currency
-                  const Icon = cfg.icon
+                {visible.map((h) => {
                   const isActive = editing?.id === h.id
                   const isSell = isActive && editing.mode === 'sell'
                   const pl = h.unrealizedProfitLoss
@@ -154,12 +158,6 @@ export default function Assets() {
                       className={`border-b border-border/60 last:border-0 hover:bg-secondary/40 ${clickable ? 'cursor-pointer' : ''}`}
                       onClick={() => clickable && setDrawer(h)}
                     >
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1.5 text-xs ${cfg.cls}`}>
-                          <Icon className="h-3.5 w-3.5" />
-                          {t(`assets.${h.assetType.toLowerCase()}`)}
-                        </span>
-                      </td>
                       <td className="px-4 py-3 text-sm font-semibold text-foreground">{h.symbol}</td>
 
                       {isActive ? (
