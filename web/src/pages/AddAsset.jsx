@@ -65,15 +65,10 @@ export default function AddAsset() {
     setAssetType(val)
     setQuery('')
     setResults([])
-    if (val === 'Gold') {
-      // Altın: sembol sabit (XAU), gram bazlı, her zaman TL
-      setSymbol('XAU')
-      setSelectedName(t('assets.gold'))
-      setCurrency('TRY')
-    } else {
-      setSymbol('')
-      setSelectedName('')
-    }
+    setSymbol(val === 'Gold' ? 'XAU' : '')
+    setSelectedName(val === 'Gold' ? t('assets.gold') : '')
+    // Altın ve döviz her zaman TL ile alınır → para birimi kilitli
+    if (val === 'Gold' || val === 'Currency') setCurrency('TRY')
   }
 
   const handleSelectResult = (r) => {
@@ -102,7 +97,7 @@ export default function AddAsset() {
         currency,
         date: toApiDate(date),
       })
-      navigate('/assets')
+      navigate(`/assets?tab=${assetType}`)
     } catch (err) {
       setError(err.response?.data?.error?.message ?? err.message)
     }
@@ -147,7 +142,7 @@ export default function AddAsset() {
 
             {/* Asset / Symbol */}
             <div className="space-y-1.5">
-              <Label>{t('assets.name')}</Label>
+              <Label>{assetType ? t(`assets.${assetType.toLowerCase()}`) : t('assets.name')}</Label>
 
               {assetType === 'Currency' && (
                 <Select value={symbol} onValueChange={setSymbol}>
@@ -255,7 +250,7 @@ export default function AddAsset() {
               </div>
               <div className="space-y-1.5">
                 <Label>{t('assets.currencyLabel')}</Label>
-                <Select value={currency} onValueChange={setCurrency} disabled={assetType === 'Gold'}>
+                <Select value={currency} onValueChange={setCurrency} disabled={assetType === 'Gold' || assetType === 'Currency'}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>

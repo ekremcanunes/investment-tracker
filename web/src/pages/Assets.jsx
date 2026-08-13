@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useHoldings, useSellAsset, useUpdateAsset, useDeleteAsset } from '@/hooks/queries'
 import { Button } from '@/components/ui/button'
@@ -25,7 +25,9 @@ export default function Assets() {
   const updateMutation = useUpdateAsset()
   const deleteMutation = useDeleteAsset()
 
-  const [tab, setTab] = useState('Stock')
+  const [searchParams] = useSearchParams()
+  const initialTab = TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'Stock'
+  const [tab, setTab] = useState(initialTab)
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(null) // { id, mode: 'edit' | 'sell' }
   const [form, setForm] = useState({ quantity: '', price: '' })

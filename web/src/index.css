@@ -21,48 +21,53 @@
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
 
-  /* Semantik: kâr/zarar — vurgudan (pirinç) ayrı */
-  --color-up: hsl(var(--up));
-  --color-down: hsl(var(--down));
+  /* LEDGER'a özel */
+  --color-up: hsl(var(--up));           /* kâr */
+  --color-down: hsl(var(--down));       /* zarar */
+  --color-brass: hsl(var(--brass));     /* ikincil aksan (işlem) */
+  --color-margin: hsl(var(--margin));   /* kırmızı marj çizgisi */
 
   --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-sm: calc(var(--radius) - 1px);
 
-  --font-sans: "Hanken Grotesk Variable", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono Variable", ui-monospace, "SF Mono", monospace;
+  --font-sans: "Plus Jakarta Sans Variable", system-ui, sans-serif;
+  --font-serif: "Courier Prime", ui-monospace, monospace;   /* daktilo wordmark/makbuz */
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
 }
 
 /*
-  Pirinç / Ink — sıcak-eğilimli koyu tema (tek tema, bilinçli tercih).
-  Nötrler hafif sıcak (bronz) eğilimli; vurgu mat pirinç; K/Z zümrüt/gül.
-  Renkler HSL "H S% L%" formatında (shadcn token yapısı).
+  LEDGER — açık/bone muhasebe defteri teması (tek tema, bilinçli tercih).
+  Renkler HSL "H S% L%" (shadcn yapısı). Ink üzerine bone; kâr/zarar semantik;
+  marj-kırmızısı ve pirinç aksanlar vurgudan ayrı.
 */
 :root {
-  --background: 40 24% 4%;      /* #100E0A sıcak neredeyse-siyah */
-  --foreground: 38 30% 88%;     /* #ECE4D6 sıcak kırık beyaz */
-  --card: 38 22% 8%;            /* panel */
-  --card-foreground: 38 30% 88%;
-  --popover: 38 24% 7%;
-  --popover-foreground: 38 30% 88%;
-  --primary: 38 46% 60%;        /* #C8A66A mat pirinç */
-  --primary-foreground: 40 50% 7%;
-  --secondary: 38 16% 14%;
-  --secondary-foreground: 38 30% 88%;
-  --muted: 38 16% 13%;
-  --muted-foreground: 36 12% 58%; /* #9A9083 */
-  --accent: 38 20% 16%;
-  --accent-foreground: 38 40% 90%;
-  --destructive: 9 68% 68%;     /* gül (down ile aynı aile) */
-  --destructive-foreground: 40 50% 7%;
-  --border: 37 20% 14%;
-  --input: 37 20% 16%;
-  --ring: 38 46% 60%;
+  --background: 46 22% 92%;    /* #EFEDE6 bone */
+  --foreground: 45 8% 10%;     /* #1C1B18 ink */
+  --card: 50 25% 96%;          /* #F7F6F1 surface */
+  --card-foreground: 45 8% 10%;
+  --popover: 50 25% 96%;
+  --popover-foreground: 45 8% 10%;
+  --primary: 45 8% 10%;        /* ink — birincil buton */
+  --primary-foreground: 50 25% 96%;
+  --secondary: 46 18% 88%;     /* hover/ikincil yüzey */
+  --secondary-foreground: 45 8% 10%;
+  --muted: 46 16% 88%;
+  --muted-foreground: 45 6% 39%; /* #6A675E */
+  --accent: 46 18% 88%;
+  --accent-foreground: 45 8% 10%;
+  --destructive: 5 53% 32%;    /* zarar/loss #7B2D26 */
+  --destructive-foreground: 50 25% 96%;
+  --border: 47 16% 82%;        /* #D9D6CB rule */
+  --input: 45 8% 10%;          /* ledger'da inputlar ink kenarlı */
+  --ring: 45 8% 10%;
 
-  --up: 152 44% 55%;            /* #5CBF95 zümrüt */
-  --down: 8 66% 68%;            /* #E2867A gül */
+  --up: 149 60% 27%;           /* kâr #1B6E43 */
+  --down: 5 53% 32%;           /* zarar #7B2D26 */
+  --brass: 36 43% 38%;         /* #8C6A38 */
+  --margin: 6 59% 44%;         /* #B23A2E marj kırmızısı */
 
-  --radius: 0.625rem;
+  --radius: 0.125rem;          /* keskin ledger köşeleri */
 }
 
 * { border-color: hsl(var(--border)); }
@@ -73,19 +78,31 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv11", "ss01";
 }
 
-/* Rakamlar / tickerlar: mono + tabular hizalama için yardımcı sınıf */
+/* Rakamlar / ticker: mono + tabular hizalama */
 .tabular {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
+
+/* Ledger imzaları */
+.shadow-ledger { box-shadow: 4px 4px 0 0 hsl(var(--foreground) / 0.06); }
+.shadow-ledger-strong { box-shadow: 8px 8px 0 0 hsl(var(--foreground)); }
+.border-double-bottom { border-bottom: 3px double hsl(var(--foreground)); }
+
+/* Sol kırmızı marj çizgisi (muhasebe kağıdı) — .margin-rule + sol iç boşluk gerektirir */
+.margin-rule { position: relative; }
+.margin-rule::before {
+  content: ""; position: absolute; top: 0; bottom: 0; left: 1rem; width: 1px;
+  background: hsl(var(--margin));
+}
+@media (min-width: 768px) { .margin-rule::before { left: 2rem; } }
 
 /* Yumuşak geçişler — reduced-motion'a saygılı */
 @media (prefers-reduced-motion: no-preference) {
   a, button, [role="button"], .transition-smooth {
-    transition: color .18s ease, background-color .18s ease, border-color .18s ease, opacity .18s ease, transform .18s ease;
+    transition: color .16s ease, background-color .16s ease, border-color .16s ease, opacity .16s ease, transform .16s ease;
   }
 }
