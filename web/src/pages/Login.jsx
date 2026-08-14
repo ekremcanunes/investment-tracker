@@ -3,11 +3,14 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { isValidEmail, kratosErrorText } from '../lib/authErrors'
+import { APP_NAME } from '../lib/app'
+import { Eye, EyeOff } from 'lucide-react'
 
 export default function Login() {
   const [flow, setFlow] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPass, setShowPass] = useState(false)
   const [fieldErr, setFieldErr] = useState({})
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -79,7 +82,7 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm border-2 border-foreground bg-card p-8 shadow-ledger-strong">
         <div className="mb-6 text-center">
-          <span className="block font-serif text-2xl font-bold text-foreground">LEDGER № 01</span>
+          <span className="block font-serif text-2xl font-bold text-foreground">{APP_NAME}</span>
           <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             {t('auth.signInSubtitle')}
           </span>
@@ -100,7 +103,12 @@ export default function Login() {
 
           <div>
             <label className="mb-1 block uppercase text-muted-foreground">{t('auth.password')}</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputCls} />
+            <div className="relative">
+              <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={`${inputCls} pr-10`} />
+              <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground" aria-label={showPass ? t('auth.hidePassword') : t('auth.showPassword')}>
+                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {fieldErr.password && <p className="mt-1 text-down">{fieldErr.password}</p>}
           </div>
 

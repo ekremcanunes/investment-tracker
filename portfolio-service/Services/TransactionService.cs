@@ -13,6 +13,8 @@ public class TransactionService(AppDbContext db) : ITransactionService
 
         if (filter.Type.HasValue)
             query = query.Where(t => t.Type == filter.Type.Value);
+        if (!string.IsNullOrWhiteSpace(filter.Symbol))
+            query = query.Where(t => t.Symbol == filter.Symbol);
         if (!string.IsNullOrWhiteSpace(filter.Category))
             query = query.Where(t => t.Category == filter.Category);
         if (!string.IsNullOrWhiteSpace(filter.Tag))

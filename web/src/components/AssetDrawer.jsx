@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
+import { useAssetTransactions } from '@/hooks/queries'
 import TradingViewChart from './TradingViewChart'
 import { ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react'
 
@@ -18,8 +19,24 @@ function Row({ label, value, valueClass = 'text-foreground' }) {
   )
 }
 
-export default function StockDrawer({ holding, onClose, onSell }) {
+// Varlık türüne göre etiket + TradingView sembolü
+function typeConfig(holding, t) {
+  switch (holding.assetType) {
+    case 'Currency':
+      return { qtyLabel: t('assets.amount'), avgLabel: t('assets.buyRate'), priceLabel: t('assets.currentRate'),
+        tvSymbol: `FX_IDC:${holding.symbol}TRY` }
+    case 'Gold':
+      return { qtyLabel: t('assets.grams'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.pricePerGram'),
+        tvSymbol: 'TVC:GOLD' }
+    default:
+      return { qtyLabel: t('assets.quantity'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.currentPrice'),
+        tvSymbol: holding.exchange === 'BIST' ? `BIST:${holding.symbol}` : holding.symbol }
+  }
+}
+
+export default function AssetDrawer({ holding, onClose, onSell }) {
   const { t } = useLanguage()
+  const { data: lots = [], isLoading: lotsLoading } = useAssetTransactions(holding?.symbol)
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -29,12 +46,14 @@ export default function StockDrawer({ holding, onClose, onSell }) {
 
   if (!holding) return null
 
+  const cfg = typeConfig(holding, t)
   const native = holding.nativeCurrency || holding.currency
   const price = holding.nativePrice
   const prev = holding.previousClose
   const change = price != null && prev != null ? price - prev : null
   const changePct = change != null && prev ? (change / prev) * 100 : null
   const up = change != null && change >= 0
+  const hasMarketStats = holding.dayHigh != null || holding.week52High != null
   const pl = holding.unrealizedProfitLoss
   const plUp = pl != null && pl >= 0
 
@@ -48,7 +67,7 @@ export default function StockDrawer({ holding, onClose, onSell }) {
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4">
             <span className="font-bold text-muted-foreground">
-              DEFTER NO: <span className="text-foreground">{holding.exchange || '—'}</span>
+              DEFTER NO: <span className="text-foreground">{holding.exchange || holding.assetType}</span>
             </span>
             <button onClick={onClose} className="font-bold underline hover:text-margin">[X] {t('common.cancel')}</button>
           </div>
@@ -71,8 +90,8 @@ export default function StockDrawer({ holding, onClose, onSell }) {
             )}
           </div>
 
-          {/* Piyasa metrikleri */}
-          {holding.priceAvailable && (
+          {/* Piyasa metrikleri (yalnızca veri varsa — hisse) */}
+          {holding.priceAvailable && hasMarketStats && (
             <div className="border-b border-border py-6">
               <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.marketStats')}</h3>
               <Row label={t('drawer.previousClose')} value={fmt(prev, native)} />
@@ -83,10 +102,10 @@ export default function StockDrawer({ holding, onClose, onSell }) {
           )}
 
           {/* Pozisyon */}
-          <div className="py-6">
+          <div className="border-b border-border py-6">
             <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.yourPosition')}</h3>
-            <Row label={t('assets.quantity')} value={fmtNum(holding.quantity)} />
-            <Row label={t('assets.avgCost')} value={fmt(holding.avgCostBasis, holding.currency)} />
+            <Row label={cfg.qtyLabel} value={fmtNum(holding.quantity)} />
+            <Row label={cfg.avgLabel} value={fmt(holding.avgCostBasis, holding.currency)} />
             <Row label={t('assets.currentValue')} value={fmt(holding.valueInTry, 'TRY')} />
             <Row
               label={t('assets.profitLoss')}
@@ -97,11 +116,44 @@ export default function StockDrawer({ holding, onClose, onSell }) {
             />
           </div>
 
+          {/* Lot geçmişi */}
+          <div className="border-b border-border py-6">
+            <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.lotHistory')}</h3>
+            {lotsLoading ? (
+              <p className="text-muted-foreground">{t('common.loading')}</p>
+            ) : lots.length === 0 ? (
+              <p className="text-muted-foreground">{t('drawer.noHistory')}</p>
+            ) : (
+              <table className="tabular w-full text-left">
+                <thead>
+                  <tr className="border-b border-border uppercase text-[10px] tracking-wider text-muted-foreground">
+                    <th className="py-1.5 font-normal">{t('drawer.date')}</th>
+                    <th className="py-1.5 font-normal">{t('common.type')}</th>
+                    <th className="py-1.5 text-right font-normal">{cfg.qtyLabel}</th>
+                    <th className="py-1.5 text-right font-normal">{cfg.avgLabel}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60">
+                  {lots.map((lot) => (
+                    <tr key={lot.id}>
+                      <td className="py-1.5">{new Date(lot.date).toLocaleDateString('tr-TR')}</td>
+                      <td className={`py-1.5 font-bold ${lot.type === 'AssetSell' ? 'text-down' : 'text-up'}`}>
+                        {lot.type === 'AssetSell' ? t('assets.sell') : t('assets.buy')}
+                      </td>
+                      <td className="py-1.5 text-right">{fmtNum(lot.quantity)}</td>
+                      <td className="py-1.5 text-right">{fmt(lot.unitPrice, lot.currency)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
           {/* Grafik */}
-          <div className="pb-2">
+          <div className="pb-2 pt-6">
             <h3 className="mb-2 uppercase tracking-wider text-muted-foreground">{t('drawer.chart')}</h3>
             <div className="h-72 overflow-hidden border border-border">
-              <TradingViewChart symbol={holding.symbol} exchange={holding.exchange} />
+              <TradingViewChart tvSymbol={cfg.tvSymbol} />
             </div>
           </div>
         </div>

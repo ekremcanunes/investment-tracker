@@ -5,6 +5,7 @@ namespace portfolio_service.DTOs;
 public class TransactionFilterDto
 {
     public TransactionType? Type { get; set; }
+    public string? Symbol { get; set; }
     public string? Category { get; set; }
     public string? Tag { get; set; }
     public DateTime? From { get; set; }

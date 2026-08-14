@@ -1,14 +1,13 @@
 import { useEffect, useRef } from 'react'
 
 // TradingView Advanced Chart embed — harici widget, API kredisi yemez.
-// BIST için "BIST:THYAO", diğerleri için sembol doğrudan kullanılır.
-export default function TradingViewChart({ symbol, exchange }) {
+// tvSymbol tam TradingView sembolüdür (ör. "BIST:THYAO", "FX_IDC:USDTRY", "TVC:GOLD").
+export default function TradingViewChart({ tvSymbol }) {
   const containerRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
-    const tvSymbol = exchange === 'BIST' ? `BIST:${symbol}` : symbol
-    const containerId = `tv_${symbol}_${exchange}`.replace(/[^a-zA-Z0-9_]/g, '')
+    const containerId = `tv_${tvSymbol}`.replace(/[^a-zA-Z0-9_]/g, '')
 
     const loadScript = () =>
       new Promise((resolve) => {
@@ -35,7 +34,7 @@ export default function TradingViewChart({ symbol, exchange }) {
         autosize: true,
         interval: 'D',
         timezone: 'Europe/Istanbul',
-        theme: 'dark',
+        theme: 'light',
         style: '1',
         locale: 'tr',
         hide_side_toolbar: true,
@@ -47,7 +46,7 @@ export default function TradingViewChart({ symbol, exchange }) {
     return () => {
       cancelled = true
     }
-  }, [symbol, exchange])
+  }, [tvSymbol])
 
   return <div ref={containerRef} className="h-full w-full" />
 }

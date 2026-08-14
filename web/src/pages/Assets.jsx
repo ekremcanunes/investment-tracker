@@ -5,7 +5,7 @@ import { useHoldings, useSellAsset, useUpdateAsset, useDeleteAsset } from '@/hoo
 import { MoneyInput } from '@/components/ui/money-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Modal } from '@/components/ui/modal'
-import StockDrawer from '@/components/StockDrawer'
+import AssetDrawer from '@/components/AssetDrawer'
 import { Plus, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
 const TABS = ['Stock', 'Currency', 'Gold']
@@ -73,7 +73,13 @@ export default function Assets() {
 
   const visible = holdings.filter((h) => h.assetType === tab)
   const tabTotal = visible.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
+  const grandTotal = holdings.reduce((s, h) => s + (h.valueInTry ?? 0), 0)
   const shownError = error ?? (queryError ? queryError.message : null)
+
+  // Sütun etiketleri türe göre uyarlanır
+  const qtyLabel = tab === 'Currency' ? t('assets.amount') : tab === 'Gold' ? t('assets.grams') : t('assets.quantity')
+  const costLabel = tab === 'Currency' ? t('assets.buyRate') : t('assets.purchasePrice')
+  const curLabel = tab === 'Currency' ? t('assets.currentRate') : t('assets.currentPrice')
 
   return (
     <div className="space-y-6">
@@ -81,7 +87,7 @@ export default function Assets() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('assets.title')}</h1>
           <p className="mt-1 font-mono text-xs text-muted-foreground">
-            {t('common.total')}: <span className="tabular text-foreground">{formatMoney(tabTotal)}</span>
+            {t('assets.grandTotal')}: <span className="tabular text-foreground">{formatMoney(grandTotal)}</span>
           </p>
         </div>
         <button
@@ -135,9 +141,9 @@ export default function Assets() {
                 <thead>
                   <tr className="border-b-2 border-foreground uppercase tracking-wider text-muted-foreground">
                     <th className="px-2 py-3 font-normal">{t('assets.name')}</th>
-                    <th className="px-2 py-3 text-right font-normal">{t('assets.quantity')}</th>
-                    <th className="px-2 py-3 text-right font-normal">{t('assets.purchasePrice')}</th>
-                    <th className="px-2 py-3 text-right font-normal">{t('assets.currentPrice')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{qtyLabel}</th>
+                    <th className="px-2 py-3 text-right font-normal">{costLabel}</th>
+                    <th className="px-2 py-3 text-right font-normal">{curLabel}</th>
                     <th className="px-2 py-3 text-right font-normal">{t('assets.currentValue')}</th>
                     <th className="px-2 py-3 text-right font-normal">{t('assets.profitLoss')}</th>
                     <th className="px-2 py-3"></th>
@@ -151,7 +157,7 @@ export default function Assets() {
                     const plColor = pl > 0 ? 'text-up' : pl < 0 ? 'text-down' : 'text-muted-foreground'
                     const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
                     const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
-                    const clickable = h.assetType === 'Stock' && !isActive
+                    const clickable = !isActive
 
                     return (
                       <tr
@@ -231,7 +237,7 @@ export default function Assets() {
       </section>
 
       {drawer && (
-        <StockDrawer
+        <AssetDrawer
           holding={drawer}
           onClose={() => setDrawer(null)}
           onSell={(h) => { setDrawer(null); startSell(h) }}

@@ -1,12 +1,25 @@
+import { useState, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { LayoutDashboard, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { APP_NAME } from '@/lib/app'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+
+// Canlı sistem tarih/saati (sidebar alt bilgisi)
+function useClock() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 1000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
 
 export default function Layout() {
   const { logout } = useAuth()
   const { t, lang, switchLang } = useLanguage()
+  const now = useClock()
 
   const navLinks = [
     { to: '/', label: t('nav.overview'), icon: LayoutDashboard, end: true },
@@ -19,7 +32,7 @@ export default function Layout() {
       <aside className="flex w-60 flex-col border-r border-border bg-card">
         {/* Wordmark */}
         <div className="border-b-2 border-foreground px-5 py-5">
-          <div className="font-serif text-2xl font-bold tracking-tight text-foreground">LEDGER</div>
+          <div className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">{APP_NAME}</div>
           <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
             Kişisel Portföy Defteri
           </div>
@@ -47,8 +60,9 @@ export default function Layout() {
         </nav>
 
         <div className="space-y-1 border-t border-border px-3 py-3">
-          <div className="px-3 pb-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
-            Folio N° <span className="text-foreground">084-2026</span>
+          <div className="px-3 pb-2 font-mono text-[10px] tracking-wider text-muted-foreground">
+            <div className="tabular text-foreground">{now.toLocaleDateString('tr-TR')}</div>
+            <div className="tabular">{now.toLocaleTimeString('tr-TR')}</div>
           </div>
           <button
             onClick={() => switchLang(lang === 'tr' ? 'en' : 'tr')}

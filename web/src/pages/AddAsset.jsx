@@ -223,7 +223,9 @@ export default function AddAsset() {
 
             {/* Quantity */}
             <div className="space-y-1.5">
-              <Label htmlFor="quantity">{assetType === 'Gold' ? t('assets.grams') : t('assets.quantity')}</Label>
+              <Label htmlFor="quantity">
+                {assetType === 'Gold' ? t('assets.grams') : assetType === 'Currency' ? t('assets.amount') : t('assets.quantity')}
+              </Label>
               <MoneyInput
                 id="quantity"
                 placeholder="0"
@@ -237,7 +239,7 @@ export default function AddAsset() {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label htmlFor="unitPrice">
-                  {assetType === 'Gold' ? t('assets.pricePerGram') : t('assets.purchasePrice')}
+                  {assetType === 'Gold' ? t('assets.pricePerGram') : assetType === 'Currency' ? t('assets.buyRate') : t('assets.purchasePrice')}
                 </Label>
                 <MoneyInput
                   id="unitPrice"
