@@ -1,21 +1,19 @@
 import { useEffect } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
-import { Button } from '@/components/ui/button'
 import TradingViewChart from './TradingViewChart'
-import { X, ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react'
 
 const fmt = (v, currency) =>
   v != null
     ? new Intl.NumberFormat(currency === 'TRY' ? 'tr-TR' : 'en-US', { style: 'currency', currency }).format(v)
     : '—'
-
 const fmtNum = (v) => (v != null ? new Intl.NumberFormat('tr-TR').format(v) : '—')
 
-function Stat({ label, value }) {
+function Row({ label, value, valueClass = 'text-foreground' }) {
   return (
-    <div className="rounded-lg border border-border bg-secondary/40 px-3 py-2">
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className="tabular mt-0.5 text-sm font-medium text-foreground">{value}</div>
+    <div className="flex items-center justify-between border-b border-border/60 py-1.5">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`tabular font-bold ${valueClass}`}>{value}</span>
     </div>
   )
 }
@@ -37,102 +35,85 @@ export default function StockDrawer({ holding, onClose, onSell }) {
   const change = price != null && prev != null ? price - prev : null
   const changePct = change != null && prev ? (change / prev) * 100 : null
   const up = change != null && change >= 0
-
   const pl = holding.unrealizedProfitLoss
   const plUp = pl != null && pl >= 0
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" onClick={onClose} />
-
-      <div className="relative z-10 flex h-full w-full max-w-lg flex-col border-l border-border bg-background shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-5 py-4">
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold tracking-tight text-foreground">{holding.symbol}</h2>
-            {holding.exchange && (
-              <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-muted-foreground">{holding.exchange}</span>
-            )}
+    <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[1px]" onClick={onClose}>
+      <div
+        className="fixed bottom-0 right-0 top-0 flex w-full max-w-md flex-col justify-between overflow-y-auto border-l-2 border-foreground bg-card p-6 font-mono text-xs shadow-ledger-strong"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div>
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-border pb-4">
+            <span className="font-bold text-muted-foreground">
+              DEFTER NO: <span className="text-foreground">{holding.exchange || '—'}</span>
+            </span>
+            <button onClick={onClose} className="font-bold underline hover:text-margin">[X] {t('common.cancel')}</button>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-5 w-5" />
-          </Button>
-        </div>
 
-        <div className="flex-1 space-y-5 overflow-y-auto p-5">
-          {/* Fiyat + günlük değişim */}
-          {holding.priceAvailable ? (
-            <div>
-              <div className="tabular text-3xl font-semibold text-foreground">{fmt(price, native)}</div>
-              {change != null && (
-                <div className={`mt-1 flex items-center gap-1 text-sm ${up ? 'text-up' : 'text-down'}`}>
-                  {up ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                  <span className="tabular">
+          {/* Sembol + fiyat */}
+          <div className="mt-6 border-b border-border pb-6">
+            <span className="block text-2xl font-bold text-foreground">{holding.symbol}</span>
+            {holding.priceAvailable ? (
+              <div className="mt-4 flex items-baseline justify-between">
+                <span className="tabular text-3xl font-bold text-foreground">{fmt(price, native)}</span>
+                {change != null && (
+                  <span className={`inline-flex items-center gap-1 border px-2 py-1 font-bold ${up ? 'border-up/20 bg-up/10 text-up' : 'border-down/20 bg-down/10 text-down'}`}>
+                    {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
                     {fmt(change, native)} ({changePct >= 0 ? '+' : ''}{changePct?.toFixed(2)}%)
                   </span>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-sm text-down">{t('assets.priceUnavailable')}</div>
-          )}
-
-          {/* Piyasa istatistikleri */}
-          {holding.priceAvailable && (
-            <div>
-              <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('drawer.marketStats')}</div>
-              <div className="grid grid-cols-2 gap-2">
-                <Stat label={t('drawer.previousClose')} value={fmt(prev, native)} />
-                <Stat label={t('drawer.dayRange')} value={`${fmt(holding.dayLow, native)} – ${fmt(holding.dayHigh, native)}`} />
-                <Stat label={t('drawer.week52Range')} value={`${fmt(holding.week52Low, native)} – ${fmt(holding.week52High, native)}`} />
-                <Stat label={t('drawer.volume')} value={fmtNum(holding.volume)} />
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Senin pozisyonun */}
-          <div>
-            <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('drawer.yourPosition')}</div>
-            <div className="grid grid-cols-2 gap-2">
-              <Stat label={t('assets.quantity')} value={fmtNum(holding.quantity)} />
-              <Stat label={t('assets.avgCost')} value={fmt(holding.avgCostBasis, holding.currency)} />
-              <Stat label={t('assets.currentValue')} value={fmt(holding.valueInTry, 'TRY')} />
-              <Stat
-                label={t('assets.profitLoss')}
-                value={
-                  pl != null ? (
-                    <span className={plUp ? 'text-up' : 'text-down'}>
-                      {fmt(pl, holding.currency)}
-                      {holding.unrealizedProfitLossPercent != null &&
-                        ` (${holding.unrealizedProfitLossPercent >= 0 ? '+' : ''}${holding.unrealizedProfitLossPercent.toFixed(2)}%)`}
-                    </span>
-                  ) : (
-                    '—'
-                  )
-                }
-              />
-            </div>
+            ) : (
+              <div className="mt-3 text-down">{t('assets.priceUnavailable')}</div>
+            )}
           </div>
 
-          {/* TradingView grafik */}
-          <div>
-            <div className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{t('drawer.chart')}</div>
-            <div className="h-80 overflow-hidden rounded-lg border border-border">
+          {/* Piyasa metrikleri */}
+          {holding.priceAvailable && (
+            <div className="border-b border-border py-6">
+              <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.marketStats')}</h3>
+              <Row label={t('drawer.previousClose')} value={fmt(prev, native)} />
+              <Row label={t('drawer.dayRange')} value={`${fmt(holding.dayLow, native)} – ${fmt(holding.dayHigh, native)}`} />
+              <Row label={t('drawer.week52Range')} value={`${fmt(holding.week52Low, native)} – ${fmt(holding.week52High, native)}`} />
+              <Row label={t('drawer.volume')} value={fmtNum(holding.volume)} />
+            </div>
+          )}
+
+          {/* Pozisyon */}
+          <div className="py-6">
+            <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.yourPosition')}</h3>
+            <Row label={t('assets.quantity')} value={fmtNum(holding.quantity)} />
+            <Row label={t('assets.avgCost')} value={fmt(holding.avgCostBasis, holding.currency)} />
+            <Row label={t('assets.currentValue')} value={fmt(holding.valueInTry, 'TRY')} />
+            <Row
+              label={t('assets.profitLoss')}
+              valueClass={pl == null ? 'text-muted-foreground' : plUp ? 'text-up' : 'text-down'}
+              value={pl != null
+                ? `${fmt(pl, holding.currency)}${holding.unrealizedProfitLossPercent != null ? ` (${holding.unrealizedProfitLossPercent >= 0 ? '+' : ''}${holding.unrealizedProfitLossPercent.toFixed(2)}%)` : ''}`
+                : '—'}
+            />
+          </div>
+
+          {/* Grafik */}
+          <div className="pb-2">
+            <h3 className="mb-2 uppercase tracking-wider text-muted-foreground">{t('drawer.chart')}</h3>
+            <div className="h-72 overflow-hidden border border-border">
               <TradingViewChart symbol={holding.symbol} exchange={holding.exchange} />
             </div>
           </div>
         </div>
 
-        {/* Aksiyonlar */}
-        <div className="border-t border-border px-5 py-4">
-          <Button
-            variant="outline"
-            className="w-full text-down hover:bg-down/10 hover:text-down"
+        <div className="pt-6">
+          <button
             onClick={() => onSell(holding)}
+            className="flex w-full items-center justify-center gap-2 border border-foreground py-3 font-bold uppercase tracking-wider text-foreground hover:bg-foreground hover:text-background"
           >
-            <ArrowDownRight className="mr-2 h-4 w-4" />
+            <ArrowDownRight className="h-4 w-4" />
             {t('assets.sell')}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

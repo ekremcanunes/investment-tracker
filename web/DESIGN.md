@@ -1,44 +1,37 @@
-# Tasarım Sistemi — "Pirinç / Ink"
+# Tasarım Sistemi — "LEDGER" (Muhasebe Defteri)
 
-Bu doküman uygulamanın görsel dilini ve **gelecekteki tüm tasarım geliştirmelerinde sabit kalacak** kuralları tanımlar. Yeni bir sayfa/bileşen eklerken buraya uy; token dışına çıkma.
+Uygulamanın görsel dili: **açık/bone, muhasebe defteri** kimliği. Konuya sadık (bu bir portföy defteri), ayırt edici, açık tema. Gelecekteki tüm tasarım işi buna sabit kalır.
 
-> Kaynak dosya: [`src/index.css`](src/index.css) — tüm token'lar burada. Değişiklik önce burada yapılır, bileşenler token'ı kullanır.
+> Kaynak: [`src/index.css`](src/index.css) — tüm token'lar burada. Önce token, sonra bileşen.
+> Detaylı gerekçe: [`../docs/superpowers/specs/2026-08-10-ledger-redesign-design.md`](../docs/superpowers/specs/2026-08-10-ledger-redesign-design.md)
 
 ---
 
 ## 1. Felsefe
 
-- **AI-vari olmayan, zarif, sakin bir işlem enstrümanı.** Jenerik şablon görünümünden kaçınılır.
-- **Vurgu tek yerde harcanır**, gerisi sessiz kalır. Pirinç vurgu az ve dozunda.
-- **Rakamlar birinci sınıf vatandaştır** — mono + tabular, sütunlar hizalı.
-- **Semantik renk (kâr/zarar) vurgudan ayrıdır.** Pirinç asla "artı/eksi" anlamı taşımaz.
+- **Muhasebe defteri estetiği**: cetvel çizgileri, çift-giriş, makbuz, folio numaraları.
+- **AI-vari değil**: kimlik renkten değil **yapı + tipografi + doku + bir riskten** gelir (kırmızı marj çizgisi, sert offset gölge, cetvelli tablolar).
+- **Rakamlar birinci sınıf**: mono + tabular, sütunlar hizalı.
+- **Semantik (kâr/zarar) vurgudan ayrı**: pirinç/marj-kırmızısı asla artı/eksi anlamı taşımaz.
 
 ---
 
-## 2. Renk (token'lar)
+## 2. Renk (token'lar) — açık/bone
 
-Renkler `index.css`'te HSL `H S% L%` formatında tanımlı (shadcn yapısı). **Bileşenlerde token kullan, hex/`gray-950`/`blue-400` gibi ad-hoc renk YAZMA.**
+| Token | Hex | Kullanım |
+|-------|-----|----------|
+| `background` | `#EFEDE6` | Ana zemin (bone) |
+| `card` | `#F7F6F1` | Panel/kart/popover |
+| `foreground` | `#1C1B18` | Ana metin/çizgi (ink) |
+| `muted-foreground` | `#6A675E` | İkincil metin |
+| `border` | `#D9D6CB` | Cetvel/hairline |
+| `primary` | ink `#1C1B18` | Birincil buton (ink-dolu) |
+| `brass` | `#8C6A38` | İkincil aksan (işlem/Al butonu) — az |
+| `margin` | `#B23A2E` | Kırmızı marj çizgisi, `[X] kapat` |
+| `up` (kâr) | `#1B6E43` | Kâr |
+| `down` / `destructive` (zarar) | `#7B2D26` | Zarar, silme |
 
-| Token | Değer (hex) | Kullanım |
-|-------|-------------|----------|
-| `background` | `#100E0A` | Ana zemin (sıcak neredeyse-siyah) |
-| `card` / `popover` | `#17140F` | Panel, kart, dropdown |
-| `secondary` / `muted` / `accent` | koyu kahve-gri | Hover, ikincil yüzey |
-| `foreground` | `#ECE4D6` | Ana metin (sıcak kırık beyaz) |
-| `muted-foreground` | `#9A9083` | İkincil metin, etiket |
-| `border` / `input` | `#2C261C` | Hairline çizgiler, input kenarı |
-| `primary` (vurgu) | `#C8A66A` | **Mat pirinç** — aktif nav, ana buton, focus, link |
-| `primary-foreground` | koyu ink | Pirinç üstündeki metin |
-| `up` (semantik) | `#5CBF95` | Kâr / artış (zümrüt) |
-| `down` (semantik) | `#E2867A` | Zarar / düşüş (gül) |
-| `destructive` | gül tonu | Hata, silme |
-
-**Kullanım sınıfları:** `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-primary`, `bg-primary`, `text-up`, `text-down`, `bg-up/10`, `bg-down/10`.
-
-### Renk kuralları
-- Vurgu (`primary`/pirinç) yalnızca: aktif nav, birincil aksiyon, focus halkası, link. Dekorasyon için değil.
-- Kâr/zarar **her zaman** `up`/`down` — pirinç veya mavi değil.
-- Yeni yüzey mi lazım? `card` → `secondary/40` → `background` sırası. Yeni gri icat etme.
+Sınıflar: `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-up`, `text-down`, `bg-brass`, `text-margin`. **Ad-hoc renk yazma.**
 
 ---
 
@@ -46,69 +39,55 @@ Renkler `index.css`'te HSL `H S% L%` formatında tanımlı (shadcn yapısı). **
 
 | Rol | Font | Nerede |
 |-----|------|--------|
-| UI / metin | **Hanken Grotesk** (`--font-sans`) | Varsayılan, `body`'de |
-| Rakam / ticker | **JetBrains Mono** (`--font-mono`) | `.tabular` sınıfıyla |
+| UI / metin | **Plus Jakarta Sans** | Varsayılan (`--font-sans`) |
+| Wordmark / makbuz başlığı | **Courier Prime** (daktilo) | `font-serif` |
+| Rakam / ticker | **JetBrains Mono** | `.tabular` |
 
-- Fontlar `@fontsource-variable/*` ile **self-host** ([`src/main.jsx`](src/main.jsx)) — CDN yok.
-- **Tüm sayısal değerlere `.tabular` sınıfı ver** (fiyat, tutar, adet, %, ticker). Bu sınıf mono + `tabular-nums` + hafif letter-spacing verir → sütunlar hizalı.
-- Başlıklar: `font-semibold tracking-tight`. Büyük başlıkta `text-balance`.
-- Uppercase etiketler: `text-[11px] uppercase tracking-[0.14em] text-muted-foreground`.
-- Font değişimi tek yerden: `index.css` → `--font-sans` / `--font-mono`.
+Self-host (`@fontsource`), CDN yok. Tüm sayısal değerlere `.tabular`. Tablolar/etiketler çoğunlukla `font-mono uppercase tracking-wider`.
 
 ---
 
-## 4. Layout & boşluk
+## 4. Yapısal imzalar (kimliğin özü)
 
-- **Kabuk:** sol sidebar (`w-60`, `bg-card`, `border-r`), sağda `main`. İçerik `max-w-7xl mx-auto px-8 py-10` ([`Layout.jsx`](src/components/Layout.jsx)).
-- **Sayfa genişliği:**
-  - Geniş/tablo sayfaları (Portföy) → tüm genişliği kullanır, **yatay scroll'dan kaçın** (sütunlar sığsın).
-  - Okuma/özet sayfaları (Overview) → kendi içinde `max-w-3xl`.
-- **Radius:** `--radius: 0.625rem`. Kartlar `rounded-xl`, küçük öğeler `rounded-lg`/`rounded-md`.
-- **Kenarlıklar:** her zaman `border-border` — ince, hairline. Ağır gölge yok; gerekiyorsa `shadow-xl` sadece drawer/overlay'de.
-- **Boşluk:** grid/flex + `gap`. Per-element margin yığma.
+CSS yardımcıları [`index.css`](src/index.css)'te:
 
----
-
-## 5. Bileşen kuralları
-
-- **shadcn bileşenleri** (`src/components/ui/*`) token tabanlıdır — onları kullan, yeniden renklendirme.
-- Tablo: `border-border/60` satır çizgisi, `hover:bg-secondary/40`, başlık `text-[11px] uppercase tracking-wider text-muted-foreground`.
-- Chip/rozet: küçük, `rounded-full`, semantik renk + `/10` zemin (`text-up bg-up/10`).
-- Buton: birincil = `bg-primary text-primary-foreground hover:opacity-90`. İkincil = `variant="outline"`/`ghost`.
-- Tıklanabilir satır/kart `cursor-pointer` + hover yüzeyi almalı; aksiyon butonları satır tıklamasını yutmasın (`stopPropagation`).
+- **`.margin-rule`** — panelin solunda dikey kırmızı marj çizgisi (içerik `pl-4 md:pl-6` ile açılır).
+- **`.shadow-ledger`** — panel offset gölge `4px 4px`. **`.shadow-ledger-strong`** — modal/drawer `8px 8px` full ink.
+- **`.border-double-bottom`** — tablo toplam satırı 3px çift çizgi.
+- **Keskin köşeler** — `--radius: 2px` (tüm bileşenler).
+- **Cetvelli tablo** — mono, tabular, `border-b-2 border-foreground` başlık, `divide-border` satırlar, `tfoot` toplam çift-çizgi.
+- **Aktif nav/tab** — ink-dolu blok (`bg-foreground text-background`).
 
 ---
 
-## 6. Hareket (motion)
+## 5. Ortak Modal ([`ui/modal.jsx`](src/components/ui/modal.jsx))
 
-- Yumuşak geçiş: `a/button/[role=button]` için `.18s ease` (index.css'te global). Ekstra için `.transition-smooth`.
-- **`prefers-reduced-motion` her zaman respekt edilir** — dekoratif animasyon bu blokta kalır.
-- Az = çok. Aşırı animasyon "AI-vari" hissi verir; kaçın.
+Makbuz-stili tek bileşen; her yerde kullanılır (`window.confirm` yerine de).
+- Overlay `foreground/50` + blur; panel `border-2 border-foreground` + `shadow-ledger-strong`.
+- `title` → daktilo makbuz başlığı (kesikli ayraç), `subtitle`, `children`, `actions`.
+- Animasyon `.ledger-modal` (fade + hafif ölçek), `prefers-reduced-motion`'a saygılı.
+- Örnek kullanım: Portföy'de silme onayı.
+
+---
+
+## 6. Etkileşim
+
+- **Hover zorunlu**: satır `hover:bg-secondary` + sembol `group-hover:underline`; butonlar `hover:border-foreground` / `hover:bg-foreground hover:text-background`; tab hover.
+- Tıklanabilir hisse satırı → drawer; aksiyon butonları `stopPropagation`.
+- Login/Register: client-side validasyon (e-posta/parola) + Kratos hataları Türkçe ([`lib/authErrors.js`](src/lib/authErrors.js)).
 
 ---
 
 ## 7. Tek tema (bilinçli)
 
-- Sadece **koyu** tema — Pirinç/Ink dünyasına bağlı bilinçli tercih. Şu an açık tema yok.
-- İleride açık tema istenirse: token'ları `@media (prefers-color-scheme: light)` + `:root[data-theme=...]` ile yeniden tanımla, bileşenlere dokunma.
+Sadece **açık/bone**. Koyu tema yok (bilinçli). İleride istenirse token'lar `@media`/`[data-theme]` ile yeniden tanımlanır, bileşenlere dokunulmaz.
 
 ---
 
-## 8. YAPMA listesi (AI-vari kaçınma)
+## 8. YAPMA listesi
 
-- ❌ Ad-hoc renk (`gray-950`, `blue-400`, `#111827`) — sadece token.
-- ❌ Jenerik shadcn mavisi / mor-mavi gradient / acid-green pop.
-- ❌ Rakamı normal fontla yazmak — `.tabular` kullan.
-- ❌ Vurgu rengini kâr/zarar için kullanmak.
-- ❌ Her yere gölge/`rounded-full` kart, emoji section başlığı, ortalanmış her şey.
-- ❌ Yeni gri/ara renk icat etmek — mevcut yüzey merdivenini kullan.
-
----
-
-## 9. Değişiklik akışı
-
-1. Renk/font/radius → **önce `index.css` token'ı**.
-2. Bileşen → token sınıfını kullan.
-3. Yeni sayısal alan → `.tabular`.
-4. Yeni sayfa → doğru `max-w` (tablo geniş, özet dar).
-5. Bittiğinde `npm run build` ile doğrula.
+- ❌ Ad-hoc renk (`gray-950`, `#111` vb.) — sadece token.
+- ❌ Rakamı normal fontla — `.tabular`.
+- ❌ Vurgu/marj rengini kâr-zarar için kullanmak.
+- ❌ Yuvarlak köşe/yumuşak gölge dünyasına kayma — ledger keskin + offset gölge.
+- ❌ `window.confirm` — ortak `Modal`.

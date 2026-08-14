@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useHoldings, useSellAsset, useUpdateAsset, useDeleteAsset } from '@/hooks/queries'
-import { Button } from '@/components/ui/button'
 import { MoneyInput } from '@/components/ui/money-input'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Modal } from '@/components/ui/modal'
 import StockDrawer from '@/components/StockDrawer'
 import { Plus, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
@@ -29,20 +29,20 @@ export default function Assets() {
   const initialTab = TABS.includes(searchParams.get('tab')) ? searchParams.get('tab') : 'Stock'
   const [tab, setTab] = useState(initialTab)
   const [error, setError] = useState(null)
-  const [editing, setEditing] = useState(null) // { id, mode: 'edit' | 'sell' }
+  const [editing, setEditing] = useState(null)
   const [form, setForm] = useState({ quantity: '', price: '' })
   const [drawer, setDrawer] = useState(null)
+  const [confirmId, setConfirmId] = useState(null)
 
   const saving = sellMutation.isPending || updateMutation.isPending
 
-  const startEdit = (asset) => {
-    setEditing({ id: asset.id, mode: 'edit' })
-    setForm({ quantity: String(asset.quantity), price: asset.avgCostBasis != null ? String(asset.avgCostBasis) : '' })
+  const startEdit = (a) => {
+    setEditing({ id: a.id, mode: 'edit' })
+    setForm({ quantity: String(a.quantity), price: a.avgCostBasis != null ? String(a.avgCostBasis) : '' })
   }
-
-  const startSell = (asset) => {
-    setEditing({ id: asset.id, mode: 'sell' })
-    setForm({ quantity: String(asset.quantity), price: '' })
+  const startSell = (a) => {
+    setEditing({ id: a.id, mode: 'sell' })
+    setForm({ quantity: String(a.quantity), price: '' })
   }
 
   const handleConfirm = async () => {
@@ -50,15 +50,9 @@ export default function Assets() {
     setError(null)
     try {
       if (editing.mode === 'sell') {
-        await sellMutation.mutateAsync({
-          id: editing.id,
-          data: { quantity: parseFloat(form.quantity), unitPrice: parseFloat(form.price) },
-        })
+        await sellMutation.mutateAsync({ id: editing.id, data: { quantity: parseFloat(form.quantity), unitPrice: parseFloat(form.price) } })
       } else {
-        await updateMutation.mutateAsync({
-          id: editing.id,
-          data: { quantity: parseFloat(form.quantity), purchasePrice: form.price ? parseFloat(form.price) : null },
-        })
+        await updateMutation.mutateAsync({ id: editing.id, data: { quantity: parseFloat(form.quantity), purchasePrice: form.price ? parseFloat(form.price) : null } })
       }
       setEditing(null)
     } catch (err) {
@@ -66,8 +60,9 @@ export default function Assets() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm(t('assets.confirmDelete'))) return
+  const doDelete = async () => {
+    const id = confirmId
+    setConfirmId(null)
     setError(null)
     try {
       await deleteMutation.mutateAsync(id)
@@ -84,196 +79,183 @@ export default function Assets() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-foreground">{t('assets.title')}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('assets.title')}</h1>
+          <p className="mt-1 font-mono text-xs text-muted-foreground">
             {t('common.total')}: <span className="tabular text-foreground">{formatMoney(tabTotal)}</span>
           </p>
         </div>
-        <Button onClick={() => navigate('/assets/buy')}>
-          <Plus className="mr-2 h-4 w-4" />
+        <button
+          onClick={() => navigate('/assets/buy')}
+          className="inline-flex items-center gap-2 border border-brass bg-brass px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:opacity-90"
+        >
+          <Plus className="h-4 w-4" />
           {t('assets.buy')}
-        </Button>
+        </button>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-6 border-b border-border">
+      {/* Tab bar — ledger buton stili */}
+      <div className="flex gap-2 font-mono text-xs">
         {TABS.map((key) => (
           <button
             key={key}
             onClick={() => { setTab(key); setEditing(null) }}
-            className={`relative -mb-px pb-2.5 text-sm font-medium transition-colors ${
+            className={`border px-3 py-1.5 font-bold uppercase tracking-wider ${
               tab === key
-                ? 'text-foreground'
-                : 'text-muted-foreground hover:text-foreground'
+                ? 'border-foreground bg-foreground text-background'
+                : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
             }`}
           >
             {t(`assets.${key.toLowerCase()}`)}
-            {tab === key && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
           </button>
         ))}
       </div>
 
       {shownError && (
-        <div className="rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="border border-destructive/30 bg-destructive/5 px-3 py-2 font-mono text-xs text-destructive">
           {shownError}
         </div>
       )}
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card">
-        {isLoading ? (
-          <div className="space-y-3 p-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
-          </div>
-        ) : visible.length === 0 ? (
-          <div className="px-4 py-16 text-center">
-            <p className="mb-4 text-muted-foreground">{t('assets.noAssets')}</p>
-            <Button onClick={() => navigate('/assets/buy')}>{t('assets.buy')}</Button>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground">
-                  <th className="px-4 py-2.5 text-left font-medium">{t('assets.name')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.quantity')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.purchasePrice')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.currentPrice')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.cost')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.currentValue')}</th>
-                  <th className="px-4 py-2.5 text-right font-medium">{t('assets.profitLoss')}</th>
-                  <th className="px-4 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {visible.map((h) => {
-                  const isActive = editing?.id === h.id
-                  const isSell = isActive && editing.mode === 'sell'
-                  const pl = h.unrealizedProfitLoss
-                  const plColor = pl > 0 ? 'text-up' : pl < 0 ? 'text-down' : 'text-muted-foreground'
-                  const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
-                  const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
-                  const clickable = h.assetType === 'Stock' && !isActive
+      <section className="margin-rule overflow-hidden border border-border bg-card p-6 shadow-ledger md:p-8">
+        <div className="pl-4 md:pl-6">
+          {isLoading ? (
+            <div className="space-y-3">
+              {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="py-14 text-center">
+              <p className="mb-4 font-mono text-xs text-muted-foreground">{t('assets.noAssets')}</p>
+              <button onClick={() => navigate('/assets/buy')} className="border border-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-foreground hover:bg-foreground hover:text-background">
+                {t('assets.buy')}
+              </button>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="tabular w-full whitespace-nowrap text-left font-mono text-xs">
+                <thead>
+                  <tr className="border-b-2 border-foreground uppercase tracking-wider text-muted-foreground">
+                    <th className="px-2 py-3 font-normal">{t('assets.name')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{t('assets.quantity')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{t('assets.purchasePrice')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{t('assets.currentPrice')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{t('assets.currentValue')}</th>
+                    <th className="px-2 py-3 text-right font-normal">{t('assets.profitLoss')}</th>
+                    <th className="px-2 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {visible.map((h) => {
+                    const isActive = editing?.id === h.id
+                    const isSell = isActive && editing.mode === 'sell'
+                    const pl = h.unrealizedProfitLoss
+                    const plColor = pl > 0 ? 'text-up' : pl < 0 ? 'text-down' : 'text-muted-foreground'
+                    const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
+                    const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
+                    const clickable = h.assetType === 'Stock' && !isActive
 
-                  return (
-                    <tr
-                      key={h.id}
-                      className={`border-b border-border/60 last:border-0 hover:bg-secondary/40 ${clickable ? 'cursor-pointer' : ''}`}
-                      onClick={() => clickable && setDrawer(h)}
-                    >
-                      <td className="px-4 py-3 text-sm font-semibold text-foreground">{h.symbol}</td>
-
-                      {isActive ? (
-                        <td colSpan={7} className="px-4 py-3">
-                          <div className="flex flex-wrap items-center justify-end gap-3">
-                            <span className="text-xs text-muted-foreground">
-                              {isSell ? t('assets.sellAsset') : t('assets.edit')} · {h.symbol} ({h.currency})
-                            </span>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs text-muted-foreground">{t('assets.quantity')}</span>
-                              <MoneyInput
-                                value={form.quantity}
-                                onChange={(v) => setForm((f) => ({ ...f, quantity: v }))}
-                                className="h-7 w-24 text-xs"
-                                placeholder="0"
-                              />
-                            </div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs text-muted-foreground">
-                                {isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}
+                    return (
+                      <tr
+                        key={h.id}
+                        className={`group hover:bg-secondary ${clickable ? 'cursor-pointer' : ''}`}
+                        onClick={() => clickable && setDrawer(h)}
+                      >
+                        <td className="px-2 py-3.5 font-bold text-foreground group-hover:underline">{h.symbol}</td>
+                        {isActive ? (
+                          <td colSpan={6} className="px-2 py-3">
+                            <div className="flex flex-wrap items-center justify-end gap-3">
+                              <span className="text-muted-foreground">
+                                {isSell ? t('assets.sellAsset') : t('assets.edit')} · {h.symbol} ({h.currency})
                               </span>
-                              <MoneyInput
-                                currency={h.currency}
-                                value={form.price}
-                                onChange={(v) => setForm((f) => ({ ...f, price: v }))}
-                                className="h-7 w-28 text-xs"
-                                placeholder="0,00"
-                              />
-                            </div>
-                            <Button
-                              size="sm" variant="ghost" onClick={handleConfirm}
-                              disabled={saving || !form.quantity || (isSell && !form.price)}
-                              className="h-7 w-7 p-0 text-up hover:bg-up/10 hover:text-up"
-                            >
-                              <Check className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm" variant="ghost" onClick={() => setEditing(null)}
-                              className="h-7 w-7 p-0 text-muted-foreground"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      ) : (
-                        <>
-                          <td className="tabular px-4 py-3 text-right text-sm text-muted-foreground">{h.quantity}</td>
-                          <td className="tabular px-4 py-3 text-right text-sm text-muted-foreground">{formatMoney(h.avgCostBasis, h.currency)}</td>
-                          <td className="px-4 py-3 text-right text-sm">
-                            {h.priceAvailable ? (
-                              <span className="tabular text-muted-foreground">{formatMoney(currentUnit, h.currency)}</span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 text-xs text-down">
-                                <AlertTriangle className="h-3 w-3" />
-                                {t('assets.priceUnavailable')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="tabular px-4 py-3 text-right text-sm text-muted-foreground">{formatMoney(h.totalCost, h.currency)}</td>
-                          <td className="tabular px-4 py-3 text-right text-sm font-medium text-foreground">{formatMoney(currentTotal, h.currency)}</td>
-                          <td className="px-4 py-3 text-right">
-                            {pl != null ? (
-                              <div className={`tabular text-sm font-medium ${plColor}`}>
-                                {formatMoney(pl, h.currency)}
-                                <span className="ml-1 text-xs">{formatPercent(h.unrealizedProfitLossPercent)}</span>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">{t('assets.quantity')}</span>
+                                <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-7 w-24 text-xs" placeholder="0" />
                               </div>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-right">
-                            <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
-                              <Button
-                                size="sm" variant="ghost" onClick={() => startSell(h)}
-                                className="h-7 px-2 text-xs text-down hover:bg-down/10 hover:text-down"
-                              >
-                                <ArrowDownRight className="mr-1 h-3.5 w-3.5" />
-                                {t('assets.sell')}
-                              </Button>
-                              <Button
-                                size="sm" variant="ghost" onClick={() => startEdit(h)}
-                                className="h-7 w-7 p-0 text-muted-foreground hover:bg-secondary hover:text-foreground"
-                              >
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                size="sm" variant="ghost" onClick={() => handleDelete(h.id)}
-                                className="h-7 w-7 p-0 text-muted-foreground hover:bg-down/10 hover:text-down"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-muted-foreground">{isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}</span>
+                                <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-7 w-28 text-xs" placeholder="0,00" />
+                              </div>
+                              <button onClick={handleConfirm} disabled={saving || !form.quantity || (isSell && !form.price)} className="border border-up p-1 text-up hover:bg-up/10 disabled:opacity-40">
+                                <Check className="h-4 w-4" />
+                              </button>
+                              <button onClick={() => setEditing(null)} className="border border-border p-1 text-muted-foreground hover:border-foreground">
+                                <X className="h-4 w-4" />
+                              </button>
                             </div>
                           </td>
-                        </>
-                      )}
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+                        ) : (
+                          <>
+                            <td className="px-2 py-3.5 text-right text-muted-foreground">{h.quantity}</td>
+                            <td className="px-2 py-3.5 text-right text-muted-foreground">{formatMoney(h.avgCostBasis, h.currency)}</td>
+                            <td className="px-2 py-3.5 text-right">
+                              {h.priceAvailable ? (
+                                <span className="text-muted-foreground">{formatMoney(currentUnit, h.currency)}</span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-down"><AlertTriangle className="h-3 w-3" />{t('assets.priceUnavailable')}</span>
+                              )}
+                            </td>
+                            <td className="px-2 py-3.5 text-right font-bold text-foreground">{formatMoney(currentTotal, h.currency)}</td>
+                            <td className={`px-2 py-3.5 text-right font-bold ${plColor}`}>
+                              {pl != null ? <>{formatMoney(pl, h.currency)} <span className="text-[11px]">({formatPercent(h.unrealizedProfitLossPercent)})</span></> : '—'}
+                            </td>
+                            <td className="px-2 py-3.5 text-right">
+                              <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => startSell(h)} className="border border-border px-2 py-1 text-down hover:border-down" title={t('assets.sell')}>
+                                  <ArrowDownRight className="h-3.5 w-3.5" />
+                                </button>
+                                <button onClick={() => startEdit(h)} className="border border-border p-1 text-muted-foreground hover:border-foreground hover:text-foreground" title={t('assets.edit')}>
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </button>
+                                <button onClick={() => setConfirmId(h.id)} className="border border-border p-1 text-muted-foreground hover:border-down hover:text-down" title={t('common.delete')}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </>
+                        )}
+                      </tr>
+                    )
+                  })}
+                </tbody>
+                <tfoot>
+                  <tr className="border-double-bottom bg-secondary/50 font-bold uppercase">
+                    <td className="px-2 py-3.5" colSpan={4}>{t('common.total')}</td>
+                    <td className="px-2 py-3.5 text-right text-foreground">{formatMoney(tabTotal)}</td>
+                    <td className="px-2 py-3.5"></td>
+                    <td className="px-2 py-3.5"></td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+        </div>
+      </section>
 
       {drawer && (
         <StockDrawer
           holding={drawer}
           onClose={() => setDrawer(null)}
-          onSell={(h) => {
-            setDrawer(null)
-            startSell(h)
-          }}
+          onSell={(h) => { setDrawer(null); startSell(h) }}
         />
       )}
+
+      <Modal
+        open={confirmId != null}
+        onClose={() => setConfirmId(null)}
+        title={t('common.delete')}
+        subtitle="Portföy Kaydı"
+        actions={
+          <>
+            <button onClick={() => setConfirmId(null)} className="w-1/2 border border-foreground py-2.5 font-mono text-xs font-bold uppercase text-foreground hover:bg-secondary">
+              {t('common.cancel')}
+            </button>
+            <button onClick={doDelete} className="w-1/2 border border-down bg-down py-2.5 font-mono text-xs font-bold uppercase text-white hover:opacity-90">
+              {t('common.delete')}
+            </button>
+          </>
+        }
+      >
+        <p className="text-center font-mono text-xs text-muted-foreground">{t('assets.confirmDelete')}</p>
+      </Modal>
     </div>
   )
 }

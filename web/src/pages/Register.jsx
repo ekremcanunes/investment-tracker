@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
-import { LineChart } from 'lucide-react'
+import { isValidEmail, kratosErrorText } from '../lib/authErrors'
 
 export default function Register() {
   const [flow, setFlow] = useState(null)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [fieldErr, setFieldErr] = useState({})
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const [searchParams] = useSearchParams()
@@ -20,128 +21,103 @@ export default function Register() {
     if (flowId) {
       fetch(`http://localhost:4433/self-service/registration/flows?id=${flowId}`, {
         credentials: 'include',
-        headers: { Accept: 'application/json' }
+        headers: { Accept: 'application/json' },
       })
-        .then(res => res.json())
+        .then((res) => res.json())
         .then(setFlow)
     } else {
       window.location.href = 'http://localhost:4433/self-service/registration/browser'
     }
   }, [searchParams])
 
+  const validate = () => {
+    const e = {}
+    if (!email) e.email = t('auth.errEmailRequired')
+    else if (!isValidEmail(email)) e.email = t('auth.errEmailInvalid')
+    if (!password) e.password = t('auth.errPasswordRequired')
+    else if (password.length < 8) e.password = t('auth.errPasswordShort')
+    setFieldErr(e)
+    return Object.keys(e).length === 0
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
     setError(null)
+    if (!validate()) return
 
-    const csrfToken = flow?.ui?.nodes?.find(n => n.attributes?.name === 'csrf_token')?.attributes?.value
-
+    setLoading(true)
+    const csrfToken = flow?.ui?.nodes?.find((n) => n.attributes?.name === 'csrf_token')?.attributes?.value
     try {
       const res = await fetch(`http://localhost:4433/self-service/registration?flow=${flow.id}`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ method: 'password', 'traits.email': email, password, csrf_token: csrfToken })
+        body: JSON.stringify({ method: 'password', 'traits.email': email, password, csrf_token: csrfToken }),
       })
-
       const body = await res.json()
-
       if (res.ok) {
         setSession(body.session)
         navigate('/')
       } else {
-        setError(body.ui?.messages?.[0]?.text ?? body.ui?.nodes?.find(n => n.messages?.length > 0)?.messages?.[0]?.text ?? 'Registration failed')
+        setError(kratosErrorText(body, t))
       }
     } finally {
       setLoading(false)
     }
   }
 
-  if (!flow) return (
-    <div className="flex min-h-screen items-center justify-center bg-background text-sm text-muted-foreground">
-      {t('auth.redirecting')}
-    </div>
-  )
+  if (!flow) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background font-mono text-xs text-muted-foreground">
+        {t('auth.redirecting')}
+      </div>
+    )
+  }
+
+  const inputCls = 'w-full border border-input bg-background px-3 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring'
 
   return (
-    <div className="flex min-h-screen bg-background">
-      {/* Left panel */}
-      <div className="hidden w-1/2 flex-col justify-between border-r border-border bg-gradient-to-br from-primary/8 via-card to-background p-12 lg:flex">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15">
-            <LineChart className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight text-foreground">{t('auth.appName')}</span>
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="w-full max-w-sm border-2 border-foreground bg-card p-8 shadow-ledger-strong">
+        <div className="mb-6 text-center">
+          <span className="block font-serif text-2xl font-bold text-foreground">LEDGER № 01</span>
+          <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+            {t('auth.createAccountSubtitle')}
+          </span>
         </div>
-        <div>
-          <p className="text-2xl font-semibold leading-snug text-foreground text-balance">
-            {t('auth.registerTagline1')}<br />{t('auth.registerTagline2')}<br />{t('auth.registerTagline3')}
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground">{t('auth.registerSubtagline')}</p>
-        </div>
-        <p className="text-xs text-muted-foreground/70">{t('auth.copyright')}</p>
-      </div>
 
-      {/* Right panel */}
-      <div className="flex flex-1 items-center justify-center px-6">
-        <div className="w-full max-w-sm">
-          <div className="mb-8 flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15">
-              <LineChart className="h-4.5 w-4.5 text-primary" />
-            </div>
-            <span className="font-semibold tracking-tight text-foreground">{t('auth.appName')}</span>
+        {error && (
+          <div className="mb-4 border border-destructive/30 bg-destructive/5 px-3 py-2 font-mono text-xs text-destructive">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs" noValidate>
+          <div>
+            <label className="mb-1 block uppercase text-muted-foreground">{t('auth.email')}</label>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
+            {fieldErr.email && <p className="mt-1 text-down">{fieldErr.email}</p>}
           </div>
 
-          <h1 className="mb-1 text-2xl font-semibold tracking-tight text-foreground">{t('auth.createAccount')}</h1>
-          <p className="mb-8 text-sm text-muted-foreground">{t('auth.createAccountSubtitle')}</p>
+          <div>
+            <label className="mb-1 block uppercase text-muted-foreground">{t('auth.password')}</label>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={inputCls} />
+            {fieldErr.password && <p className="mt-1 text-down">{fieldErr.password}</p>}
+          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {error && (
-              <div className="rounded-lg border border-destructive/25 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full border border-foreground bg-foreground py-3 font-bold uppercase tracking-wider text-background hover:opacity-90 disabled:opacity-50"
+          >
+            {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
+          </button>
+        </form>
 
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground/80">{t('auth.email')}</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="w-full rounded-lg border border-input bg-secondary/40 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-sm font-medium text-foreground/80">{t('auth.password')}</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full rounded-lg border border-input bg-secondary/40 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/60 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full rounded-lg bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
-            </button>
-          </form>
-
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            {t('auth.alreadyHaveAccount')}{' '}
-            <Link to="/login" className="text-primary transition-opacity hover:opacity-80">
-              {t('auth.signIn')}
-            </Link>
-          </p>
-        </div>
+        <p className="mt-6 text-center font-mono text-[11px] text-muted-foreground">
+          {t('auth.alreadyHaveAccount')}{' '}
+          <Link to="/login" className="text-foreground underline hover:text-margin">{t('auth.signIn')}</Link>
+        </p>
       </div>
     </div>
   )

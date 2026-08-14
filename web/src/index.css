@@ -100,6 +100,14 @@ body {
 }
 @media (min-width: 768px) { .margin-rule::before { left: 2rem; } }
 
+/* Modal giriş animasyonu (sade/versatil) */
+@keyframes ledger-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+.ledger-modal { animation: ledger-in .16s ease-out; }
+@media (prefers-reduced-motion: reduce) { .ledger-modal { animation: none; } }
+
 /* Yumuşak geçişler — reduced-motion'a saygılı */
 @media (prefers-reduced-motion: no-preference) {
   a, button, [role="button"], .transition-smooth {

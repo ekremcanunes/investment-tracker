@@ -15,17 +15,18 @@ const formatTRY = (value) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value ?? 0)
 
 const TYPE_COLORS = {
-  Stock: '#c8a66a',   // pirinç
-  Currency: '#8f867a', // nötr
+  Stock: '#1C1B18',    // ink
+  Currency: '#6A675E', // nötr
+  Gold: '#8C6A38',     // pirinç
 }
 
-const PIE_COLORS = ['#c8a66a', '#8f867a', '#5cbf95', '#e2867a']
+const PIE_COLORS = ['#1C1B18', '#8C6A38', '#1B6E43', '#6A675E']
 
 const CHART_TOOLTIP_STYLE = {
-  backgroundColor: '#17140f',
-  border: '1px solid #2c261c',
-  borderRadius: '0.625rem',
-  color: '#ece4d6',
+  backgroundColor: '#F7F6F1',
+  border: '1px solid #1C1B18',
+  borderRadius: '2px',
+  color: '#1C1B18',
 }
 
 export default function Analytics() {
