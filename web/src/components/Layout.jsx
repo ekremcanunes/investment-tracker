@@ -60,7 +60,7 @@ export default function Layout() {
           </div>
           <div className="min-w-0">
             <div className="truncate text-[13px] font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
-            <div className="truncate text-[10px] text-shell-muted">{email || '—'}</div>
+            {email && <div className="truncate text-[10px] text-shell-muted">{email}</div>}
           </div>
         </div>
 

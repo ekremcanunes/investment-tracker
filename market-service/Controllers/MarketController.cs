@@ -11,13 +11,15 @@ public class MarketController : ControllerBase
     private readonly IMarketService _marketService;
     private readonly ISymbolSearchService _searchService;
     private readonly IMarketOverviewService _overviewService;
+    private readonly IPriceHistoryService _historyService;
 
     public MarketController(IMarketService marketService, ISymbolSearchService searchService,
-        IMarketOverviewService overviewService)
+        IMarketOverviewService overviewService, IPriceHistoryService historyService)
     {
         _marketService = marketService;
         _searchService = searchService;
         _overviewService = overviewService;
+        _historyService = historyService;
     }
 
     [HttpGet("prices")]
@@ -50,5 +52,16 @@ public class MarketController : ControllerBase
     public async Task<ActionResult<MarketOverview>> Overview()
     {
         return Ok(await _overviewService.GetOverviewAsync());
+    }
+
+    // Grafik serisi. range beyaz listeye karşı doğrulanır (bkz. PriceHistoryService.Ranges).
+    [HttpGet("history/{symbol}")]
+    public async Task<ActionResult<PriceHistory>> History(string symbol,
+        [FromQuery] string assetType = "Stock", [FromQuery] string range = "1mo")
+    {
+        if (string.IsNullOrWhiteSpace(symbol)) return BadRequest();
+        if (!PriceHistoryService.IsValidRange(range)) return BadRequest(new { error = "Unsupported range" });
+
+        return Ok(await _historyService.GetHistoryAsync(symbol.Trim(), assetType, range));
     }
 }

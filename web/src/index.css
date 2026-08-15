@@ -104,6 +104,10 @@
 
 * { border-color: hsl(var(--border)); }
 
+/* Tailwind v4 preflight butonlara cursor:default veriyor (v3'te pointer'dı) — geri alıyoruz */
+button:not(:disabled), [role="button"]:not(:disabled), a[href] { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));

@@ -23,4 +23,6 @@ export const transactionApi = {
 export const marketApi = {
   search: (q) => api.get('/api/market/search', { params: { q } }),
   overview: () => api.get('/api/market/overview'),
+  history: (symbol, assetType, range) =>
+    api.get(`/api/market/history/${encodeURIComponent(symbol)}`, { params: { assetType, range } }),
 }

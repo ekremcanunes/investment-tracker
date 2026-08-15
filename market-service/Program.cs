@@ -30,6 +30,7 @@ builder.Services.AddScoped<IBistCatalog, BistCatalog>();
 builder.Services.AddScoped<IMarketService, MarketService>();
 builder.Services.AddScoped<ISymbolSearchService, SymbolSearchService>();
 builder.Services.AddScoped<IMarketOverviewService, MarketOverviewService>();
+builder.Services.AddScoped<IPriceHistoryService, PriceHistoryService>();
 
 builder.Services.AddControllers();
 

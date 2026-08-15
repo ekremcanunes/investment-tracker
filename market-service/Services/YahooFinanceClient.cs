@@ -1,4 +1,5 @@
 using System.Text.Json;
+using market_service.Models;
 
 namespace market_service.Services;
 
@@ -20,6 +21,9 @@ public interface IYahooFinanceClient
 
     // Kapanış serisi (sparkline). Quote ile aynı endpoint, yalnızca range farklı.
     Task<List<decimal>> GetCloseSeriesAsync(string yahooSymbol, string range);
+
+    // OHLC + hacim serisi (grafik). Aynı endpoint; interval aralığa göre seçilir.
+    Task<(List<Candle> Candles, string Currency)> GetCandlesAsync(string yahooSymbol, string range, string interval);
 }
 
 public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClient> logger) : IYahooFinanceClient
@@ -101,6 +105,64 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         {
             logger.LogError(ex, "Failed to get Yahoo series for {Symbol}", yahooSymbol);
             return [];
+        }
+    }
+
+    public async Task<(List<Candle> Candles, string Currency)> GetCandlesAsync(string yahooSymbol, string range, string interval)
+    {
+        try
+        {
+            var url = $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(yahooSymbol)}"
+                    + $"?interval={Uri.EscapeDataString(interval)}&range={Uri.EscapeDataString(range)}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var result = doc.RootElement.GetProperty("chart").GetProperty("result");
+            if (result.ValueKind != JsonValueKind.Array || result.GetArrayLength() == 0)
+                return ([], string.Empty);
+
+            var root = result[0];
+            var stamps = root.GetProperty("timestamp");
+            var q = root.GetProperty("indicators").GetProperty("quote")[0];
+            var currency = root.GetProperty("meta").TryGetProperty("currency", out var c)
+                ? c.GetString() ?? string.Empty : string.Empty;
+
+            var opens = q.GetProperty("open");
+            var highs = q.GetProperty("high");
+            var lows = q.GetProperty("low");
+            var closes = q.GetProperty("close");
+            var volumes = q.TryGetProperty("volume", out var v) ? v : default;
+
+            var candles = new List<Candle>(stamps.GetArrayLength());
+            for (var i = 0; i < stamps.GetArrayLength(); i++)
+            {
+                // Tatil/durdurma barlarında OHLC null gelir → mum atlanır
+                if (opens[i].ValueKind != JsonValueKind.Number || highs[i].ValueKind != JsonValueKind.Number ||
+                    lows[i].ValueKind != JsonValueKind.Number || closes[i].ValueKind != JsonValueKind.Number)
+                    continue;
+
+                candles.Add(new Candle
+                {
+                    Time = stamps[i].GetInt64(),
+                    Open = opens[i].GetDecimal(),
+                    High = highs[i].GetDecimal(),
+                    Low = lows[i].GetDecimal(),
+                    Close = closes[i].GetDecimal(),
+                    Volume = volumes.ValueKind == JsonValueKind.Array && volumes[i].ValueKind == JsonValueKind.Number
+                        ? volumes[i].GetInt64() : null,
+                });
+            }
+
+            return (candles, currency);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get Yahoo candles for {Symbol}", yahooSymbol);
+            return ([], string.Empty);
         }
     }
 

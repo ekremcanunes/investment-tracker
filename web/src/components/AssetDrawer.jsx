@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAssetTransactions } from '@/hooks/queries'
-import TradingViewChart from './TradingViewChart'
+import PriceChart from './PriceChart'
 import { ArrowDownRight, Plus, TrendingUp, TrendingDown, Maximize2, Minimize2 } from 'lucide-react'
 
 const fmt = (v, currency) =>
@@ -24,14 +24,11 @@ function Row({ label, value, valueClass = 'text-foreground' }) {
 function typeConfig(holding, t) {
   switch (holding.assetType) {
     case 'Currency':
-      return { qtyLabel: t('assets.amount'), avgLabel: t('assets.buyRate'), priceLabel: t('assets.currentRate'),
-        tvSymbol: `FX_IDC:${holding.symbol}TRY` }
+      return { qtyLabel: t('assets.amount'), avgLabel: t('assets.buyRate'), priceLabel: t('assets.currentRate') }
     case 'Gold':
-      return { qtyLabel: t('assets.grams'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.pricePerGram'),
-        tvSymbol: 'TVC:GOLD' }
+      return { qtyLabel: t('assets.grams'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.pricePerGram') }
     default:
-      return { qtyLabel: t('assets.quantity'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.currentPrice'),
-        tvSymbol: holding.exchange === 'BIST' ? `BIST:${holding.symbol}` : holding.symbol }
+      return { qtyLabel: t('assets.quantity'), avgLabel: t('assets.avgCost'), priceLabel: t('assets.currentPrice') }
   }
 }
 
@@ -178,8 +175,16 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
     </button>
   )
 
-  // Grafik — mode değişince tazelensin diye key veriyoruz (TradingView yeniden boyutlansın)
-  const chart = <TradingViewChart tvSymbol={cfg.tvSymbol} key={expanded ? 'expanded' : 'collapsed'} />
+  // Grafik — mode değişince yeniden boyutlansın diye key veriyoruz
+  const chart = (
+    <PriceChart
+      symbol={holding.symbol}
+      assetType={holding.assetType}
+      exchange={holding.exchange}
+      height={expanded ? 460 : 300}
+      key={expanded ? 'expanded' : 'collapsed'}
+    />
+  )
 
   // --- GENİŞLETİLMİŞ: tam ekran, iki kolon (bilgi sol, büyük grafik sağ) ---
   if (expanded) {

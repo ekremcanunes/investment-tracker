@@ -144,6 +144,18 @@ Piyasa iki sayfaya ayrıldı: **Borsa** (`/market`) ve **Altın & Döviz** (`/go
 
 **Bileşenler:** [`Sparkline`](src/components/Sparkline.jsx) (yön rengi kâr/zarar semantiğinde) ve `RangeBar` (bant içi konum işareti).
 
+### Grafik — [`PriceChart`](src/components/PriceChart.jsx)
+
+Uygulamadaki **tek** grafik. Gömülü TradingView widget'ı kaldırıldı: ücretsiz widget BIST sembollerinde *"Sembol sadece TradingView'de bulunabilir"* uyarısı verip varsayılan sembole (AAPL) düşüyordu. Lisans kısıtı, kod hatası değil.
+
+- Kütüphane: `lightweight-charts` (TradingView, Apache-2.0). Veriyi **biz** besliyoruz → BIST çalışıyor
+- Veri: `/api/market/history/{symbol}?assetType=&range=` — Yahoo OHLC + hacim; döviz için Frankfurter
+- Aralıklar: `1d 1w 1mo 3mo 1y 5y`. Backend'de **beyaz listeye** karşı doğrulanır, kullanıcı girdisi Yahoo'ya doğrudan geçmez
+- Cache: gün içi 5 dk, günlük 1 saat (Redis)
+- Hisse/altın → mum + hacim. **Döviz → alan grafiği**, çünkü Frankfurter yalnızca günlük kapanış verir; OHLC'nin dördü de aynı olur, mum yanıltıcı olurdu
+- **Renkler token'dan okunur:** `token('--up')` → `hsl(152 72% 28%)`. Grafikteki yeşil tablodaki yeşille aynı hex. Tema değiştirici eklenirse `applyOptions` yeniden çağrılmalı
+- TradingView logosu **bilinçli olarak açık** (Apache-2.0 NOTICE: logo ya da kalıcı tradingview.com bağlantısı zorunlu)
+
 ---
 
 ## 7. İki katman, tek tema

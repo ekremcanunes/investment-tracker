@@ -28,6 +28,16 @@ export function useSymbolSearch(q) {
   })
 }
 
+// Grafik serisi — backend cache'li (gün içi 5 dk, günlük 1 saat)
+export function usePriceHistory(symbol, assetType, range) {
+  return useQuery({
+    queryKey: ['price-history', symbol, assetType, range],
+    queryFn: () => marketApi.history(symbol, assetType, range).then((r) => r.data),
+    enabled: !!symbol,
+    staleTime: 5 * 60_000,
+  })
+}
+
 // Tüm portföy — tek kaynak; tab'lar bunu client-side filtreler
 export function useHoldings() {
   return useQuery({
