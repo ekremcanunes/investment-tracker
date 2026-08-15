@@ -16,73 +16,100 @@ function useClock() {
   return now
 }
 
+const sectionCls = 'px-2 pb-1.5 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-shell-muted'
+
+function NavItem({ to, label, icon: Icon, end }) {
+  return (
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        cn(
+          'relative flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-[13px]',
+          isActive
+            ? 'nav-active bg-shell-panel font-medium text-shell-fg'
+            : 'text-shell-muted hover:bg-shell-panel hover:text-shell-fg'
+        )
+      }
+    >
+      {({ isActive }) => (
+        <>
+          <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-foil')} />
+          {label}
+        </>
+      )}
+    </NavLink>
+  )
+}
+
 export default function Layout() {
-  const { logout } = useAuth()
+  const { logout, session } = useAuth()
   const { t, lang, switchLang } = useLanguage()
   const now = useClock()
 
-  const navLinks = [
-    { to: '/', label: t('nav.overview'), icon: LayoutDashboard, end: true },
-    { to: '/market', label: t('nav.market'), icon: CandlestickChart },
-    { to: '/assets', label: t('nav.assets'), icon: Wallet },
-    { to: '/analytics', label: t('nav.analytics'), icon: BarChart2 },
-  ]
+  const email = session?.identity?.traits?.email ?? ''
+  const initials = (email.slice(0, 2) || '··').toUpperCase()
 
   return (
-    <div className="flex h-screen bg-background text-foreground">
-      <aside className="flex w-60 flex-col border-r border-border bg-card">
-        {/* Wordmark */}
-        <div className="border-b-2 border-foreground px-5 py-5">
-          <div className="font-serif text-2xl font-bold leading-tight tracking-tight text-foreground">{APP_NAME}</div>
-          <div className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            Kişisel Portföy Defteri
+    <div className="flex h-screen bg-shell text-shell-fg">
+      <aside className="flex w-[212px] shrink-0 flex-col gap-0.5 px-2.5 py-2.5">
+        {/* Marka rozeti */}
+        <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
+          <div className="foil-tile grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[7px] font-mono text-xs font-bold">
+            ₺
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-[13px] font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
+            <div className="truncate text-[10px] text-shell-muted">{email || '—'}</div>
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {navLinks.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                cn(
-                  'flex items-center gap-3 border px-3 py-2 text-xs font-semibold uppercase tracking-wider',
-                  isActive
-                    ? 'border-foreground bg-foreground text-background'
-                    : 'border-transparent text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground'
-                )
-              }
-            >
-              <Icon className="h-[15px] w-[15px]" />
-              {label}
-            </NavLink>
-          ))}
+        <nav className="mt-2 flex flex-col gap-0.5">
+          <div className={sectionCls}>{t('nav.sectionGeneral')}</div>
+          <NavItem to="/" label={t('nav.overview')} icon={LayoutDashboard} end />
+          <NavItem to="/assets" label={t('nav.assets')} icon={Wallet} />
+          <NavItem to="/analytics" label={t('nav.analytics')} icon={BarChart2} />
+
+          <div className={sectionCls}>{t('nav.sectionMarket')}</div>
+          <NavItem to="/market" label={t('nav.market')} icon={CandlestickChart} />
         </nav>
 
-        <div className="space-y-1 border-t border-border px-3 py-3">
-          <div className="px-3 pb-2 font-mono text-[10px] tracking-wider text-muted-foreground">
-            <div className="tabular text-foreground">{now.toLocaleDateString('tr-TR')}</div>
-            <div className="tabular">{now.toLocaleTimeString('tr-TR')}</div>
+        {/* Alt blok: saat + ayarlar + kullanıcı kartı */}
+        <div className="mt-auto flex flex-col gap-0.5">
+          <div className="tabular px-2.5 pb-1 text-[10px] leading-relaxed text-shell-muted">
+            {now.toLocaleDateString('tr-TR')} · {now.toLocaleTimeString('tr-TR')}
           </div>
+
           <button
             onClick={() => switchLang(lang === 'tr' ? 'en' : 'tr')}
-            className="flex w-full items-center gap-3 border border-transparent px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground"
+            className="flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-[13px] text-shell-muted hover:bg-shell-panel hover:text-shell-fg"
           >
-            <Globe className="h-[15px] w-[15px]" />
+            <Globe className="h-4 w-4 shrink-0" />
             {lang === 'tr' ? 'English' : 'Türkçe'}
           </button>
-          <button
-            onClick={logout}
-            className="flex w-full items-center gap-3 border border-transparent px-3 py-2 text-xs font-medium uppercase tracking-wider text-muted-foreground hover:border-border hover:bg-secondary hover:text-foreground"
-          >
-            <LogOut className="h-[15px] w-[15px]" />
-            {t('nav.logout')}
-          </button>
+
+          <div className="mt-1 flex items-center gap-2.5 rounded-[9px] border border-shell-border bg-shell-panel px-2 py-2">
+            <div className="grid h-[25px] w-[25px] shrink-0 place-items-center rounded-full bg-shell-border text-[10px] font-semibold text-shell-fg">
+              {initials}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11.5px] leading-tight text-shell-fg">{email.split('@')[0] || '—'}</div>
+              <div className="truncate text-[9.5px] text-shell-muted">{email}</div>
+            </div>
+            <button
+              onClick={logout}
+              title={t('nav.logout')}
+              aria-label={t('nav.logout')}
+              className="shrink-0 rounded-md p-1 text-shell-muted hover:text-shell-fg"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto">
+      {/* Bone içerik tuvali — koyu şasinin üstünde ayrı bir yüzey */}
+      <main className="canvas-inset my-2 mr-2 flex-1 overflow-auto rounded-xl border border-shell-border bg-background text-foreground">
         <div className="mx-auto max-w-7xl px-8 py-10">
           <Outlet />
         </div>

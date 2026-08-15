@@ -16,6 +16,9 @@ const translations = {
     'nav.transactions': 'İşlemler',
     'nav.analytics': 'Analiz',
     'nav.logout': 'Çıkış Yap',
+    'nav.sectionGeneral': 'Genel',
+    'nav.sectionMarket': 'Piyasa',
+    'nav.settings': 'Ayarlar',
 
     // Overview
     'overview.title': 'Genel Bakış',
@@ -165,6 +168,9 @@ const translations = {
     'nav.transactions': 'Transactions',
     'nav.analytics': 'Analytics',
     'nav.logout': 'Logout',
+    'nav.sectionGeneral': 'General',
+    'nav.sectionMarket': 'Market',
+    'nav.settings': 'Settings',
     'overview.title': 'Overview',
     'overview.netWorth': 'Net Worth',
     'overview.cash': 'Cash',
