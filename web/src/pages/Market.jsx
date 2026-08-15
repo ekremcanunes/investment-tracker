@@ -3,6 +3,9 @@ import { useLanguage } from '@/contexts/LanguageContext'
 import { useMarketOverview } from '@/hooks/queries'
 import { Skeleton } from '@/components/ui/skeleton'
 import AssetDrawer from '@/components/AssetDrawer'
+import { Page, PageTab } from '@/components/Page'
+import { Section, StatCard } from '@/components/Section'
+import { catOf } from '@/lib/assetColors'
 
 const num = (v) => new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v ?? 0)
 const pct = (v) => (v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '—')
@@ -48,67 +51,70 @@ export default function Market() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-80 w-full" />
-      </div>
+      <Page eyebrow={t('nav.sectionMarket')} title={t('market.title')}>
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
+          <Skeleton className="h-80 w-full" />
+        </div>
+      </Page>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('market.title')}</h1>
-
-      {/* Üst tab bar */}
-      <div className="flex gap-2 font-mono text-xs">
-        {TABS.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`border px-3 py-1.5 font-bold uppercase tracking-wider ${
-              tab === key
-                ? 'border-foreground bg-foreground text-background'
-                : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
-            }`}
-          >
-            {t(label)}
-          </button>
-        ))}
-      </div>
-
+    <Page
+      eyebrow={t('nav.sectionMarket')}
+      title={t('market.title')}
+      tabs={TABS.map(({ key, label }) => (
+        <PageTab key={key} active={tab === key} onClick={() => setTab(key)}>
+          {t(label)}
+        </PageTab>
+      ))}
+    >
       {tab === 'stocks' ? (
-        <>
+        <div className="space-y-4">
           {/* Endeks şeridi */}
-          <div className="flex gap-2 overflow-x-auto">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {indices.map((q) => (
-              <div key={q.symbol} className="min-w-[150px] border border-border bg-background/60 px-3 py-2">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{q.name || q.symbol}</div>
-                <div className="tabular mt-0.5 text-sm font-bold text-foreground">{num(q.price)}</div>
-                {q.changePercent != null && <div className={`tabular text-[11px] ${pctCls(q.changePercent)}`}>{pct(q.changePercent)}</div>}
-              </div>
+              <StatCard
+                key={q.symbol}
+                accent={catOf('Index').dot}
+                tint={catOf('Index').tint}
+                label={q.name || q.symbol}
+                value={num(q.price)}
+                chip={
+                  q.changePercent != null && (
+                    <span className={`tabular mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9.5px] ${q.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
+                      {pct(q.changePercent)}
+                    </span>
+                  )
+                }
+              />
             ))}
           </div>
 
           {/* Yükselen / düşen */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[{ title: t('market.gainers'), rows: gainers }, { title: t('market.losers'), rows: losers }].map((col) => (
-              <div key={col.title} className="border border-border bg-card p-4 shadow-ledger">
-                <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{col.title}</div>
-                {col.rows.map((s) => (
-                  <button key={s.symbol} onClick={() => open(s, 'Stock')} className="flex w-full items-center justify-between py-1 hover:bg-secondary">
-                    <span className="font-mono text-xs font-bold text-foreground">{s.symbol}</span>
-                    <span className="tabular font-mono text-xs text-muted-foreground">{num(s.price)}</span>
-                    <span className={`tabular font-mono text-xs font-bold ${pctCls(s.changePercent)}`}>{pct(s.changePercent)}</span>
-                  </button>
-                ))}
-              </div>
+              <Section key={col.title} title={col.title}>
+                <div className="p-2">
+                  {col.rows.map((s) => (
+                    <button key={s.symbol} onClick={() => open(s, 'Stock')} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-[13px] hover:bg-secondary">
+                      <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-md font-mono text-[8.5px] ${catOf('Stock').tint} ${catOf('Stock').text}`}>
+                        {s.symbol.slice(0, 2)}
+                      </span>
+                      <span className="font-semibold text-foreground">{s.symbol}</span>
+                      <span className="tabular ml-auto text-muted-foreground">{num(s.price)}</span>
+                      <span className={`tabular w-16 text-right font-semibold ${pctCls(s.changePercent)}`}>{pct(s.changePercent)}</span>
+                    </button>
+                  ))}
+                </div>
+              </Section>
             ))}
           </div>
 
           {/* BIST 30 tablosu */}
-          <section className="margin-rule overflow-hidden border border-border bg-card p-6 shadow-ledger md:p-8">
-            <div className="pl-4 md:pl-6">
-              <div className="mb-3 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">BIST 30</div>
+          <Section title="BIST 30" meta={`${sorted.length} ${t('overview.assetCount')}`}>
+            <div className="p-4">
               <div className="overflow-x-auto">
                 <table className="tabular w-full text-left font-mono text-xs">
                   <thead>
@@ -122,7 +128,14 @@ export default function Market() {
                   <tbody className="divide-y divide-border">
                     {sorted.map((s) => (
                       <tr key={s.symbol} onClick={() => open(s, 'Stock')} className="group cursor-pointer hover:bg-secondary">
-                        <td className="px-2 py-3 font-bold text-foreground group-hover:underline">{s.symbol}</td>
+                        <td className="px-2 py-3 font-bold text-foreground group-hover:underline">
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`grid h-5 w-5 place-items-center rounded-md text-[8.5px] ${catOf('Stock').tint} ${catOf('Stock').text}`}>
+                              {s.symbol.slice(0, 2)}
+                            </span>
+                            {s.symbol}
+                          </span>
+                        </td>
                         <td className="max-w-[220px] truncate px-2 py-3 text-muted-foreground">{s.name}</td>
                         <td className="px-2 py-3 text-right text-muted-foreground">{num(s.price)}</td>
                         <td className={`px-2 py-3 text-right font-bold ${pctCls(s.changePercent)}`}>{pct(s.changePercent)}</td>
@@ -132,28 +145,34 @@ export default function Market() {
                 </table>
               </div>
             </div>
-          </section>
-        </>
+          </Section>
+        </div>
       ) : (
         /* Altın & Döviz */
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {strip.map((q) => (
-            <button
-              key={q.symbol}
-              onClick={() => open(q, q.symbol === 'XAU' ? 'Gold' : 'Currency')}
-              className="border border-border bg-card p-5 text-left shadow-ledger hover:border-foreground"
-            >
-              <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{q.name || q.symbol}</div>
-              <div className="tabular mt-1.5 text-2xl font-bold text-foreground">{num(q.price)} ₺</div>
-              {q.changePercent != null && (
-                <div className={`tabular mt-1 text-xs font-bold ${pctCls(q.changePercent)}`}>{pct(q.changePercent)}</div>
-              )}
-            </button>
-          ))}
+          {strip.map((q) => {
+            const cat = catOf(q.symbol === 'XAU' ? 'Gold' : 'Currency')
+            return (
+              <button
+                key={q.symbol}
+                onClick={() => open(q, q.symbol === 'XAU' ? 'Gold' : 'Currency')}
+                className="relative overflow-hidden rounded-xl border border-border bg-card p-5 text-left hover:border-foreground"
+              >
+                <span className={`absolute inset-y-0 left-0 w-[3px] ${cat.dot}`} />
+                <div className="font-mono text-[9.5px] uppercase tracking-[0.1em] text-muted-foreground">{q.name || q.symbol}</div>
+                <div className="tabular mt-1.5 text-2xl font-semibold tracking-tight text-foreground">{num(q.price)} ₺</div>
+                {q.changePercent != null && (
+                  <span className={`tabular mt-2 inline-flex rounded-full px-2 py-0.5 text-[9.5px] ${q.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
+                    {pct(q.changePercent)}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
       )}
 
       {drawer && <AssetDrawer holding={drawer} onClose={() => setDrawer(null)} onSell={() => {}} />}
-    </div>
+    </Page>
   )
 }

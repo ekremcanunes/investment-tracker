@@ -5,6 +5,7 @@ import { marketApi } from '@/services/api'
 import { useBuyAsset } from '@/hooks/queries'
 import { todayString, toApiDate } from '@/lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Page } from '@/components/Page'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { MoneyInput } from '@/components/ui/money-input'
@@ -104,14 +105,15 @@ export default function AddAsset() {
   }
 
   return (
-    <div>
-      <div className="flex items-center gap-3 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/assets')}>
+    <Page
+      eyebrow={t('assets.title')}
+      title={t('assets.buyAsset')}
+      actions={
+        <Button variant="ghost" size="icon" onClick={() => navigate('/assets')} aria-label={t('common.cancel')}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-bold text-white">{t('assets.buyAsset')}</h1>
-      </div>
-
+      }
+    >
       <Card className="max-w-md">
         <CardHeader>
           <CardTitle className="text-base">{t('assets.buyAsset')}</CardTitle>
@@ -288,6 +290,6 @@ export default function AddAsset() {
           </form>
         </CardContent>
       </Card>
-    </div>
+    </Page>
   )
 }

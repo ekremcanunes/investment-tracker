@@ -83,8 +83,11 @@ CSS yardımcıları [`index.css`](src/index.css)'te:
 - **`.margin-rule`** — panelin solunda dikey kırmızı marj çizgisi (içerik `pl-4 md:pl-6` ile açılır).
 - **`.shadow-ledger`** — panel offset gölge `4px 4px`. **`.shadow-ledger-strong`** — modal/drawer `8px 8px` full ink.
 - **`.border-double-bottom`** — tablo toplam satırı 3px çift çizgi.
-- **Keskin köşeler** — `--radius: 2px` (bone tuval içindeki bileşenler).
-- **Cetvelli tablo** — mono, tabular, `border-b-2 border-foreground` başlık, `divide-border` satırlar, `tfoot` toplam çift-çizgi.
+- **Yumuşak köşe** — `--radius: 8px`; kart/panel `rounded-xl`, buton/rozet `rounded-lg`.
+- **Cetvelli tablo** — mono, tabular, `border-b-2 border-foreground` başlık, `divide-border` satırlar, `tfoot` toplam çift-çizgi. Ledger keskinliği artık **burada** yaşıyor.
+- **Sayfa iskeleti** — her sayfa [`Page`](src/components/Page.jsx) ile: tuvale yapışık yapışkan başlık çubuğu (eyebrow + başlık + meta + aksiyon + sekme), altında padding'li gövde.
+- **İçerik bloğu** — [`Section`](src/components/Section.jsx): başlık + meta + aksiyon satırı, altında gövde. Yanında `StatCard` (sol kategori şeridi + ikon rozeti) ve `DeltaChip` (yalnızca K/Z).
+- **Kategori rozeti** — sembolün yanında `catOf(assetType)` ile renklendirilmiş 2 harfli kare ([`lib/assetColors.js`](src/lib/assetColors.js)).
 
 Şasi imzaları (yalnızca sidebar/auth; bunlar yumuşak köşelidir):
 
@@ -130,6 +133,7 @@ Kullanıcıya seçtirilen bir tema **yok**. Bunun yerine iki sabit katman var:
 - ❌ Rakamı normal fontla — `.tabular`.
 - ❌ Vurgu/marj rengini kâr-zarar için kullanmak.
 - ❌ Kategori rengini kâr/zarar, `up`/`down`'ı kategori için kullanmak.
-- ❌ `foil`'i bone tuval içinde kullanmak — foil yalnızca şasiye ait.
-- ❌ Bone tuval içinde yuvarlak köşe/yumuşak gölge — orası keskin + offset gölge. Yuvarlaklık şasiye ait.
+- ❌ `foil`'i bone tuval içinde kullanmak — foil yalnızca şasiye ait. Tuvalde birincil aksiyon rengi `brass`.
+- ❌ Sayfayı `Page` olmadan yazmak — başlık çubuğu ve padding oradan gelir, Layout padding vermez.
+- ❌ Ad-hoc `<h1>` — başlık `Page`'in işi.
 - ❌ `window.confirm` — ortak `Modal`.

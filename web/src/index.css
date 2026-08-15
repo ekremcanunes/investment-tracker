@@ -91,7 +91,7 @@
   --brass: 36 43% 38%;         /* #8C6A38 */
   --margin: 6 59% 44%;         /* #B23A2E marj kırmızısı */
 
-  --radius: 0.125rem;          /* keskin ledger köşeleri */
+  --radius: 0.5rem;            /* yumuşak köşe — keskinlik artık cetvelli tabloda kalıyor */
 
   /* Şasi: bone tuvali taşıyan koyu kabuk. LEDGER kağıdı bunun üstünde durur. */
   --shell: 240 6% 5%;          /* #0B0B0D */

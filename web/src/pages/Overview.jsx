@@ -2,23 +2,50 @@ import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useDashboard } from '@/hooks/queries'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ArrowRight } from 'lucide-react'
+import { Page, GhostAction, PrimaryAction } from '@/components/Page'
+import { Section, StatCard, InfoChip } from '@/components/Section'
+import { catOf } from '@/lib/assetColors'
+import { ArrowRight, Plus, Wallet, Banknote, Coins, Layers } from 'lucide-react'
 
 const formatTry = (v) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(v ?? 0)
+
+// Dağılım halkası — dilimler stroke-dasharray ile, ekstra kütüphane yok.
+// Her dilimin offset'i kendinden öncekilerin toplamına göre (12 yönünden başlar).
+function Donut({ slices }) {
+  const withOffset = slices.reduce(
+    (acc, s) => {
+      acc.list.push({ ...s, offset: acc.run })
+      acc.run -= s.pct
+      return acc
+    },
+    { list: [], run: 25 }
+  ).list
+
+  return (
+    <svg viewBox="0 0 42 42" className="h-28 w-28 shrink-0" role="img" aria-hidden="true">
+      <circle cx="21" cy="21" r="15.9" fill="none" stroke="currentColor" strokeWidth="6" className="text-border" />
+      {withOffset.map((s) => (
+        <circle
+          key={s.key}
+          cx="21"
+          cy="21"
+          r="15.9"
+          fill="none"
+          stroke={s.hex}
+          strokeWidth="6"
+          strokeDasharray={`${s.pct} ${100 - s.pct}`}
+          strokeDashoffset={s.offset}
+        />
+      ))}
+    </svg>
+  )
+}
 
 export default function Overview() {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const { data: dashboard, isLoading } = useDashboard()
-
-  if (isLoading) {
-    return (
-      <div className="max-w-4xl">
-        <Skeleton className="h-64 w-full" />
-      </div>
-    )
-  }
 
   const total = dashboard?.totalValueInTry ?? 0
   const stock = dashboard?.stockValueInTry ?? 0
@@ -28,66 +55,78 @@ export default function Overview() {
   const pct = (v) => (total > 0 ? (v / total) * 100 : 0)
 
   const cats = [
-    { key: 'investments', label: t('overview.investments'), value: stock, bar: 'bg-foreground' },
-    { key: 'cash', label: t('overview.cash'), value: cash, bar: 'bg-muted-foreground/50' },
-    { key: 'gold', label: t('assets.gold'), value: gold, bar: 'bg-brass' },
-  ]
+    { key: 'Stock', label: t('overview.investments'), value: stock },
+    { key: 'Cash', label: t('overview.cash'), value: cash },
+    { key: 'Gold', label: t('assets.gold'), value: gold },
+  ].map((c) => ({ ...c, ...catOf(c.key), pct: pct(c.value) }))
 
   return (
-    <div className="max-w-4xl">
-      <section className="margin-rule relative overflow-hidden border border-border bg-card p-6 shadow-ledger md:p-10">
-        <div className="pl-4 md:pl-6">
-          {/* Net Varlık */}
-          <div className="flex flex-col justify-between gap-4 border-b border-border pb-8 md:flex-row md:items-end">
-            <div>
-              <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                {t('overview.netWorth')}
-              </span>
-              <h1 className="tabular mt-2 text-4xl font-bold tracking-tight text-foreground md:text-5xl">
-                {formatTry(total)}
-              </h1>
-            </div>
-            <button
-              onClick={() => navigate('/assets')}
-              className="inline-flex items-center gap-1.5 self-start border border-foreground px-3 py-2 text-xs font-semibold uppercase tracking-wider text-foreground hover:bg-foreground hover:text-background"
-            >
-              {t('overview.allAssets')}
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
+    <Page
+      eyebrow={t('nav.sectionGeneral')}
+      title={t('overview.title')}
+      actions={
+        <>
+          <GhostAction onClick={() => navigate('/assets')}>
+            {t('overview.allAssets')}
+            <ArrowRight className="h-3.5 w-3.5" />
+          </GhostAction>
+          <PrimaryAction onClick={() => navigate('/assets/buy')}>
+            <Plus className="h-3.5 w-3.5" />
+            {t('assets.buy')}
+          </PrimaryAction>
+        </>
+      }
+    >
+      {isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-24 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {/* KPI şeridi */}
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <StatCard
+              accent="bg-foreground"
+              tint="bg-foreground/10"
+              iconClass="text-foreground"
+              icon={Wallet}
+              label={t('overview.netWorth')}
+              value={formatTry(total)}
+              chip={<InfoChip tint="bg-foreground/8" text="text-muted-foreground">{count} {t('overview.assetCount')}</InfoChip>}
+            />
+            {cats.map((c) => (
+              <StatCard
+                key={c.key}
+                accent={c.dot}
+                tint={c.tint}
+                iconClass={c.text}
+                icon={c.key === 'Stock' ? Layers : c.key === 'Cash' ? Banknote : Coins}
+                label={c.label}
+                value={formatTry(c.value)}
+                chip={<InfoChip tint={c.tint} text={c.text}>%{c.pct.toFixed(0)}</InfoChip>}
+              />
+            ))}
           </div>
 
           {/* Dağılım */}
-          <div className="pt-8">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="font-mono text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                {t('overview.allocation')}
-              </h2>
-              <span className="font-mono text-[11px] text-muted-foreground">{count} {t('overview.assetCount')}</span>
-            </div>
-
-            {/* Stacked bar */}
-            <div className="mb-6 flex h-4 w-full gap-0.5 border border-border bg-background p-0.5">
-              {cats.map((c) => (
-                <div key={c.key} className={`h-full ${c.bar}`} style={{ width: `${pct(c.value)}%` }} title={c.label} />
-              ))}
-            </div>
-
-            {/* Kategori kutuları */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-              {cats.map((c) => (
-                <div key={c.key} className="border border-border bg-background/60 p-3">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2 w-2 ${c.bar}`} />
-                    <span className="font-mono text-[11px] text-muted-foreground">{c.label}</span>
-                    <span className="tabular ml-auto text-[11px] text-muted-foreground">{pct(c.value).toFixed(0)}%</span>
+          <Section title={t('overview.allocation')} meta={`${count} ${t('overview.assetCount')}`}>
+            <div className="flex flex-col items-center gap-6 p-5 sm:flex-row sm:items-center">
+              <Donut slices={cats.filter((c) => c.pct > 0)} />
+              <div className="w-full flex-1 space-y-2.5">
+                {cats.map((c) => (
+                  <div key={c.key} className="flex items-center gap-2.5 text-[13px]">
+                    <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${c.dot}`} />
+                    <span className="text-foreground">{c.label}</span>
+                    <span className="tabular ml-auto text-muted-foreground">%{c.pct.toFixed(0)}</span>
+                    <span className="tabular w-28 text-right font-semibold text-foreground">{formatTry(c.value)}</span>
                   </div>
-                  <p className="tabular mt-1.5 text-lg font-bold text-foreground">{formatTry(c.value)}</p>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          </Section>
         </div>
-      </section>
-    </div>
+      )}
+    </Page>
   )
 }

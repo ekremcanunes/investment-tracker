@@ -109,10 +109,9 @@ export default function Layout() {
       </aside>
 
       {/* Bone içerik tuvali — koyu şasinin üstünde ayrı bir yüzey */}
+      {/* Bone içerik tuvali — padding'i Page bileşeni yönetir (başlık kenara yapışsın diye) */}
       <main className="canvas-inset my-2 mr-2 flex-1 overflow-auto rounded-xl border border-shell-border bg-background text-foreground">
-        <div className="mx-auto max-w-7xl px-8 py-10">
-          <Outlet />
-        </div>
+        <Outlet />
       </main>
     </div>
   )

@@ -6,6 +6,9 @@ import { MoneyInput } from '@/components/ui/money-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Modal } from '@/components/ui/modal'
 import AssetDrawer from '@/components/AssetDrawer'
+import { Page, PageTab, PrimaryAction } from '@/components/Page'
+import { Section } from '@/components/Section'
+import { catOf } from '@/lib/assetColors'
 import { Plus, Pencil, Trash2, X, Check, ArrowDownRight, AlertTriangle } from 'lucide-react'
 
 const TABS = ['Stock', 'Currency', 'Gold']
@@ -82,58 +85,48 @@ export default function Assets() {
   const curLabel = tab === 'Currency' ? t('assets.currentRate') : t('assets.currentPrice')
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">{t('assets.title')}</h1>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">
-            {t('assets.grandTotal')}: <span className="tabular text-foreground">{formatMoney(grandTotal)}</span>
-          </p>
-        </div>
-        <button
-          onClick={() => navigate('/assets/buy')}
-          className="inline-flex items-center gap-2 border border-brass bg-brass px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider text-white hover:opacity-90"
-        >
-          <Plus className="h-4 w-4" />
+    <Page
+      eyebrow={t('nav.sectionGeneral')}
+      title={t('assets.title')}
+      meta={
+        <>
+          {t('assets.grandTotal')}: <span className="tabular font-semibold text-foreground">{formatMoney(grandTotal)}</span>
+        </>
+      }
+      actions={
+        <PrimaryAction onClick={() => navigate('/assets/buy')}>
+          <Plus className="h-3.5 w-3.5" />
           {t('assets.buy')}
-        </button>
-      </div>
-
-      {/* Tab bar — ledger buton stili */}
-      <div className="flex gap-2 font-mono text-xs">
-        {TABS.map((key) => (
-          <button
-            key={key}
-            onClick={() => { setTab(key); setEditing(null) }}
-            className={`border px-3 py-1.5 font-bold uppercase tracking-wider ${
-              tab === key
-                ? 'border-foreground bg-foreground text-background'
-                : 'border-border bg-background text-muted-foreground hover:border-foreground hover:text-foreground'
-            }`}
-          >
+        </PrimaryAction>
+      }
+      tabs={TABS.map((key) => (
+        <PageTab key={key} active={tab === key} onClick={() => { setTab(key); setEditing(null) }}>
+          <span className="inline-flex items-center gap-1.5">
+            <span className={`h-2 w-2 rounded-sm ${catOf(key).dot}`} />
             {t(`assets.${key.toLowerCase()}`)}
-          </button>
-        ))}
-      </div>
-
+          </span>
+        </PageTab>
+      ))}
+    >
       {shownError && (
-        <div className="border border-destructive/30 bg-destructive/5 px-3 py-2 font-mono text-xs text-destructive">
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive" role="alert">
           {shownError}
         </div>
       )}
 
-      <section className="margin-rule overflow-hidden border border-border bg-card p-6 shadow-ledger md:p-8">
-        <div className="pl-4 md:pl-6">
+      <Section title={t(`assets.${tab.toLowerCase()}`)} meta={`${visible.length} ${t('overview.assetCount')}`}>
+        <div className="p-4">
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
             </div>
           ) : visible.length === 0 ? (
             <div className="py-14 text-center">
-              <p className="mb-4 font-mono text-xs text-muted-foreground">{t('assets.noAssets')}</p>
-              <button onClick={() => navigate('/assets/buy')} className="border border-foreground px-4 py-2 font-mono text-xs font-bold uppercase text-foreground hover:bg-foreground hover:text-background">
+              <p className="mb-4 text-xs text-muted-foreground">{t('assets.noAssets')}</p>
+              <PrimaryAction onClick={() => navigate('/assets/buy')}>
+                <Plus className="h-3.5 w-3.5" />
                 {t('assets.buy')}
-              </button>
+              </PrimaryAction>
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -165,7 +158,14 @@ export default function Assets() {
                         className={`group hover:bg-secondary ${clickable ? 'cursor-pointer' : ''}`}
                         onClick={() => clickable && setDrawer(h)}
                       >
-                        <td className="px-2 py-3.5 font-bold text-foreground group-hover:underline">{h.symbol}</td>
+                        <td className="px-2 py-3.5 font-bold text-foreground group-hover:underline">
+                          <span className="inline-flex items-center gap-2">
+                            <span className={`grid h-5 w-5 place-items-center rounded-md text-[8.5px] ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
+                              {h.symbol.slice(0, 2)}
+                            </span>
+                            {h.symbol}
+                          </span>
+                        </td>
                         {isActive ? (
                           <td colSpan={6} className="px-2 py-3">
                             <div className="flex flex-wrap items-center justify-end gap-3">
@@ -234,7 +234,7 @@ export default function Assets() {
             </div>
           )}
         </div>
-      </section>
+      </Section>
 
       {drawer && (
         <AssetDrawer
@@ -262,6 +262,6 @@ export default function Assets() {
       >
         <p className="text-center font-mono text-xs text-muted-foreground">{t('assets.confirmDelete')}</p>
       </Modal>
-    </div>
+    </Page>
   )
 }

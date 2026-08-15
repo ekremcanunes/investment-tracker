@@ -1,7 +1,9 @@
 import { useMemo } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useHoldings } from '@/hooks/queries'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Page } from '@/components/Page'
+import { Section } from '@/components/Section'
+import { catOf } from '@/lib/assetColors'
 import {
   PieChart,
   Pie,
@@ -14,18 +16,10 @@ import {
 const formatTRY = (value) =>
   new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value ?? 0)
 
-const TYPE_COLORS = {
-  Stock: '#1C1B18',    // ink
-  Currency: '#6A675E', // nötr
-  Gold: '#8C6A38',     // pirinç
-}
-
-const PIE_COLORS = ['#1C1B18', '#8C6A38', '#1B6E43', '#6A675E']
-
 const CHART_TOOLTIP_STYLE = {
   backgroundColor: '#F7F6F1',
-  border: '1px solid #1C1B18',
-  borderRadius: '2px',
+  border: '1px solid #D9D6CB',
+  borderRadius: '8px',
   color: '#1C1B18',
 }
 
@@ -48,22 +42,18 @@ export default function Analytics() {
     }))
   }, [holdings, t])
 
-  if (isLoading) return <div className="text-muted-foreground">{t('common.loading')}</div>
-  if (error) return <div className="text-down">{t('common.error')}: {error.message}</div>
-
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-semibold tracking-tight text-foreground">{t('nav.analytics')}</h1>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Varlık dağılımı */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">{t('analytics.allocation')}</CardTitle>
-          </CardHeader>
-          <CardContent>
+    <Page eyebrow={t('nav.sectionGeneral')} title={t('nav.analytics')}>
+      {isLoading ? (
+        <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+      ) : error ? (
+        <div className="text-sm text-down" role="alert">{t('common.error')}: {error.message}</div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {/* Varlık dağılımı */}
+          <Section title={t('analytics.allocation')} meta={`${pieData.length} ${t('overview.assetCount')}`}>
             {pieData.length === 0 ? (
-              <p className="py-8 text-center text-sm text-muted-foreground">{t('assets.noAssets')}</p>
+              <p className="py-10 text-center text-sm text-muted-foreground">{t('assets.noAssets')}</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>
@@ -75,11 +65,8 @@ export default function Analytics() {
                     dataKey="value"
                     label={({ name, value }) => `${name}: ${value}%`}
                   >
-                    {pieData.map((entry, index) => (
-                      <Cell
-                        key={entry.typeKey}
-                        fill={TYPE_COLORS[entry.typeKey] ?? PIE_COLORS[index % PIE_COLORS.length]}
-                      />
+                    {pieData.map((entry) => (
+                      <Cell key={entry.typeKey} fill={catOf(entry.typeKey).hex} />
                     ))}
                   </Pie>
                   <Tooltip
@@ -93,9 +80,9 @@ export default function Analytics() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          </Section>
+        </div>
+      )}
+    </Page>
   )
 }
