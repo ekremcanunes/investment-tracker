@@ -17,6 +17,9 @@ public record YahooQuote(
 public interface IYahooFinanceClient
 {
     Task<YahooQuote?> GetQuoteAsync(string yahooSymbol);
+
+    // Kapanış serisi (sparkline). Quote ile aynı endpoint, yalnızca range farklı.
+    Task<List<decimal>> GetCloseSeriesAsync(string yahooSymbol, string range);
 }
 
 public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClient> logger) : IYahooFinanceClient
@@ -67,6 +70,37 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         {
             logger.LogError(ex, "Failed to get Yahoo quote for {Symbol}", yahooSymbol);
             return null;
+        }
+    }
+
+    public async Task<List<decimal>> GetCloseSeriesAsync(string yahooSymbol, string range)
+    {
+        try
+        {
+            var url = $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(yahooSymbol)}?interval=1d&range={Uri.EscapeDataString(range)}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var result = doc.RootElement.GetProperty("chart").GetProperty("result");
+            if (result.ValueKind != JsonValueKind.Array || result.GetArrayLength() == 0)
+                return [];
+
+            var closes = result[0].GetProperty("indicators").GetProperty("quote")[0].GetProperty("close");
+
+            // Tatil/durdurma günlerinde null gelir → atlanır
+            return closes.EnumerateArray()
+                .Where(c => c.ValueKind == JsonValueKind.Number)
+                .Select(c => c.GetDecimal())
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get Yahoo series for {Symbol}", yahooSymbol);
+            return [];
         }
     }
 

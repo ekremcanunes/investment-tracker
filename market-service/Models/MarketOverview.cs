@@ -9,6 +9,17 @@ public class MarketQuote
     public decimal Price { get; set; }
     public decimal? PreviousClose { get; set; }
     public decimal? ChangePercent { get; set; }
+
+    // Yahoo zaten bu alanları döndürüyor (bkz. YahooQuote) — ek istek maliyeti yok.
+    public decimal? DayHigh { get; set; }
+    public decimal? DayLow { get; set; }
+    public decimal? Week52High { get; set; }
+    public decimal? Week52Low { get; set; }
+    public long? Volume { get; set; }
+
+    // Sparkline için kapanış serisi (kronolojik). Yalnızca endeks ve altın/döviz doldurulur;
+    // 30 hisse için ayrı ayrı seri çekmek maliyetli olurdu.
+    public List<decimal> Spark { get; set; } = [];
 }
 
 public class MarketOverview

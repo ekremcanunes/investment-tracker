@@ -6,6 +6,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import Layout from './components/Layout'
 import Overview from './pages/Overview'
 import Market from './pages/Market'
+import GoldFx from './pages/GoldFx'
 import Assets from './pages/Assets'
 import AddAsset from './pages/AddAsset'
 import Analytics from './pages/Analytics'
@@ -40,6 +41,7 @@ export default function App() {
             >
               <Route path="/" element={<Overview />} />
               <Route path="/market" element={<Market />} />
+              <Route path="/gold-fx" element={<GoldFx />} />
               <Route path="/assets" element={<Assets />} />
               <Route path="/assets/buy" element={<AddAsset />} />
               <Route path="/analytics" element={<Analytics />} />

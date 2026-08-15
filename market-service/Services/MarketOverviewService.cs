@@ -14,6 +14,8 @@ public class MarketOverviewService : IMarketOverviewService
     private const string CacheKey = "market:overview";
     private const int CacheMinutes = 10;
     private const decimal GramsPerOunce = 31.1034768m;
+    private const string SparkRange = "1mo";   // Yahoo range parametresi
+    private const int SparkDays = 30;          // Frankfurter gün sayısı
 
     // BIST 30 bileşenleri — endeks üyeliğini API vermediği için elle tutulur.
     // Periyodik olarak (BIST 30 üç ayda bir gözden geçirilir) güncellenmeli.
@@ -52,11 +54,11 @@ public class MarketOverviewService : IMarketOverviewService
 
         var usdTryRate = await _frankfurter.GetExchangeRateAsync("USD");
 
-        // Endeksler
+        // Endeksler — sparkline'lı (yalnızca 2 sembol, ek maliyet önemsiz)
         var indexTasks = new[]
         {
-            YahooQuoteAsync("XU100.IS", "BIST 100"),
-            YahooQuoteAsync("XU030.IS", "BIST 30"),
+            YahooQuoteAsync("XU100.IS", "BIST 100", withSpark: true),
+            YahooQuoteAsync("XU030.IS", "BIST 30", withSpark: true),
         };
 
         // BIST 30 hisseleri
@@ -76,10 +78,13 @@ public class MarketOverviewService : IMarketOverviewService
     }
 
     // Tek Yahoo sembolü → MarketQuote (hata olursa null → listeden düşer)
-    private async Task<MarketQuote?> YahooQuoteAsync(string yahooSymbol, string name, string? displaySymbol = null)
+    private async Task<MarketQuote?> YahooQuoteAsync(string yahooSymbol, string name,
+        string? displaySymbol = null, bool withSpark = false)
     {
         var q = await _yahoo.GetQuoteAsync(yahooSymbol);
         if (q == null) return null;
+
+        var spark = withSpark ? await _yahoo.GetCloseSeriesAsync(yahooSymbol, SparkRange) : [];
         return new MarketQuote
         {
             Symbol = displaySymbol ?? yahooSymbol,
@@ -87,6 +92,12 @@ public class MarketOverviewService : IMarketOverviewService
             Price = q.Price,
             PreviousClose = q.PreviousClose,
             ChangePercent = ChangePct(q.Price, q.PreviousClose),
+            DayHigh = q.DayHigh,
+            DayLow = q.DayLow,
+            Week52High = q.Week52High,
+            Week52Low = q.Week52Low,
+            Volume = q.Volume,
+            Spark = spark,
         };
     }
 
@@ -94,11 +105,11 @@ public class MarketOverviewService : IMarketOverviewService
     {
         var strip = new List<MarketQuote>();
 
-        var usd = await _frankfurter.GetExchangeRateAsync("USD");
-        if (usd.HasValue) strip.Add(new MarketQuote { Symbol = "USD", Name = "USD/TRY", Price = usd.Value });
-
-        var eur = await _frankfurter.GetExchangeRateAsync("EUR");
-        if (eur.HasValue) strip.Add(new MarketQuote { Symbol = "EUR", Name = "EUR/TRY", Price = eur.Value });
+        foreach (var (code, name) in new[] { ("USD", "USD/TRY"), ("EUR", "EUR/TRY"), ("GBP", "GBP/TRY") })
+        {
+            var fx = await FxQuoteAsync(code, name);
+            if (fx != null) strip.Add(fx);
+        }
 
         // Altın: GC=F (USD/ons) → gram TL
         var gold = await _yahoo.GetQuoteAsync("GC=F");
@@ -108,6 +119,7 @@ public class MarketOverviewService : IMarketOverviewService
             decimal? prevGram = gold.PreviousClose.HasValue
                 ? gold.PreviousClose.Value / GramsPerOunce * usdTryRate.Value
                 : null;
+            var ounceSeries = await _yahoo.GetCloseSeriesAsync("GC=F", SparkRange);
             strip.Add(new MarketQuote
             {
                 Symbol = "XAU",
@@ -115,10 +127,36 @@ public class MarketOverviewService : IMarketOverviewService
                 Price = gram,
                 PreviousClose = prevGram,
                 ChangePercent = ChangePct(gram, prevGram),
+                // Seri USD/ons; güncel kurla gram TL'ye çevriliyor. Geçmiş kur farkı
+                // yansımaz — sparkline eğilim gösterir, kesin tarihsel fiyat değil.
+                Spark = [.. ounceSeries.Select(o => o / GramsPerOunce * usdTryRate.Value)],
             });
         }
 
         return strip;
+    }
+
+    // Döviz: Frankfurter serisinden son değer + bir önceki gün → günlük değişim
+    private async Task<MarketQuote?> FxQuoteAsync(string code, string name)
+    {
+        var series = await _frankfurter.GetSeriesAsync(code, SparkDays);
+        if (series.Count == 0)
+        {
+            var spot = await _frankfurter.GetExchangeRateAsync(code);
+            return spot.HasValue ? new MarketQuote { Symbol = code, Name = name, Price = spot.Value } : null;
+        }
+
+        var last = series[^1];
+        decimal? prev = series.Count > 1 ? series[^2] : null;
+        return new MarketQuote
+        {
+            Symbol = code,
+            Name = name,
+            Price = last,
+            PreviousClose = prev,
+            ChangePercent = ChangePct(last, prev),
+            Spark = series,
+        };
     }
 
     private static decimal? ChangePct(decimal price, decimal? prev) =>

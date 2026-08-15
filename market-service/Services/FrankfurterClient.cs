@@ -39,4 +39,33 @@ public class FrankfurterClient : IFrankfurterClient
             return null;
         }
     }
+
+    // v1 zaman serisi: {"rates":{"2026-08-07":{"TRY":47.706}, ...}} — hafta sonları atlanır.
+    public async Task<List<decimal>> GetSeriesAsync(string baseCurrency, int days)
+    {
+        try
+        {
+            var end = DateTime.UtcNow.Date;
+            var start = end.AddDays(-days);
+            var url = $"https://api.frankfurter.dev/v1/{start:yyyy-MM-dd}..{end:yyyy-MM-dd}?base={baseCurrency}&symbols=TRY";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            if (!doc.RootElement.TryGetProperty("rates", out var rates))
+                return [];
+
+            return rates.EnumerateObject()
+                .OrderBy(p => p.Name, StringComparer.Ordinal)   // tarih ISO → sıralama kronolojik
+                .Where(p => p.Value.TryGetProperty("TRY", out _))
+                .Select(p => p.Value.GetProperty("TRY").GetDecimal())
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get series for {BaseCurrency}", baseCurrency);
+            return [];
+        }
+    }
 }

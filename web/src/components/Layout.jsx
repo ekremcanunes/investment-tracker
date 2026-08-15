@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, CandlestickChart, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
+import { LayoutDashboard, CandlestickChart, Coins, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APP_NAME } from '@/lib/app'
 import { useAuth } from '@/contexts/AuthContext'
@@ -72,6 +72,7 @@ export default function Layout() {
 
           <div className={sectionCls}>{t('nav.sectionMarket')}</div>
           <NavItem to="/market" label={t('nav.market')} icon={CandlestickChart} />
+          <NavItem to="/gold-fx" label={t('nav.goldFx')} icon={Coins} />
         </nav>
 
         {/* Alt blok: saat + ayarlar + kullanıcı kartı */}

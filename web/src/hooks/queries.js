@@ -17,6 +17,17 @@ export function useMarketOverview() {
   })
 }
 
+// Tüm BIST evreninde sembol arama — yalnızca BIST 30 filtresi boş kalınca kullanılır.
+// q null ise sorgu hiç çalışmaz.
+export function useSymbolSearch(q) {
+  return useQuery({
+    queryKey: ['symbol-search', q],
+    queryFn: () => marketApi.search(q).then((r) => r.data),
+    enabled: !!q && q.length >= 2,
+    staleTime: 60 * 60_000,
+  })
+}
+
 // Tüm portföy — tek kaynak; tab'lar bunu client-side filtreler
 export function useHoldings() {
   return useQuery({

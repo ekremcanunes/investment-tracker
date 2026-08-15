@@ -116,6 +116,36 @@ Makbuz-stili tek bileşen; her yerde kullanılır (`window.confirm` yerine de).
 
 ---
 
+## 6.1 Piyasa sayfaları — neyi gösterebiliriz
+
+Piyasa iki sayfaya ayrıldı: **Borsa** (`/market`) ve **Altın & Döviz** (`/gold-fx`).
+
+**Elimizdeki veri** — hepsi mevcut çağrılardan gelir, ek maliyet yoktur:
+
+| Alan | Kaynak | Not |
+|------|--------|-----|
+| Fiyat, önceki kapanış, değişim % | Yahoo chart meta | — |
+| Gün yüksek/düşük, 52H yüksek/düşük, hacim | Yahoo chart meta | Aynı çağrıda geliyordu, önce atılıyordu |
+| Kapanış serisi (sparkline) | Yahoo `?range=1mo` | Yalnızca **endeks ve altın/döviz** için; 30 hisseye ayrı seri çekilmez |
+| Döviz kuru + 30 günlük seri | Frankfurter v1 timeseries | Günlük değişim buradan hesaplanır |
+| BIST evreni (sembol + isim) | BistCatalog, Redis 24s | Arama için |
+
+**Türetilenler** (backend işi yok, tamamen frontend):
+
+- **Piyasa nabzı** — `changePercent` sayımı: yükselen / yatay / düşen + ortalama
+- **Hacim liderleri** — `volume` sıralaması. Birim **adet**, TL değil
+- **52H konum** — `(price − week52Low) / (week52High − week52Low)`
+- **Gün aralığı çubuğu** — fiyatın gün bandındaki yeri (`RangeBar`)
+- **Sarrafiye** — gram fiyatı × ağırlık × milyem (22 ayar = 0.916)
+
+> **Elimizde OLMAYAN — üretmeyin, mock'lamayın:** sektör/endüstri bilgisi, F/K – piyasa değeri – temettü gibi temel veriler, emir defteri/derinlik, seans içi tick, haber akışı, duyarlılık skoru. Hiçbir kaynağımız bunları vermiyor.
+
+**Arama:** BIST 30 içinde arama **client-side filtredir** — 30 satır için ağ turu ya da DB indeksi kurulmaz. Filtre boş dönerse `/market/search` ile tüm BIST evreni önerilir. Piyasa sembolleri Postgres'te tutulmaz; DB yalnızca portföy ve işlemler içindir.
+
+**Bileşenler:** [`Sparkline`](src/components/Sparkline.jsx) (yön rengi kâr/zarar semantiğinde) ve `RangeBar` (bant içi konum işareti).
+
+---
+
 ## 7. İki katman, tek tema
 
 Kullanıcıya seçtirilen bir tema **yok**. Bunun yerine iki sabit katman var:
@@ -136,4 +166,6 @@ Kullanıcıya seçtirilen bir tema **yok**. Bunun yerine iki sabit katman var:
 - ❌ `foil`'i bone tuval içinde kullanmak — foil yalnızca şasiye ait. Tuvalde birincil aksiyon rengi `brass`.
 - ❌ Sayfayı `Page` olmadan yazmak — başlık çubuğu ve padding oradan gelir, Layout padding vermez.
 - ❌ Ad-hoc `<h1>` — başlık `Page`'in işi.
+- ❌ Elimizde olmayan piyasa verisini uydurmak veya mock'lamak (bkz. §6.1).
+- ❌ 30 satırlık BIST 30 için sunucuya arama isteği atmak — filtre client-side.
 - ❌ `window.confirm` — ortak `Modal`.
