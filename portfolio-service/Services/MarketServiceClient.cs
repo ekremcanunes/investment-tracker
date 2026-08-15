@@ -46,4 +46,20 @@ public class MarketServiceClient(HttpClient httpClient, IHttpContextAccessor htt
         var result = await response.Content.ReadFromJsonAsync<MarketOverviewResponse>();
         return result ?? new MarketOverviewResponse();
     }
+
+    public async Task<PriceHistoryResponse> GetHistoryAsync(string symbol, string assetType, string range)
+    {
+        var url = $"/api/market/history/{Uri.EscapeDataString(symbol)}"
+                + $"?assetType={Uri.EscapeDataString(assetType)}&range={Uri.EscapeDataString(range)}";
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        var cookieHeader = httpContextAccessor.HttpContext?.Request.Headers["Cookie"].ToString();
+        if (!string.IsNullOrEmpty(cookieHeader))
+            request.Headers.Add("Cookie", cookieHeader);
+
+        var response = await httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PriceHistoryResponse>();
+        return result ?? new PriceHistoryResponse();
+    }
 }

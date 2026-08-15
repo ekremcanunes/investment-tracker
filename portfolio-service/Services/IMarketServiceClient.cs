@@ -5,6 +5,7 @@ public interface IMarketServiceClient
     Task<List<MarketPriceResponse>> GetPricesAsync(IEnumerable<string> symbols);
     Task<List<SymbolSearchResponse>> SearchAsync(string query);
     Task<MarketOverviewResponse> GetOverviewAsync();
+    Task<PriceHistoryResponse> GetHistoryAsync(string symbol, string assetType, string range);
 }
 
 public class MarketQuoteResponse
@@ -14,6 +15,32 @@ public class MarketQuoteResponse
     public decimal Price { get; set; }
     public decimal? PreviousClose { get; set; }
     public decimal? ChangePercent { get; set; }
+
+    // market-service.MarketQuote ile birebir kalmalı — eksik alan sessizce düşer.
+    public decimal? DayHigh { get; set; }
+    public decimal? DayLow { get; set; }
+    public decimal? Week52High { get; set; }
+    public decimal? Week52Low { get; set; }
+    public long? Volume { get; set; }
+    public List<decimal> Spark { get; set; } = new();
+}
+
+public class CandleResponse
+{
+    public long Time { get; set; }
+    public decimal Open { get; set; }
+    public decimal High { get; set; }
+    public decimal Low { get; set; }
+    public decimal Close { get; set; }
+    public long? Volume { get; set; }
+}
+
+public class PriceHistoryResponse
+{
+    public string Symbol { get; set; } = string.Empty;
+    public string Range { get; set; } = string.Empty;
+    public string Currency { get; set; } = string.Empty;
+    public List<CandleResponse> Candles { get; set; } = new();
 }
 
 public class MarketOverviewResponse

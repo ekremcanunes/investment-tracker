@@ -20,4 +20,13 @@ public class MarketController(IMarketServiceClient marketServiceClient) : Contro
     {
         return Ok(await marketServiceClient.GetOverviewAsync());
     }
+
+    // Grafik serisi — market-service'e geçirilir (nginx tüm /api/'yi buraya yönlendirir)
+    [HttpGet("history/{symbol}")]
+    public async Task<ActionResult<PriceHistoryResponse>> History(string symbol,
+        [FromQuery] string assetType = "Stock", [FromQuery] string range = "1mo")
+    {
+        if (string.IsNullOrWhiteSpace(symbol)) return BadRequest();
+        return Ok(await marketServiceClient.GetHistoryAsync(symbol.Trim(), assetType, range));
+    }
 }

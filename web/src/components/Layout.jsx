@@ -58,10 +58,8 @@ export default function Layout() {
           <div className="foil-tile grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[7px] font-mono text-xs font-bold">
             ₺
           </div>
-          <div className="min-w-0">
-            <div className="truncate text-[13px] font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
-            {email && <div className="truncate text-[10px] text-shell-muted">{email}</div>}
-          </div>
+          {/* Yalnızca marka — kullanıcı bilgisi alttaki kartta */}
+          <div className="truncate text-[13px] font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
         </div>
 
         <nav className="mt-2 flex flex-col gap-0.5">

@@ -118,27 +118,6 @@ export default function Market() {
       eyebrow={t('nav.sectionMarket')}
       title={t('nav.market')}
       meta={t('market.delayNote')}
-      actions={
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('market.searchPlaceholder')}
-            aria-label={t('market.searchPlaceholder')}
-            className="w-52 rounded-lg border border-border bg-background py-1.5 pl-8 pr-7 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
-          />
-          {query && (
-            <button
-              onClick={() => setQuery('')}
-              aria-label={t('common.cancel')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
-      }
     >
       <div className="space-y-4">
         {/* Endeksler + özet */}
@@ -227,16 +206,37 @@ export default function Market() {
           title="BIST 30"
           meta={`${sorted.length} / ${stocks.length}`}
           action={
-            <div className="flex gap-1">
-              {SORTS.map((s) => (
-                <button
-                  key={s.key}
-                  onClick={() => setSort(s.key)}
-                  className={`rounded-md px-2 py-1 text-[11px] ${sort === s.key ? 'bg-secondary font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  {t(s.label)}
-                </button>
-              ))}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className="flex gap-1">
+                {SORTS.map((s) => (
+                  <button
+                    key={s.key}
+                    onClick={() => setSort(s.key)}
+                    className={`rounded-md px-2 py-1 text-[11px] ${sort === s.key ? 'bg-secondary font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  >
+                    {t(s.label)}
+                  </button>
+                ))}
+              </div>
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('market.searchPlaceholder')}
+                  aria-label={t('market.searchPlaceholder')}
+                  className="w-52 rounded-lg border border-border bg-background py-1.5 pl-8 pr-7 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+                />
+                {query && (
+                  <button
+                    onClick={() => setQuery('')}
+                    aria-label={t('common.clear')}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
             </div>
           }
         >
