@@ -1,8 +1,8 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAssetTransactions } from '@/hooks/queries'
 import TradingViewChart from './TradingViewChart'
-import { ArrowDownRight, TrendingUp, TrendingDown } from 'lucide-react'
+import { ArrowDownRight, TrendingUp, TrendingDown, Maximize2, Minimize2 } from 'lucide-react'
 
 const fmt = (v, currency) =>
   v != null
@@ -37,6 +37,7 @@ function typeConfig(holding, t) {
 export default function AssetDrawer({ holding, onClose, onSell }) {
   const { t } = useLanguage()
   const { data: lots = [], isLoading: lotsLoading } = useAssetTransactions(holding?.symbol)
+  const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
     const onKey = (e) => e.key === 'Escape' && onClose()
@@ -57,6 +58,145 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
   const pl = holding.unrealizedProfitLoss
   const plUp = pl != null && pl >= 0
 
+  // --- İçerik blokları (iki layout da bunları kullanır) ---
+  const header = (
+    <div className="flex items-center justify-between border-b border-border pb-4">
+      <span className="font-bold text-muted-foreground">
+        DEFTER NO: <span className="text-foreground">{holding.exchange || holding.assetType}</span>
+      </span>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setExpanded((v) => !v)}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label={expanded ? t('drawer.collapse') : t('drawer.expand')}
+          title={expanded ? t('drawer.collapse') : t('drawer.expand')}
+        >
+          {expanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        </button>
+        <button onClick={onClose} className="font-bold underline hover:text-margin">[X] {t('common.cancel')}</button>
+      </div>
+    </div>
+  )
+
+  const priceBlock = (
+    <div className="border-b border-border pb-6">
+      <span className="block text-2xl font-bold text-foreground">{holding.symbol}</span>
+      {holding.priceAvailable ? (
+        <div className="mt-4 flex items-baseline justify-between">
+          <span className="tabular text-3xl font-bold text-foreground">{fmt(price, native)}</span>
+          {change != null && (
+            <span className={`inline-flex items-center gap-1 border px-2 py-1 font-bold ${up ? 'border-up/20 bg-up/10 text-up' : 'border-down/20 bg-down/10 text-down'}`}>
+              {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+              {fmt(change, native)} ({changePct >= 0 ? '+' : ''}{changePct?.toFixed(2)}%)
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 text-down">{t('assets.priceUnavailable')}</div>
+      )}
+    </div>
+  )
+
+  const statsBlock = holding.priceAvailable && hasMarketStats && (
+    <div className="border-b border-border py-6">
+      <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.marketStats')}</h3>
+      <Row label={t('drawer.previousClose')} value={fmt(prev, native)} />
+      <Row label={t('drawer.dayRange')} value={`${fmt(holding.dayLow, native)} – ${fmt(holding.dayHigh, native)}`} />
+      <Row label={t('drawer.week52Range')} value={`${fmt(holding.week52Low, native)} – ${fmt(holding.week52High, native)}`} />
+      <Row label={t('drawer.volume')} value={fmtNum(holding.volume)} />
+    </div>
+  )
+
+  const positionBlock = (
+    <div className="border-b border-border py-6">
+      <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.yourPosition')}</h3>
+      <Row label={cfg.qtyLabel} value={fmtNum(holding.quantity)} />
+      <Row label={cfg.avgLabel} value={fmt(holding.avgCostBasis, holding.currency)} />
+      <Row label={t('assets.currentValue')} value={fmt(holding.valueInTry, 'TRY')} />
+      <Row
+        label={t('assets.profitLoss')}
+        valueClass={pl == null ? 'text-muted-foreground' : plUp ? 'text-up' : 'text-down'}
+        value={pl != null
+          ? `${fmt(pl, holding.currency)}${holding.unrealizedProfitLossPercent != null ? ` (${holding.unrealizedProfitLossPercent >= 0 ? '+' : ''}${holding.unrealizedProfitLossPercent.toFixed(2)}%)` : ''}`
+          : '—'}
+      />
+    </div>
+  )
+
+  const lotBlock = (
+    <div className="py-6">
+      <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.lotHistory')}</h3>
+      {lotsLoading ? (
+        <p className="text-muted-foreground">{t('common.loading')}</p>
+      ) : lots.length === 0 ? (
+        <p className="text-muted-foreground">{t('drawer.noHistory')}</p>
+      ) : (
+        <table className="tabular w-full text-left">
+          <thead>
+            <tr className="border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground">
+              <th className="py-1.5 font-normal">{t('drawer.date')}</th>
+              <th className="py-1.5 font-normal">{t('common.type')}</th>
+              <th className="py-1.5 text-right font-normal">{cfg.qtyLabel}</th>
+              <th className="py-1.5 text-right font-normal">{cfg.avgLabel}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border/60">
+            {lots.map((lot) => (
+              <tr key={lot.id}>
+                <td className="py-1.5">{new Date(lot.date).toLocaleDateString('tr-TR')}</td>
+                <td className={`py-1.5 font-bold ${lot.type === 'AssetSell' ? 'text-down' : 'text-up'}`}>
+                  {lot.type === 'AssetSell' ? t('assets.sell') : t('assets.buy')}
+                </td>
+                <td className="py-1.5 text-right">{fmtNum(lot.quantity)}</td>
+                <td className="py-1.5 text-right">{fmt(lot.unitPrice, lot.currency)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  )
+
+  const sellBtn = (
+    <button
+      onClick={() => onSell(holding)}
+      className="flex w-full items-center justify-center gap-2 border border-foreground py-3 font-bold uppercase tracking-wider text-foreground hover:bg-foreground hover:text-background"
+    >
+      <ArrowDownRight className="h-4 w-4" />
+      {t('assets.sell')}
+    </button>
+  )
+
+  // Grafik — mode değişince tazelensin diye key veriyoruz (TradingView yeniden boyutlansın)
+  const chart = <TradingViewChart tvSymbol={cfg.tvSymbol} key={expanded ? 'expanded' : 'collapsed'} />
+
+  // --- GENİŞLETİLMİŞ: tam ekran, iki kolon (bilgi sol, büyük grafik sağ) ---
+  if (expanded) {
+    return (
+      <div className="fixed inset-0 z-50 bg-foreground/50 p-4 md:p-8" onClick={onClose}>
+        <div
+          className="ledger-modal mx-auto flex h-full max-w-6xl flex-col border-2 border-foreground bg-card shadow-ledger-strong"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="px-6 pt-6 font-mono text-xs">{header}</div>
+          <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[360px_1fr]">
+            <div className="overflow-y-auto border-border p-6 font-mono text-xs md:border-r">
+              {priceBlock}
+              {statsBlock}
+              {positionBlock}
+              {lotBlock}
+              <div className="pt-2">{sellBtn}</div>
+            </div>
+            <div className="min-h-96 p-6 md:min-h-0">
+              <div className="h-full min-h-96 overflow-hidden border border-border md:min-h-0">{chart}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // --- KATLANMIŞ: yan panel ---
   return (
     <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[1px]" onClick={onClose}>
       <div
@@ -64,109 +204,17 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
         onClick={(e) => e.stopPropagation()}
       >
         <div>
-          {/* Header */}
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <span className="font-bold text-muted-foreground">
-              DEFTER NO: <span className="text-foreground">{holding.exchange || holding.assetType}</span>
-            </span>
-            <button onClick={onClose} className="font-bold underline hover:text-margin">[X] {t('common.cancel')}</button>
-          </div>
-
-          {/* Sembol + fiyat */}
-          <div className="mt-6 border-b border-border pb-6">
-            <span className="block text-2xl font-bold text-foreground">{holding.symbol}</span>
-            {holding.priceAvailable ? (
-              <div className="mt-4 flex items-baseline justify-between">
-                <span className="tabular text-3xl font-bold text-foreground">{fmt(price, native)}</span>
-                {change != null && (
-                  <span className={`inline-flex items-center gap-1 border px-2 py-1 font-bold ${up ? 'border-up/20 bg-up/10 text-up' : 'border-down/20 bg-down/10 text-down'}`}>
-                    {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                    {fmt(change, native)} ({changePct >= 0 ? '+' : ''}{changePct?.toFixed(2)}%)
-                  </span>
-                )}
-              </div>
-            ) : (
-              <div className="mt-3 text-down">{t('assets.priceUnavailable')}</div>
-            )}
-          </div>
-
-          {/* Piyasa metrikleri (yalnızca veri varsa — hisse) */}
-          {holding.priceAvailable && hasMarketStats && (
-            <div className="border-b border-border py-6">
-              <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.marketStats')}</h3>
-              <Row label={t('drawer.previousClose')} value={fmt(prev, native)} />
-              <Row label={t('drawer.dayRange')} value={`${fmt(holding.dayLow, native)} – ${fmt(holding.dayHigh, native)}`} />
-              <Row label={t('drawer.week52Range')} value={`${fmt(holding.week52Low, native)} – ${fmt(holding.week52High, native)}`} />
-              <Row label={t('drawer.volume')} value={fmtNum(holding.volume)} />
-            </div>
-          )}
-
-          {/* Pozisyon */}
-          <div className="border-b border-border py-6">
-            <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.yourPosition')}</h3>
-            <Row label={cfg.qtyLabel} value={fmtNum(holding.quantity)} />
-            <Row label={cfg.avgLabel} value={fmt(holding.avgCostBasis, holding.currency)} />
-            <Row label={t('assets.currentValue')} value={fmt(holding.valueInTry, 'TRY')} />
-            <Row
-              label={t('assets.profitLoss')}
-              valueClass={pl == null ? 'text-muted-foreground' : plUp ? 'text-up' : 'text-down'}
-              value={pl != null
-                ? `${fmt(pl, holding.currency)}${holding.unrealizedProfitLossPercent != null ? ` (${holding.unrealizedProfitLossPercent >= 0 ? '+' : ''}${holding.unrealizedProfitLossPercent.toFixed(2)}%)` : ''}`
-                : '—'}
-            />
-          </div>
-
-          {/* Lot geçmişi */}
-          <div className="border-b border-border py-6">
-            <h3 className="mb-3 uppercase tracking-wider text-muted-foreground">{t('drawer.lotHistory')}</h3>
-            {lotsLoading ? (
-              <p className="text-muted-foreground">{t('common.loading')}</p>
-            ) : lots.length === 0 ? (
-              <p className="text-muted-foreground">{t('drawer.noHistory')}</p>
-            ) : (
-              <table className="tabular w-full text-left">
-                <thead>
-                  <tr className="border-b border-border uppercase text-[10px] tracking-wider text-muted-foreground">
-                    <th className="py-1.5 font-normal">{t('drawer.date')}</th>
-                    <th className="py-1.5 font-normal">{t('common.type')}</th>
-                    <th className="py-1.5 text-right font-normal">{cfg.qtyLabel}</th>
-                    <th className="py-1.5 text-right font-normal">{cfg.avgLabel}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60">
-                  {lots.map((lot) => (
-                    <tr key={lot.id}>
-                      <td className="py-1.5">{new Date(lot.date).toLocaleDateString('tr-TR')}</td>
-                      <td className={`py-1.5 font-bold ${lot.type === 'AssetSell' ? 'text-down' : 'text-up'}`}>
-                        {lot.type === 'AssetSell' ? t('assets.sell') : t('assets.buy')}
-                      </td>
-                      <td className="py-1.5 text-right">{fmtNum(lot.quantity)}</td>
-                      <td className="py-1.5 text-right">{fmt(lot.unitPrice, lot.currency)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* Grafik */}
+          {header}
+          <div className="mt-6">{priceBlock}</div>
+          {statsBlock}
+          {positionBlock}
+          {lotBlock}
           <div className="pb-2 pt-6">
             <h3 className="mb-2 uppercase tracking-wider text-muted-foreground">{t('drawer.chart')}</h3>
-            <div className="h-72 overflow-hidden border border-border">
-              <TradingViewChart tvSymbol={cfg.tvSymbol} />
-            </div>
+            <div className="h-72 overflow-hidden border border-border">{chart}</div>
           </div>
         </div>
-
-        <div className="pt-6">
-          <button
-            onClick={() => onSell(holding)}
-            className="flex w-full items-center justify-center gap-2 border border-foreground py-3 font-bold uppercase tracking-wider text-foreground hover:bg-foreground hover:text-background"
-          >
-            <ArrowDownRight className="h-4 w-4" />
-            {t('assets.sell')}
-          </button>
-        </div>
+        <div className="pt-6">{sellBtn}</div>
       </div>
     </div>
   )
