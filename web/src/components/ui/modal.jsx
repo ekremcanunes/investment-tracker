@@ -25,7 +25,7 @@ export function Modal({ open, onClose, title, subtitle, children, actions, maxWi
       >
         {title && (
           <div className="mb-6 border-b border-dashed border-foreground pb-4 text-center">
-            <div className="font-serif text-lg font-bold text-foreground">{title}</div>
+            <div className="font-display text-lg font-bold text-foreground">{title}</div>
             {subtitle && (
               <div className="mt-1 font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">{subtitle}</div>
             )}

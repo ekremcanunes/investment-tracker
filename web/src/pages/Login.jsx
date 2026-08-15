@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useLanguage } from '../contexts/LanguageContext'
 import { isValidEmail, kratosErrorText } from '../lib/authErrors'
+import { authLabelCls, authInputCls, authSubmitCls } from '../lib/authStyles'
 import { APP_NAME } from '../lib/app'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -70,60 +71,66 @@ export default function Login() {
 
   if (!flow) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background font-mono text-xs text-muted-foreground">
+      <div className="auth-bg flex min-h-screen items-center justify-center font-mono text-xs text-shell-muted">
         {t('auth.redirecting')}
       </div>
     )
   }
 
-  const inputCls = 'w-full border border-input bg-background px-3 py-2.5 font-mono text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring'
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-sm border-2 border-foreground bg-card p-8 shadow-ledger-strong">
-        <div className="mb-6 text-center">
-          <span className="block font-serif text-2xl font-bold text-foreground">{APP_NAME}</span>
-          <span className="mt-1 block font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-            {t('auth.signInSubtitle')}
-          </span>
-        </div>
+    <div className="auth-bg flex min-h-screen items-center justify-center p-4">
+      <div className="auth-card relative z-10 w-full max-w-[340px] rounded-2xl border border-shell-border bg-shell-panel p-6">
+        <div className="foil-tile grid h-[30px] w-[30px] place-items-center rounded-lg font-mono text-[13px] font-bold">₺</div>
+        <h1 className="mt-3.5 font-display text-lg font-semibold text-shell-fg">{t('auth.signIn')}</h1>
+        <p className="mt-0.5 text-xs text-shell-muted">{APP_NAME} — {t('auth.signInSubtitle')}</p>
 
         {error && (
-          <div className="mb-4 border border-destructive/30 bg-destructive/5 px-3 py-2 font-mono text-xs text-destructive">
+          <div className="mt-4 rounded-lg border border-down/40 bg-down/10 px-3 py-2 text-xs text-down" role="alert">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs" noValidate>
-          <div>
-            <label className="mb-1 block uppercase text-muted-foreground">{t('auth.email')}</label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" className={inputCls} />
-            {fieldErr.email && <p className="mt-1 text-down">{fieldErr.email}</p>}
-          </div>
+        <form onSubmit={handleSubmit} className="mt-1" noValidate>
+          <label className={authLabelCls} htmlFor="login-email">{t('auth.email')}</label>
+          <input
+            id="login-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            className={authInputCls}
+          />
+          {fieldErr.email && <p className="mt-1 text-[11px] text-down">{fieldErr.email}</p>}
 
-          <div>
-            <label className="mb-1 block uppercase text-muted-foreground">{t('auth.password')}</label>
-            <div className="relative">
-              <input type={showPass ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" className={`${inputCls} pr-10`} />
-              <button type="button" onClick={() => setShowPass((v) => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground" aria-label={showPass ? t('auth.hidePassword') : t('auth.showPassword')}>
-                {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-            {fieldErr.password && <p className="mt-1 text-down">{fieldErr.password}</p>}
+          <label className={authLabelCls} htmlFor="login-password">{t('auth.password')}</label>
+          <div className="relative">
+            <input
+              id="login-password"
+              type={showPass ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className={`${authInputCls} pr-10`}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPass((v) => !v)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-shell-muted hover:text-shell-fg"
+              aria-label={showPass ? t('auth.hidePassword') : t('auth.showPassword')}
+            >
+              {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
           </div>
+          {fieldErr.password && <p className="mt-1 text-[11px] text-down">{fieldErr.password}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full border border-foreground bg-foreground py-3 font-bold uppercase tracking-wider text-background hover:opacity-90 disabled:opacity-50"
-          >
+          <button type="submit" disabled={loading} className={authSubmitCls}>
             {loading ? t('auth.signingIn') : t('auth.signIn')}
           </button>
         </form>
 
-        <p className="mt-6 text-center font-mono text-[11px] text-muted-foreground">
+        <p className="mt-4 text-center text-[11.5px] text-shell-muted">
           {t('auth.noAccount')}{' '}
-          <Link to="/register" className="text-foreground underline hover:text-margin">{t('auth.createOne')}</Link>
+          <Link to="/register" className="border-b border-foil text-foil hover:opacity-80">{t('auth.createOne')}</Link>
         </p>
       </div>
     </div>

@@ -35,13 +35,21 @@
   --color-shell-muted: hsl(var(--shell-muted));
   --color-foil: hsl(var(--foil));       /* şampanya aksan (şasi içinde) */
 
+  /* Kategori renkleri — yalnızca AYIRT ETMEK için. Asla kâr/zarar anlamı taşımaz. */
+  --color-cat-stock: hsl(var(--cat-stock));
+  --color-cat-gold: hsl(var(--cat-gold));
+  --color-cat-fx: hsl(var(--cat-fx));
+  --color-cat-cash: hsl(var(--cat-cash));
+  --color-cat-index: hsl(var(--cat-index));
+  --color-cat-other: hsl(var(--cat-other));
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 1px);
   --radius-sm: calc(var(--radius) - 1px);
 
-  --font-sans: "Plus Jakarta Sans Variable", system-ui, sans-serif;
-  --font-serif: "Courier Prime", ui-monospace, monospace;   /* daktilo wordmark/makbuz */
-  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;      /* gövde / UI */
+  --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif; /* başlıklar */
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;         /* rakam / etiket */
 }
 
 /*
@@ -70,8 +78,16 @@
   --input: 45 8% 10%;          /* ledger'da inputlar ink kenarlı */
   --ring: 45 8% 10%;
 
-  --up: 149 60% 27%;           /* kâr #1B6E43 */
-  --down: 5 53% 32%;           /* zarar #7B2D26 */
+  --up: 152 72% 28%;           /* kâr #147C4A */
+  --down: 5 61% 46%;           /* zarar #BE3A2E */
+
+  /* Kategori paleti — bone zemine göre ayarlandı, hepsi 4.5:1 üstü kontrast */
+  --cat-stock: 217 56% 42%;    /* #2F5DA8 hisse */
+  --cat-gold: 36 51% 56%;      /* #C69B58 altın */
+  --cat-fx: 176 65% 26%;       /* #17706B döviz */
+  --cat-cash: 265 33% 46%;     /* #6B4E9B nakit */
+  --cat-index: 18 54% 50%;     /* #C25E3A endeks */
+  --cat-other: 45 6% 52%;      /* #8C897E diğer */
   --brass: 36 43% 38%;         /* #8C6A38 */
   --margin: 6 59% 44%;         /* #B23A2E marj kırmızısı */
 
@@ -129,6 +145,23 @@ body {
 
 /* Bone içerik tuvali — koyu şasinin üstünde yükselir */
 .canvas-inset { box-shadow: 0 12px 34px rgb(0 0 0 / .45); }
+
+/* Auth zemini: ızgara + üstten foil ışıma. Kart .auth-card ile yüzer. */
+.auth-bg { position: relative; overflow: hidden; background: hsl(var(--shell)); }
+.auth-bg::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    linear-gradient(hsl(var(--shell-border)) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--shell-border)) 1px, transparent 1px);
+  background-size: 34px 34px;
+  -webkit-mask-image: radial-gradient(420px 300px at 50% 42%, #000 10%, transparent 78%);
+          mask-image: radial-gradient(420px 300px at 50% 42%, #000 10%, transparent 78%);
+}
+.auth-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(340px 190px at 50% 10%, hsl(var(--foil) / .17), transparent 70%);
+}
+.auth-card { box-shadow: 0 24px 60px rgb(0 0 0 / .65); }
 
 /* Sol kırmızı marj çizgisi (muhasebe kağıdı) — .margin-rule + sol iç boşluk gerektirir */
 .margin-rule { position: relative; }
