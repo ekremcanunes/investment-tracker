@@ -4,6 +4,23 @@ public interface IMarketServiceClient
 {
     Task<List<MarketPriceResponse>> GetPricesAsync(IEnumerable<string> symbols);
     Task<List<SymbolSearchResponse>> SearchAsync(string query);
+    Task<MarketOverviewResponse> GetOverviewAsync();
+}
+
+public class MarketQuoteResponse
+{
+    public string Symbol { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public decimal? PreviousClose { get; set; }
+    public decimal? ChangePercent { get; set; }
+}
+
+public class MarketOverviewResponse
+{
+    public List<MarketQuoteResponse> Indices { get; set; } = new();
+    public List<MarketQuoteResponse> Strip { get; set; } = new();
+    public List<MarketQuoteResponse> Stocks { get; set; } = new();
 }
 
 public class SymbolSearchResponse

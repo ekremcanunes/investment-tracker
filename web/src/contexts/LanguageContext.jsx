@@ -5,6 +5,11 @@ const translations = {
     // Navigation
     'nav.overview': 'Genel Bakış',
     'nav.assets': 'Portföy',
+    'nav.market': 'Piyasa',
+    'market.title': 'Piyasa',
+    'market.gainers': 'En Çok Yükselen',
+    'market.losers': 'En Çok Düşen',
+    'market.change': 'Değişim',
     'nav.transactions': 'İşlemler',
     'nav.analytics': 'Analiz',
     'nav.logout': 'Çıkış Yap',
@@ -146,6 +151,11 @@ const translations = {
   en: {
     'nav.overview': 'Overview',
     'nav.assets': 'Portfolio',
+    'nav.market': 'Market',
+    'market.title': 'Market',
+    'market.gainers': 'Top Gainers',
+    'market.losers': 'Top Losers',
+    'market.change': 'Change',
     'nav.transactions': 'Transactions',
     'nav.analytics': 'Analytics',
     'nav.logout': 'Logout',

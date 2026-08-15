@@ -22,4 +22,5 @@ export const transactionApi = {
 
 export const marketApi = {
   search: (q) => api.get('/api/market/search', { params: { q } }),
+  overview: () => api.get('/api/market/overview'),
 }

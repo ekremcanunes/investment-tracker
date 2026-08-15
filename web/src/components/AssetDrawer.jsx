@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { useAssetTransactions } from '@/hooks/queries'
 import TradingViewChart from './TradingViewChart'
-import { ArrowDownRight, TrendingUp, TrendingDown, Maximize2, Minimize2 } from 'lucide-react'
+import { ArrowDownRight, Plus, TrendingUp, TrendingDown, Maximize2, Minimize2 } from 'lucide-react'
 
 const fmt = (v, currency) =>
   v != null
@@ -36,7 +37,9 @@ function typeConfig(holding, t) {
 
 export default function AssetDrawer({ holding, onClose, onSell }) {
   const { t } = useLanguage()
-  const { data: lots = [], isLoading: lotsLoading } = useAssetTransactions(holding?.symbol)
+  const navigate = useNavigate()
+  const isMarket = !!holding?.market // piyasa modu: sahip olunmayan, sadece izlenen sembol
+  const { data: lots = [], isLoading: lotsLoading } = useAssetTransactions(isMarket ? null : holding?.symbol)
   const [expanded, setExpanded] = useState(false)
 
   useEffect(() => {
@@ -157,7 +160,15 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
     </div>
   )
 
-  const sellBtn = (
+  const actionBtn = isMarket ? (
+    <button
+      onClick={() => navigate('/assets/buy')}
+      className="flex w-full items-center justify-center gap-2 border border-brass bg-brass py-3 font-bold uppercase tracking-wider text-white hover:opacity-90"
+    >
+      <Plus className="h-4 w-4" />
+      {t('assets.buy')}
+    </button>
+  ) : (
     <button
       onClick={() => onSell(holding)}
       className="flex w-full items-center justify-center gap-2 border border-foreground py-3 font-bold uppercase tracking-wider text-foreground hover:bg-foreground hover:text-background"
@@ -183,9 +194,9 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
             <div className="overflow-y-auto border-border p-6 font-mono text-xs md:border-r">
               {priceBlock}
               {statsBlock}
-              {positionBlock}
-              {lotBlock}
-              <div className="pt-2">{sellBtn}</div>
+              {!isMarket && positionBlock}
+              {!isMarket && lotBlock}
+              <div className="pt-2">{actionBtn}</div>
             </div>
             <div className="min-h-96 p-6 md:min-h-0">
               <div className="h-full min-h-96 overflow-hidden border border-border md:min-h-0">{chart}</div>
@@ -207,14 +218,14 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
           {header}
           <div className="mt-6">{priceBlock}</div>
           {statsBlock}
-          {positionBlock}
-          {lotBlock}
+          {!isMarket && positionBlock}
+          {!isMarket && lotBlock}
           <div className="pb-2 pt-6">
             <h3 className="mb-2 uppercase tracking-wider text-muted-foreground">{t('drawer.chart')}</h3>
             <div className="h-72 overflow-hidden border border-border">{chart}</div>
           </div>
         </div>
-        <div className="pt-6">{sellBtn}</div>
+        <div className="pt-6">{actionBtn}</div>
       </div>
     </div>
   )

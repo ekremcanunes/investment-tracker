@@ -10,11 +10,14 @@ public class MarketController : ControllerBase
 {
     private readonly IMarketService _marketService;
     private readonly ISymbolSearchService _searchService;
+    private readonly IMarketOverviewService _overviewService;
 
-    public MarketController(IMarketService marketService, ISymbolSearchService searchService)
+    public MarketController(IMarketService marketService, ISymbolSearchService searchService,
+        IMarketOverviewService overviewService)
     {
         _marketService = marketService;
         _searchService = searchService;
+        _overviewService = overviewService;
     }
 
     [HttpGet("prices")]
@@ -41,5 +44,11 @@ public class MarketController : ControllerBase
             return Ok(new List<SymbolSearchResult>());
         var results = await _searchService.SearchAsync(q.Trim());
         return Ok(results);
+    }
+
+    [HttpGet("overview")]
+    public async Task<ActionResult<MarketOverview>> Overview()
+    {
+        return Ok(await _overviewService.GetOverviewAsync());
     }
 }

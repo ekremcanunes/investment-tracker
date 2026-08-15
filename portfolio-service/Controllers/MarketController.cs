@@ -14,4 +14,10 @@ public class MarketController(IMarketServiceClient marketServiceClient) : Contro
             return Ok(new List<SymbolSearchResponse>());
         return Ok(await marketServiceClient.SearchAsync(q.Trim()));
     }
+
+    [HttpGet("overview")]
+    public async Task<ActionResult<MarketOverviewResponse>> Overview()
+    {
+        return Ok(await marketServiceClient.GetOverviewAsync());
+    }
 }

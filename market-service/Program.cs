@@ -29,6 +29,7 @@ builder.Services.AddHttpClient("Kratos");
 builder.Services.AddScoped<IBistCatalog, BistCatalog>();
 builder.Services.AddScoped<IMarketService, MarketService>();
 builder.Services.AddScoped<ISymbolSearchService, SymbolSearchService>();
+builder.Services.AddScoped<IMarketOverviewService, MarketOverviewService>();
 
 builder.Services.AddControllers();
 

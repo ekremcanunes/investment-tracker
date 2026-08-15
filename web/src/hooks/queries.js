@@ -1,10 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { assetApi, dashboardApi, transactionApi } from '@/services/api'
+import { assetApi, dashboardApi, transactionApi, marketApi } from '@/services/api'
 
 export const queryKeys = {
   holdings: ['holdings'],
   dashboard: ['dashboard'],
   transactions: ['transactions'],
+  marketOverview: ['market-overview'],
+}
+
+// Piyasa panosu — BIST 30 + endeks + döviz/altın (backend 10 dk cache'li)
+export function useMarketOverview() {
+  return useQuery({
+    queryKey: queryKeys.marketOverview,
+    queryFn: () => marketApi.overview().then((r) => r.data),
+    staleTime: 5 * 60_000,
+  })
 }
 
 // Tüm portföy — tek kaynak; tab'lar bunu client-side filtreler

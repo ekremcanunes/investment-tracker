@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
+import { LayoutDashboard, CandlestickChart, Wallet, BarChart2, LogOut, Globe } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { APP_NAME } from '@/lib/app'
 import { useAuth } from '@/contexts/AuthContext'
@@ -23,6 +23,7 @@ export default function Layout() {
 
   const navLinks = [
     { to: '/', label: t('nav.overview'), icon: LayoutDashboard, end: true },
+    { to: '/market', label: t('nav.market'), icon: CandlestickChart },
     { to: '/assets', label: t('nav.assets'), icon: Wallet },
     { to: '/analytics', label: t('nav.analytics'), icon: BarChart2 },
   ]
