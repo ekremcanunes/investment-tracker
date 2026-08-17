@@ -17,7 +17,7 @@ services:
     image: oryd/kratos:v1.2.0
     command: migrate sql -e --yes
     environment:
-      DSN: postgres://kratos:kratospassword@postgres:5432/kratos?sslmode=disable
+      DSN: ${KRATOS_DSN}
     volumes:
       - ./kratos:/etc/config/kratos
     depends_on:
@@ -32,7 +32,7 @@ services:
       - "4433:4433"
       - "4434:4434"
     environment:
-      DSN: postgres://kratos:kratospassword@postgres:5432/kratos?sslmode=disable
+      DSN: ${KRATOS_DSN}
       LOG_LEVEL: info
     volumes:
       - ./kratos:/etc/config/kratos

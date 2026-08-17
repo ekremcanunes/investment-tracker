@@ -1,7 +1,5 @@
 version: v1.2.0
 
-dsn: postgres://kratos:kratospassword@postgres:5432/kratos?sslmode=disable
-
 serve:
   public:
     base_url: http://localhost:4433/
