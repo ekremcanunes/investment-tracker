@@ -20,6 +20,18 @@ const formatMoney = (v, currency = 'TRY') =>
 
 const formatPercent = (v) => (v != null ? `${v >= 0 ? '+' : ''}${v.toFixed(2)}%` : '')
 
+// Satır değerleri tablo ve mobil kart listesinde ortak — tek yerden türetilir
+const derive = (h) => {
+  const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
+  const pl = h.unrealizedProfitLoss
+  return {
+    currentUnit,
+    currentTotal: h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null,
+    pl,
+    plColor: pl > 0 ? 'text-up' : pl < 0 ? 'text-down' : 'text-muted-foreground',
+  }
+}
+
 export default function Assets() {
   const { t } = useLanguage()
   const navigate = useNavigate()
@@ -129,7 +141,113 @@ export default function Assets() {
               </PrimaryAction>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            {/* Mobil: kart listesi — 7 sütunlu tablo dar ekranda okunmuyor */}
+            <div className="space-y-2.5 md:hidden">
+              {visible.map((h) => {
+                const isActive = editing?.id === h.id
+                const isSell = isActive && editing.mode === 'sell'
+                const { currentUnit, currentTotal, pl, plColor } = derive(h)
+
+                return (
+                  <div
+                    key={h.id}
+                    className="rounded-lg border border-border bg-card p-3 font-mono"
+                    onClick={() => !isActive && setDrawer(h)}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="inline-flex min-w-0 items-center gap-2">
+                        <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[9px] ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
+                          {h.symbol.slice(0, 2)}
+                        </span>
+                        <span className="truncate text-[13px] font-bold text-foreground">{h.symbol}</span>
+                      </span>
+                      {!isActive && (
+                        <span className={`tabular shrink-0 text-right text-xs font-bold ${plColor}`}>
+                          {pl != null ? (
+                            <>
+                              {formatMoney(pl, h.currency)}
+                              <span className="ml-1 text-[11px]">({formatPercent(h.unrealizedProfitLossPercent)})</span>
+                            </>
+                          ) : '—'}
+                        </span>
+                      )}
+                    </div>
+
+                    {isActive ? (
+                      <div className="mt-3 space-y-2" onClick={(e) => e.stopPropagation()}>
+                        <div className="text-[11px] text-muted-foreground">
+                          {isSell ? t('assets.sellAsset') : t('assets.edit')} · {h.currency}
+                        </div>
+                        <label className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                          {t('assets.quantity')}
+                          <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-10 w-32 text-xs" placeholder="0" />
+                        </label>
+                        <label className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                          {isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}
+                          <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-10 w-32 text-xs" placeholder="0,00" />
+                        </label>
+                        <div className="flex gap-2 pt-1">
+                          <button onClick={handleConfirm} disabled={saving || !form.quantity || (isSell && !form.price)} className="flex h-11 flex-1 items-center justify-center border border-up text-up disabled:opacity-40">
+                            <Check className="h-4 w-4" />
+                          </button>
+                          <button onClick={() => setEditing(null)} className="flex h-11 flex-1 items-center justify-center border border-border text-muted-foreground">
+                            <X className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <dl className="tabular mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-[11px] text-muted-foreground">{qtyLabel}</dt>
+                            <dd className="text-foreground">{h.quantity}</dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-[11px] text-muted-foreground">{costLabel}</dt>
+                            <dd className="text-foreground">{formatMoney(h.avgCostBasis, h.currency)}</dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-[11px] text-muted-foreground">{curLabel}</dt>
+                            <dd className="text-foreground">
+                              {h.priceAvailable ? formatMoney(currentUnit, h.currency) : (
+                                <span className="inline-flex items-center gap-1 text-down"><AlertTriangle className="h-3 w-3" />{t('assets.priceUnavailable')}</span>
+                              )}
+                            </dd>
+                          </div>
+                          <div className="flex justify-between gap-2">
+                            <dt className="text-[11px] text-muted-foreground">{t('assets.currentValue')}</dt>
+                            <dd className="font-bold text-foreground">{formatMoney(currentTotal, h.currency)}</dd>
+                          </div>
+                        </dl>
+
+                        <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                          <button onClick={() => startSell(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-[11px] text-down" title={t('assets.sell')}>
+                            <ArrowDownRight className="h-3.5 w-3.5" />
+                            {t('assets.sell')}
+                          </button>
+                          <button onClick={() => startEdit(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-[11px] text-muted-foreground" title={t('assets.edit')}>
+                            <Pencil className="h-3.5 w-3.5" />
+                            {t('assets.edit')}
+                          </button>
+                          <button onClick={() => setConfirmId(h.id)} className="flex h-11 w-11 shrink-0 items-center justify-center border border-border text-muted-foreground" aria-label={t('common.delete')}>
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+
+              <div className="tabular flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-3 font-mono text-xs font-bold uppercase">
+                <span>{t('common.total')}</span>
+                <span className="text-foreground">{formatMoney(tabTotal)}</span>
+              </div>
+            </div>
+
+            {/* Masaüstü: tam tablo */}
+            <div className="hidden overflow-x-auto md:block">
               <table className="tabular w-full whitespace-nowrap text-left font-mono text-xs">
                 <thead>
                   <tr className="border-b-2 border-foreground uppercase tracking-wider text-muted-foreground">
@@ -146,10 +264,7 @@ export default function Assets() {
                   {visible.map((h) => {
                     const isActive = editing?.id === h.id
                     const isSell = isActive && editing.mode === 'sell'
-                    const pl = h.unrealizedProfitLoss
-                    const plColor = pl > 0 ? 'text-up' : pl < 0 ? 'text-down' : 'text-muted-foreground'
-                    const currentUnit = h.currency === 'USD' ? h.priceInUsd : h.priceInTry
-                    const currentTotal = h.priceAvailable && currentUnit != null ? h.quantity * currentUnit : null
+                    const { currentUnit, currentTotal, pl, plColor } = derive(h)
                     const clickable = !isActive
 
                     return (
@@ -232,6 +347,7 @@ export default function Assets() {
                 </tfoot>
               </table>
             </div>
+            </>
           )}
         </div>
       </Section>
