@@ -88,6 +88,7 @@ export default function GoldFx() {
           {/* Sarrafiye — gram fiyatından hesaplanır */}
           <Section title={t('goldfx.units')} meta={t('goldfx.derivedNote')}>
             {gold ? (
+              <div className="overflow-x-auto">
               <table className="w-full text-left text-[12px]">
                 <thead>
                   <tr className="border-b border-border font-mono text-[8.5px] uppercase tracking-[0.09em] text-muted-foreground">
@@ -108,6 +109,7 @@ export default function GoldFx() {
                   ))}
                 </tbody>
               </table>
+              </div>
             ) : (
               <p className="py-8 text-center text-xs text-muted-foreground">—</p>
             )}

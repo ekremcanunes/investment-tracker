@@ -131,6 +131,7 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
       ) : lots.length === 0 ? (
         <p className="text-muted-foreground">{t('drawer.noHistory')}</p>
       ) : (
+        <div className="overflow-x-auto">
         <table className="tabular w-full text-left">
           <thead>
             <tr className="border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -153,6 +154,7 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
             ))}
           </tbody>
         </table>
+        </div>
       )}
     </div>
   )
