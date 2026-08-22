@@ -3,7 +3,7 @@ name: WSL Dev Deploy
 on:
   push:
     branches:
-      - mobil-design
+      - test
 
 jobs:
   deploy:
