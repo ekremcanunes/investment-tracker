@@ -50,6 +50,24 @@
   --font-sans: "Instrument Sans Variable", system-ui, sans-serif;      /* gövde / UI */
   --font-display: "Bricolage Grotesque Variable", system-ui, sans-serif; /* başlıklar */
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;         /* rakam / etiket */
+
+  /*
+    Tip ölçeği — 6 basamak, tam piksel. Ad-hoc `text-[11.5px]` yazmak yerine
+    hep bu adlar kullanılır. Tailwind'in text-xs/sm/lg'si ezilmedi; yeni işler
+    bu ölçeğe yazılır.
+  */
+  --text-micro: 0.6875rem;                /* 11 — etiket / ikincil mikro metin */
+  --text-micro--line-height: 1.3;
+  --text-ui: 0.8125rem;                   /* 13 — varsayılan UI / tablo hücresi */
+  --text-ui--line-height: 1.45;
+  --text-body: 0.9375rem;                 /* 15 — vurgulu gövde */
+  --text-body--line-height: 1.55;
+  --text-figure: 1.125rem;                /* 18 — KPI / kart değeri */
+  --text-figure--line-height: 1.2;
+  --text-head: 1.5rem;                    /* 24 — bölüm başlığı, mobil sayfa başlığı */
+  --text-head--line-height: 1.2;
+  --text-title: 1.875rem;                 /* 30 — sayfa başlığı (md+) */
+  --text-title--line-height: 1.1;
 }
 
 /*
@@ -114,6 +132,18 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/*
+  Mikro etiket: mono + uppercase + tracking. Eyebrow, tablo başlığı, kart etiketi,
+  bölüm ayracı — hepsi bu. Boyut `--text-micro` (11px).
+*/
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  line-height: 1.3;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
 /* Rakamlar / ticker: mono + tabular hizalama */

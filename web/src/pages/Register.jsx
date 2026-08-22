@@ -72,7 +72,7 @@ export default function Register() {
 
   if (!flow) {
     return (
-      <div className="auth-bg flex min-h-screen items-center justify-center font-mono text-xs text-shell-muted">
+      <div className="auth-bg flex min-h-screen items-center justify-center font-mono text-micro text-shell-muted">
         {t('auth.redirecting')}
       </div>
     )
@@ -81,12 +81,12 @@ export default function Register() {
   return (
     <div className="auth-bg flex min-h-screen items-center justify-center p-4">
       <div className="auth-card relative z-10 w-full max-w-[340px] rounded-2xl border border-shell-border bg-shell-panel p-6">
-        <div className="foil-tile grid h-[30px] w-[30px] place-items-center rounded-lg font-mono text-[13px] font-bold">₺</div>
-        <h1 className="mt-3.5 font-display text-lg font-semibold text-shell-fg">{t('auth.createAccount')}</h1>
-        <p className="mt-0.5 text-xs text-shell-muted">{APP_NAME} — {t('auth.createAccountSubtitle')}</p>
+        <div className="foil-tile grid h-[30px] w-[30px] place-items-center rounded-lg font-mono text-ui font-bold">₺</div>
+        <h1 className="mt-3.5 font-display text-head font-semibold tracking-tight text-shell-fg">{t('auth.createAccount')}</h1>
+        <p className="mt-0.5 text-micro text-shell-muted">{APP_NAME} — {t('auth.createAccountSubtitle')}</p>
 
         {error && (
-          <div className="mt-4 rounded-lg border border-down/40 bg-down/10 px-3 py-2 text-xs text-down" role="alert">
+          <div className="mt-4 rounded-lg border border-down/40 bg-down/10 px-3 py-2 text-micro text-down" role="alert">
             {error}
           </div>
         )}
@@ -101,7 +101,7 @@ export default function Register() {
             placeholder="you@example.com"
             className={authInputCls}
           />
-          {fieldErr.email && <p className="mt-1 text-[11px] text-down">{fieldErr.email}</p>}
+          {fieldErr.email && <p className="mt-1 text-micro text-down">{fieldErr.email}</p>}
 
           <label className={authLabelCls} htmlFor="register-password">{t('auth.password')}</label>
           <div className="relative">
@@ -122,14 +122,14 @@ export default function Register() {
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-          {fieldErr.password && <p className="mt-1 text-[11px] text-down">{fieldErr.password}</p>}
+          {fieldErr.password && <p className="mt-1 text-micro text-down">{fieldErr.password}</p>}
 
           <button type="submit" disabled={loading} className={authSubmitCls}>
             {loading ? t('auth.creatingAccount') : t('auth.createAccount')}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-[11.5px] text-shell-muted">
+        <p className="mt-4 text-center text-micro text-shell-muted">
           {t('auth.alreadyHaveAccount')}{' '}
           <Link to="/login" className="border-b border-foil text-foil hover:opacity-80">{t('auth.signIn')}</Link>
         </p>

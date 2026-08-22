@@ -80,10 +80,10 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
 
   const priceBlock = (
     <div className="border-b border-border pb-6">
-      <span className="block text-2xl font-bold text-foreground">{holding.symbol}</span>
+      <span className="block font-display text-head font-bold tracking-tight text-foreground">{holding.symbol}</span>
       {holding.priceAvailable ? (
         <div className="mt-4 flex items-baseline justify-between">
-          <span className="tabular text-3xl font-bold text-foreground">{fmt(price, native)}</span>
+          <span className="tabular text-title font-bold text-foreground">{fmt(price, native)}</span>
           {change != null && (
             <span className={`inline-flex items-center gap-1 border px-2 py-1 font-bold ${up ? 'border-up/20 bg-up/10 text-up' : 'border-down/20 bg-down/10 text-down'}`}>
               {up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
@@ -134,7 +134,7 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
         <div className="overflow-x-auto">
         <table className="tabular w-full text-left">
           <thead>
-            <tr className="border-b border-border text-[10px] uppercase tracking-wider text-muted-foreground">
+            <tr className="border-b border-border label text-muted-foreground">
               <th className="py-1.5 font-normal">{t('drawer.date')}</th>
               <th className="py-1.5 font-normal">{t('common.type')}</th>
               <th className="py-1.5 text-right font-normal">{cfg.qtyLabel}</th>
@@ -196,9 +196,9 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
           className="ledger-modal mx-auto flex h-full max-w-6xl flex-col border-2 border-foreground bg-card shadow-ledger-strong"
           onClick={(e) => e.stopPropagation()}
         >
-          <div className="px-6 pt-6 font-mono text-xs">{header}</div>
+          <div className="px-6 pt-6 font-mono text-micro">{header}</div>
           <div className="grid flex-1 grid-cols-1 overflow-hidden md:grid-cols-[360px_1fr]">
-            <div className="overflow-y-auto border-border p-6 font-mono text-xs md:border-r">
+            <div className="overflow-y-auto border-border p-6 font-mono text-micro md:border-r">
               {priceBlock}
               {statsBlock}
               {!isMarket && positionBlock}
@@ -218,7 +218,7 @@ export default function AssetDrawer({ holding, onClose, onSell }) {
   return (
     <div className="fixed inset-0 z-40 bg-foreground/40 backdrop-blur-[1px]" onClick={onClose}>
       <div
-        className="fixed bottom-0 right-0 top-0 flex w-full max-w-md flex-col justify-between overflow-y-auto border-l-2 border-foreground bg-card p-6 font-mono text-xs shadow-ledger-strong"
+        className="fixed bottom-0 right-0 top-0 flex w-full max-w-md flex-col justify-between overflow-y-auto border-l-2 border-foreground bg-card p-6 font-mono text-micro shadow-ledger-strong"
         onClick={(e) => e.stopPropagation()}
       >
         <div>

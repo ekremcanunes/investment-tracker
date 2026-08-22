@@ -39,8 +39,8 @@ export function DatePicker({
           id={id}
           disabled={disabled}
           className={cn(
-            "flex h-9 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 text-left text-sm shadow-sm transition-colors",
-            "hover:border-gray-600 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            "flex h-9 w-full items-center gap-2 rounded-md border border-input bg-transparent px-3 text-left text-ui shadow-sm transition-colors",
+            "hover:border-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             "disabled:cursor-not-allowed disabled:opacity-50",
             !value && "text-muted-foreground",
             className
@@ -67,7 +67,7 @@ export function DatePicker({
           <button
             type="button"
             onClick={() => { onChange?.(todayString()); setOpen(false) }}
-            className="rounded px-2 py-1 text-xs font-medium text-blue-400 transition-colors hover:bg-blue-500/10"
+            className="rounded px-2 py-1 text-micro font-medium text-brass transition-colors hover:bg-brass/10"
           >
             {t("common.today")}
           </button>
@@ -75,7 +75,7 @@ export function DatePicker({
             <button
               type="button"
               onClick={() => { onChange?.(''); setOpen(false) }}
-              className="inline-flex items-center gap-1 rounded px-2 py-1 text-xs text-gray-400 transition-colors hover:bg-gray-800 hover:text-white"
+              className="inline-flex items-center gap-1 rounded px-2 py-1 text-micro text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               <X className="h-3 w-3" />
               {t("common.clear")}

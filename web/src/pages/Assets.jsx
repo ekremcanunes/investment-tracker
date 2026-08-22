@@ -121,7 +121,7 @@ export default function Assets() {
       ))}
     >
       {shownError && (
-        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive" role="alert">
+        <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-micro text-destructive" role="alert">
           {shownError}
         </div>
       )}
@@ -134,7 +134,7 @@ export default function Assets() {
             </div>
           ) : visible.length === 0 ? (
             <div className="py-14 text-center">
-              <p className="mb-4 text-xs text-muted-foreground">{t('assets.noAssets')}</p>
+              <p className="mb-4 text-micro text-muted-foreground">{t('assets.noAssets')}</p>
               <PrimaryAction onClick={() => navigate('/assets/buy')}>
                 <Plus className="h-3.5 w-3.5" />
                 {t('assets.buy')}
@@ -157,17 +157,17 @@ export default function Assets() {
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="inline-flex min-w-0 items-center gap-2">
-                        <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-[9px] ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
+                        <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-md text-micro ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
                           {h.symbol.slice(0, 2)}
                         </span>
-                        <span className="truncate text-[13px] font-bold text-foreground">{h.symbol}</span>
+                        <span className="truncate text-ui font-bold text-foreground">{h.symbol}</span>
                       </span>
                       {!isActive && (
-                        <span className={`tabular shrink-0 text-right text-xs font-bold ${plColor}`}>
+                        <span className={`tabular shrink-0 text-right text-micro font-bold ${plColor}`}>
                           {pl != null ? (
                             <>
                               {formatMoney(pl, h.currency)}
-                              <span className="ml-1 text-[11px]">({formatPercent(h.unrealizedProfitLossPercent)})</span>
+                              <span className="ml-1 text-micro">({formatPercent(h.unrealizedProfitLossPercent)})</span>
                             </>
                           ) : '—'}
                         </span>
@@ -176,16 +176,16 @@ export default function Assets() {
 
                     {isActive ? (
                       <div className="mt-3 space-y-2" onClick={(e) => e.stopPropagation()}>
-                        <div className="text-[11px] text-muted-foreground">
+                        <div className="text-micro text-muted-foreground">
                           {isSell ? t('assets.sellAsset') : t('assets.edit')} · {h.currency}
                         </div>
-                        <label className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                        <label className="flex items-center justify-between gap-2 text-micro text-muted-foreground">
                           {t('assets.quantity')}
-                          <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-10 w-32 text-xs" placeholder="0" />
+                          <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-10 w-32 text-micro" placeholder="0" />
                         </label>
-                        <label className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+                        <label className="flex items-center justify-between gap-2 text-micro text-muted-foreground">
                           {isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}
-                          <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-10 w-32 text-xs" placeholder="0,00" />
+                          <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-10 w-32 text-micro" placeholder="0,00" />
                         </label>
                         <div className="flex gap-2 pt-1">
                           <button onClick={handleConfirm} disabled={saving || !form.quantity || (isSell && !form.price)} className="flex h-11 flex-1 items-center justify-center border border-up text-up disabled:opacity-40">
@@ -198,17 +198,17 @@ export default function Assets() {
                       </div>
                     ) : (
                       <>
-                        <dl className="tabular mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                        <dl className="tabular mt-2.5 grid grid-cols-2 gap-x-3 gap-y-1.5 text-micro">
                           <div className="flex justify-between gap-2">
-                            <dt className="text-[11px] text-muted-foreground">{qtyLabel}</dt>
+                            <dt className="text-micro text-muted-foreground">{qtyLabel}</dt>
                             <dd className="text-foreground">{h.quantity}</dd>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <dt className="text-[11px] text-muted-foreground">{costLabel}</dt>
+                            <dt className="text-micro text-muted-foreground">{costLabel}</dt>
                             <dd className="text-foreground">{formatMoney(h.avgCostBasis, h.currency)}</dd>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <dt className="text-[11px] text-muted-foreground">{curLabel}</dt>
+                            <dt className="text-micro text-muted-foreground">{curLabel}</dt>
                             <dd className="text-foreground">
                               {h.priceAvailable ? formatMoney(currentUnit, h.currency) : (
                                 <span className="inline-flex items-center gap-1 text-down"><AlertTriangle className="h-3 w-3" />{t('assets.priceUnavailable')}</span>
@@ -216,17 +216,17 @@ export default function Assets() {
                             </dd>
                           </div>
                           <div className="flex justify-between gap-2">
-                            <dt className="text-[11px] text-muted-foreground">{t('assets.currentValue')}</dt>
+                            <dt className="text-micro text-muted-foreground">{t('assets.currentValue')}</dt>
                             <dd className="font-bold text-foreground">{formatMoney(currentTotal, h.currency)}</dd>
                           </div>
                         </dl>
 
                         <div className="mt-3 flex gap-2" onClick={(e) => e.stopPropagation()}>
-                          <button onClick={() => startSell(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-[11px] text-down" title={t('assets.sell')}>
+                          <button onClick={() => startSell(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-micro text-down" title={t('assets.sell')}>
                             <ArrowDownRight className="h-3.5 w-3.5" />
                             {t('assets.sell')}
                           </button>
-                          <button onClick={() => startEdit(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-[11px] text-muted-foreground" title={t('assets.edit')}>
+                          <button onClick={() => startEdit(h)} className="flex h-11 flex-1 items-center justify-center gap-1.5 border border-border text-micro text-muted-foreground" title={t('assets.edit')}>
                             <Pencil className="h-3.5 w-3.5" />
                             {t('assets.edit')}
                           </button>
@@ -240,7 +240,7 @@ export default function Assets() {
                 )
               })}
 
-              <div className="tabular flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-3 font-mono text-xs font-bold uppercase">
+              <div className="tabular flex items-center justify-between rounded-lg bg-secondary/50 px-3 py-3 font-mono text-micro font-bold uppercase">
                 <span>{t('common.total')}</span>
                 <span className="text-foreground">{formatMoney(tabTotal)}</span>
               </div>
@@ -248,7 +248,7 @@ export default function Assets() {
 
             {/* Masaüstü: tam tablo */}
             <div className="hidden overflow-x-auto md:block">
-              <table className="tabular w-full whitespace-nowrap text-left font-mono text-xs">
+              <table className="tabular w-full whitespace-nowrap text-left font-mono text-micro">
                 <thead>
                   <tr className="border-b-2 border-foreground uppercase tracking-wider text-muted-foreground">
                     <th className="px-2 py-3 font-normal">{t('assets.name')}</th>
@@ -275,7 +275,7 @@ export default function Assets() {
                       >
                         <td className="px-2 py-3.5 font-bold text-foreground group-hover:underline">
                           <span className="inline-flex items-center gap-2">
-                            <span className={`grid h-5 w-5 place-items-center rounded-md text-[8.5px] ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
+                            <span className={`grid h-5 w-5 place-items-center rounded-md text-micro ${catOf(h.assetType).tint} ${catOf(h.assetType).text}`}>
                               {h.symbol.slice(0, 2)}
                             </span>
                             {h.symbol}
@@ -289,11 +289,11 @@ export default function Assets() {
                               </span>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-muted-foreground">{t('assets.quantity')}</span>
-                                <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-7 w-24 text-xs" placeholder="0" />
+                                <MoneyInput value={form.quantity} onChange={(v) => setForm((f) => ({ ...f, quantity: v }))} className="h-7 w-24 text-micro" placeholder="0" />
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <span className="text-muted-foreground">{isSell ? t('assets.unitPrice') : t('assets.purchasePrice')}</span>
-                                <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-7 w-28 text-xs" placeholder="0,00" />
+                                <MoneyInput currency={h.currency} value={form.price} onChange={(v) => setForm((f) => ({ ...f, price: v }))} className="h-7 w-28 text-micro" placeholder="0,00" />
                               </div>
                               <button onClick={handleConfirm} disabled={saving || !form.quantity || (isSell && !form.price)} className="border border-up p-1 text-up hover:bg-up/10 disabled:opacity-40">
                                 <Check className="h-4 w-4" />
@@ -316,7 +316,7 @@ export default function Assets() {
                             </td>
                             <td className="px-2 py-3.5 text-right font-bold text-foreground">{formatMoney(currentTotal, h.currency)}</td>
                             <td className={`px-2 py-3.5 text-right font-bold ${plColor}`}>
-                              {pl != null ? <>{formatMoney(pl, h.currency)} <span className="text-[11px]">({formatPercent(h.unrealizedProfitLossPercent)})</span></> : '—'}
+                              {pl != null ? <>{formatMoney(pl, h.currency)} <span className="text-micro">({formatPercent(h.unrealizedProfitLossPercent)})</span></> : '—'}
                             </td>
                             <td className="px-2 py-3.5 text-right">
                               <div className="flex items-center justify-end gap-1" onClick={(e) => e.stopPropagation()}>
@@ -367,16 +367,16 @@ export default function Assets() {
         subtitle="Portföy Kaydı"
         actions={
           <>
-            <button onClick={() => setConfirmId(null)} className="w-1/2 border border-foreground py-2.5 font-mono text-xs font-bold uppercase text-foreground hover:bg-secondary">
+            <button onClick={() => setConfirmId(null)} className="w-1/2 border border-foreground py-2.5 font-mono text-micro font-bold uppercase text-foreground hover:bg-secondary">
               {t('common.cancel')}
             </button>
-            <button onClick={doDelete} className="w-1/2 border border-down bg-down py-2.5 font-mono text-xs font-bold uppercase text-white hover:opacity-90">
+            <button onClick={doDelete} className="w-1/2 border border-down bg-down py-2.5 font-mono text-micro font-bold uppercase text-white hover:opacity-90">
               {t('common.delete')}
             </button>
           </>
         }
       >
-        <p className="text-center font-mono text-xs text-muted-foreground">{t('assets.confirmDelete')}</p>
+        <p className="text-center font-mono text-micro text-muted-foreground">{t('assets.confirmDelete')}</p>
       </Modal>
     </Page>
   )

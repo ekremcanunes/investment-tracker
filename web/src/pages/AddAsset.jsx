@@ -116,11 +116,11 @@ export default function AddAsset() {
     >
       <Card className="max-w-md">
         <CardHeader>
-          <CardTitle className="text-base">{t('assets.buyAsset')}</CardTitle>
+          <CardTitle className="font-display text-body tracking-tight">{t('assets.buyAsset')}</CardTitle>
         </CardHeader>
         <CardContent>
           {error && (
-            <div className="mb-4 rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            <div className="mb-4 rounded-md border border-destructive/25 bg-destructive/10 px-3 py-2 text-ui text-destructive">
               {error}
             </div>
           )}
@@ -162,8 +162,8 @@ export default function AddAsset() {
               {assetType === 'Stock' && symbol && (
                 <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2">
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-foreground">{symbol}</div>
-                    <div className="truncate text-xs text-muted-foreground">{selectedName}</div>
+                    <div className="text-ui font-medium text-foreground">{symbol}</div>
+                    <div className="truncate text-micro text-muted-foreground">{selectedName}</div>
                   </div>
                   <Button type="button" variant="ghost" size="icon" onClick={handleClearSymbol}>
                     <X className="h-4 w-4" />
@@ -186,7 +186,7 @@ export default function AddAsset() {
                   {(searching || results.length > 0) && (
                     <div className="absolute z-10 mt-1 w-full overflow-hidden rounded-md border border-border bg-popover shadow-lg">
                       {searching && (
-                        <div className="px-3 py-2 text-sm text-muted-foreground">{t('common.loading')}</div>
+                        <div className="px-3 py-2 text-ui text-muted-foreground">{t('common.loading')}</div>
                       )}
                       {!searching && results.map((r) => (
                         <button
@@ -196,10 +196,10 @@ export default function AddAsset() {
                           className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left hover:bg-secondary"
                         >
                           <div className="min-w-0">
-                            <div className="text-sm font-medium text-foreground">{r.symbol}</div>
-                            <div className="truncate text-xs text-muted-foreground">{r.name}</div>
+                            <div className="text-ui font-medium text-foreground">{r.symbol}</div>
+                            <div className="truncate text-micro text-muted-foreground">{r.name}</div>
                           </div>
-                          <span className="tabular shrink-0 text-xs text-muted-foreground">{r.exchange}</span>
+                          <span className="tabular shrink-0 text-micro text-muted-foreground">{r.exchange}</span>
                         </button>
                       ))}
                     </div>
@@ -209,8 +209,8 @@ export default function AddAsset() {
 
               {assetType === 'Gold' && (
                 <div className="flex items-center gap-2 rounded-md border border-border bg-secondary/40 px-3 py-2">
-                  <span className="text-sm font-medium text-foreground">XAU</span>
-                  <span className="text-xs text-muted-foreground">· {t('assets.goldGram')}</span>
+                  <span className="text-ui font-medium text-foreground">XAU</span>
+                  <span className="text-micro text-muted-foreground">· {t('assets.goldGram')}</span>
                 </div>
               )}
 

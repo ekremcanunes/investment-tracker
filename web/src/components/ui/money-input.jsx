@@ -22,7 +22,7 @@ export const MoneyInput = React.forwardRef(
     return (
       <div className="relative">
         {symbol && (
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-ui text-muted-foreground">
             {symbol}
           </span>
         )}
@@ -34,8 +34,8 @@ export const MoneyInput = React.forwardRef(
           value={value ?? ""}
           onChange={handleChange}
           className={cn(
-            "flex h-9 w-full rounded-md border border-input bg-transparent py-1 pr-3 text-right text-sm tabular-nums shadow-sm transition-colors",
-            "placeholder:text-muted-foreground hover:border-gray-600",
+            "flex h-9 w-full rounded-md border border-input bg-transparent py-1 pr-3 text-right text-ui tabular-nums shadow-sm transition-colors",
+            "placeholder:text-muted-foreground hover:border-foreground",
             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
             "disabled:cursor-not-allowed disabled:opacity-50",
             symbol ? "pl-8" : "pl-3",

@@ -128,7 +128,7 @@ export default function PriceChart({ symbol, assetType = 'Stock', exchange, heig
           <button
             key={r}
             onClick={() => setRange(r)}
-            className={`rounded-md px-2 py-1 font-mono text-[10px] ${
+            className={`rounded-md px-2 py-1 font-mono text-micro ${
               range === r ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
             }`}
           >
@@ -140,7 +140,7 @@ export default function PriceChart({ symbol, assetType = 'Stock', exchange, heig
             href={tvUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="ml-auto inline-flex items-center gap-1 text-[10px] text-muted-foreground hover:text-foreground"
+            className="ml-auto inline-flex items-center gap-1 text-micro text-muted-foreground hover:text-foreground"
           >
             {t('chart.openInTradingView')}
             <ExternalLink className="h-3 w-3" />
@@ -151,7 +151,7 @@ export default function PriceChart({ symbol, assetType = 'Stock', exchange, heig
       {isLoading ? (
         <Skeleton style={{ height }} className="w-full" />
       ) : isError || candles.length === 0 ? (
-        <div className="flex items-center justify-center text-xs text-muted-foreground" style={{ height }}>
+        <div className="flex items-center justify-center text-micro text-muted-foreground" style={{ height }}>
           {t('chart.noData')}
         </div>
       ) : (

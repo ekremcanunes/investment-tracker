@@ -7,7 +7,7 @@ export function Checkbox({ checked, onCheckedChange, label, disabled, className,
     <label
       htmlFor={id}
       className={cn(
-        "inline-flex cursor-pointer select-none items-center gap-2 text-sm text-gray-300",
+        "inline-flex cursor-pointer select-none items-center gap-2 text-ui text-foreground",
         disabled && "cursor-not-allowed opacity-50",
         className
       )}
@@ -19,9 +19,9 @@ export function Checkbox({ checked, onCheckedChange, label, disabled, className,
           checked={checked}
           disabled={disabled}
           onChange={(e) => onCheckedChange?.(e.target.checked)}
-          className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-gray-600 bg-transparent transition-colors checked:border-blue-600 checked:bg-blue-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
+          className="peer h-4 w-4 cursor-pointer appearance-none rounded border border-input bg-transparent transition-colors checked:border-foreground checked:bg-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed"
         />
-        <Check className="pointer-events-none absolute h-3 w-3 text-white opacity-0 peer-checked:opacity-100" />
+        <Check className="pointer-events-none absolute h-3 w-3 text-background opacity-0 peer-checked:opacity-100" />
       </span>
       {label}
     </label>

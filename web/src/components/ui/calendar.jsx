@@ -12,7 +12,7 @@ function Chevron({ orientation = "left", size = 16, className }) {
 }
 
 const navButton =
-  "inline-flex h-7 w-7 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-800 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-disabled:pointer-events-none aria-disabled:opacity-30"
+  "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring aria-disabled:pointer-events-none aria-disabled:opacity-30"
 
 export function Calendar({ className, classNames, startMonth, endMonth, ...props }) {
   const { lang } = useLanguage()
@@ -38,25 +38,25 @@ export function Calendar({ className, classNames, startMonth, endMonth, ...props
         dropdowns: "flex items-center gap-1.5",
         dropdown_root: "relative inline-flex items-center",
         dropdown:
-          "absolute inset-0 z-10 w-full cursor-pointer opacity-0 [&>option]:bg-gray-900 [&>option]:text-white",
+          "absolute inset-0 z-10 w-full cursor-pointer opacity-0 [&>option]:bg-card [&>option]:text-foreground",
         caption_label:
-          "inline-flex items-center gap-1 rounded-md border border-gray-700 bg-gray-800 px-2 py-1 text-sm font-medium text-white",
+          "inline-flex items-center gap-1 rounded-md border border-border bg-secondary px-2 py-1 text-ui font-medium text-foreground",
 
         month_grid: "w-full border-collapse",
         weekdays: "",
-        weekday: "h-8 w-9 text-[0.7rem] font-normal uppercase text-gray-500",
+        weekday: "h-8 w-9 font-mono text-[0.7rem] font-normal uppercase text-muted-foreground",
         weeks: "",
         week: "",
 
         day: "h-9 w-9 p-0 text-center",
         day_button:
-          "h-9 w-9 rounded-md text-sm text-gray-200 transition-colors hover:bg-gray-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "tabular h-9 w-9 rounded-md text-ui text-foreground transition-colors hover:bg-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
 
-        today: "[&>button]:font-semibold [&>button]:text-blue-400",
+        today: "[&>button]:font-semibold [&>button]:text-brass",
         selected:
-          "[&>button]:bg-blue-600 [&>button]:font-medium [&>button]:text-white [&>button]:hover:bg-blue-500",
-        outside: "[&>button]:text-gray-600",
-        disabled: "[&>button]:pointer-events-none [&>button]:text-gray-700",
+          "[&>button]:bg-foreground [&>button]:font-medium [&>button]:text-background [&>button]:hover:opacity-90",
+        outside: "[&>button]:text-muted-foreground/50",
+        disabled: "[&>button]:pointer-events-none [&>button]:text-muted-foreground/40",
         hidden: "invisible",
         ...classNames,
       }}

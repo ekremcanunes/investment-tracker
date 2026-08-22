@@ -9,10 +9,10 @@ export function Page({ eyebrow, title, meta, actions, tabs, children }) {
         <div className="flex flex-wrap items-end gap-3 pb-3 md:pb-4">
           <div className="min-w-0">
             {eyebrow && (
-              <div className="font-mono text-[9.5px] uppercase tracking-[0.12em] text-muted-foreground">{eyebrow}</div>
+              <div className="label text-muted-foreground">{eyebrow}</div>
             )}
-            <h1 className="font-display text-lg font-bold tracking-tight text-foreground md:text-xl">{title}</h1>
-            {meta && <div className="mt-1 text-xs text-muted-foreground">{meta}</div>}
+            <h1 className="mt-0.5 font-display text-head font-bold tracking-tight text-foreground md:text-title">{title}</h1>
+            {meta && <div className="mt-1.5 text-ui text-muted-foreground">{meta}</div>}
           </div>
           {actions && <div className="ml-auto flex flex-wrap items-center gap-2">{actions}</div>}
         </div>
@@ -30,7 +30,7 @@ export function PageTab({ active, children, ...props }) {
     <button
       type="button"
       className={cn(
-        '-mb-px shrink-0 whitespace-nowrap border-b-2 pb-2.5 text-[13px]',
+        '-mb-px shrink-0 whitespace-nowrap border-b-2 pb-2.5 text-ui',
         active
           ? 'border-brass font-semibold text-foreground'
           : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -48,7 +48,7 @@ export function PrimaryAction({ className, children, ...props }) {
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-lg bg-brass px-3 py-1.5 text-[12px] font-semibold text-white hover:opacity-90',
+        'inline-flex items-center gap-1.5 rounded-lg bg-brass px-3 py-1.5 text-ui font-semibold text-white hover:opacity-90',
         className
       )}
       {...props}
@@ -64,7 +64,7 @@ export function GhostAction({ className, children, ...props }) {
     <button
       type="button"
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-[12px] text-foreground hover:border-foreground',
+        'inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-ui text-foreground hover:border-foreground',
         className
       )}
       {...props}

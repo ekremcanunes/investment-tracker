@@ -67,11 +67,11 @@ export default function GoldFx() {
                 className="relative overflow-hidden rounded-xl border border-border bg-card p-4 text-left hover:border-foreground"
               >
                 <span className={`absolute inset-y-0 left-0 w-[3px] ${cat.dot}`} />
-                <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{q.name || q.symbol}</div>
-                <div className="tabular mt-1.5 text-xl font-semibold tracking-tight text-foreground">{num(q.price)} ₺</div>
+                <div className="label text-muted-foreground">{q.name || q.symbol}</div>
+                <div className="tabular mt-1.5 text-figure font-semibold tracking-tight text-foreground">{num(q.price)} ₺</div>
                 <div className="mt-2 flex items-end justify-between gap-2">
                   {q.changePercent != null ? (
-                    <span className={`tabular inline-flex rounded-full px-2 py-0.5 text-[9.5px] ${q.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
+                    <span className={`tabular inline-flex rounded-full px-2 py-0.5 text-micro ${q.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
                       {pct(q.changePercent)}
                     </span>
                   ) : (
@@ -89,9 +89,9 @@ export default function GoldFx() {
           <Section title={t('goldfx.units')} meta={t('goldfx.derivedNote')}>
             {gold ? (
               <div className="overflow-x-auto">
-              <table className="w-full text-left text-[12px]">
+              <table className="w-full text-left text-ui">
                 <thead>
-                  <tr className="border-b border-border font-mono text-[8.5px] uppercase tracking-[0.09em] text-muted-foreground">
+                  <tr className="border-b border-border label text-muted-foreground">
                     <th className="px-4 py-2.5 font-normal">{t('goldfx.unit')}</th>
                     <th className="px-4 py-2.5 text-right font-normal">{t('assets.grams')}</th>
                     <th className="px-4 py-2.5 text-right font-normal">{t('goldfx.approxValue')}</th>
@@ -111,7 +111,7 @@ export default function GoldFx() {
               </table>
               </div>
             ) : (
-              <p className="py-8 text-center text-xs text-muted-foreground">—</p>
+              <p className="py-8 text-center text-micro text-muted-foreground">—</p>
             )}
           </Section>
 
@@ -123,7 +123,7 @@ export default function GoldFx() {
                 const change = s.length > 1 ? ((s[s.length - 1] - s[0]) / s[0]) * 100 : null
                 const cat = catOf(q.symbol === 'XAU' ? 'Gold' : 'Currency')
                 return (
-                  <div key={q.symbol} className="flex items-center gap-3 text-[12.5px]">
+                  <div key={q.symbol} className="flex items-center gap-3 text-ui">
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${cat.dot}`} />
                     <span className="w-24 shrink-0 text-foreground">{q.name || q.symbol}</span>
                     <Sparkline data={s} className="h-7 flex-1" />
@@ -133,7 +133,7 @@ export default function GoldFx() {
                   </div>
                 )
               })}
-              {fx.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">—</p>}
+              {fx.length === 0 && <p className="py-6 text-center text-micro text-muted-foreground">—</p>}
             </div>
           </Section>
         </div>

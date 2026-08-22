@@ -115,7 +115,7 @@ export default function Overview() {
               <Donut slices={cats.filter((c) => c.pct > 0)} />
               <div className="w-full flex-1 space-y-2.5">
                 {cats.map((c) => (
-                  <div key={c.key} className="flex items-center gap-2.5 text-[13px]">
+                  <div key={c.key} className="flex items-center gap-2.5 text-ui">
                     <span className={`h-2.5 w-2.5 shrink-0 rounded-sm ${c.dot}`} />
                     <span className="text-foreground">{c.label}</span>
                     <span className="tabular ml-auto text-muted-foreground">%{c.pct.toFixed(0)}</span>

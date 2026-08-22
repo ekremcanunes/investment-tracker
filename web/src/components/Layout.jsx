@@ -16,7 +16,7 @@ function useClock() {
   return now
 }
 
-const sectionCls = 'px-2 pb-1.5 pt-4 font-mono text-[10px] uppercase tracking-[0.14em] text-shell-muted'
+const sectionCls = 'px-2 pb-1.5 pt-4 label text-shell-muted'
 
 function NavItem({ to, label, icon: Icon, end }) {
   return (
@@ -25,7 +25,7 @@ function NavItem({ to, label, icon: Icon, end }) {
       end={end}
       className={({ isActive }) =>
         cn(
-          'relative flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-[13px]',
+          'relative flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-ui',
           isActive
             ? 'nav-active bg-shell-panel font-medium text-shell-fg'
             : 'text-shell-muted hover:bg-shell-panel hover:text-shell-fg'
@@ -58,7 +58,7 @@ function TabItem({ to, label, icon: Icon, end }) {
       {({ isActive }) => (
         <>
           <Icon className={cn('h-[18px] w-[18px] shrink-0', isActive && 'text-foil')} />
-          <span className={cn('w-full truncate text-center text-[10px]', isActive && 'font-medium')}>{label}</span>
+          <span className={cn('w-full truncate text-center text-micro', isActive && 'font-medium')}>{label}</span>
         </>
       )}
     </NavLink>
@@ -89,7 +89,7 @@ export default function Layout() {
   const langButton = (
     <button
       onClick={() => switchLang(lang === 'tr' ? 'en' : 'tr')}
-      className="flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-[13px] text-shell-muted hover:bg-shell-panel hover:text-shell-fg"
+      className="flex h-[33px] items-center gap-2.5 rounded-lg px-2.5 text-ui text-shell-muted hover:bg-shell-panel hover:text-shell-fg"
     >
       <Globe className="h-4 w-4 shrink-0" />
       {lang === 'tr' ? 'English' : 'Türkçe'}
@@ -98,12 +98,12 @@ export default function Layout() {
 
   const userCard = (
     <div className="mt-1 flex items-center gap-2.5 rounded-[9px] border border-shell-border bg-shell-panel px-2 py-2">
-      <div className="grid h-[25px] w-[25px] shrink-0 place-items-center rounded-full bg-shell-border text-[10px] font-semibold text-shell-fg">
+      <div className="grid h-[25px] w-[25px] shrink-0 place-items-center rounded-full bg-shell-border text-micro font-semibold text-shell-fg">
         {initials}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[11.5px] leading-tight text-shell-fg">{email.split('@')[0] || '—'}</div>
-        <div className="truncate text-[9.5px] text-shell-muted">{email}</div>
+        <div className="truncate text-ui leading-tight text-shell-fg">{email.split('@')[0] || '—'}</div>
+        <div className="truncate text-micro text-shell-muted">{email}</div>
       </div>
       <button
         onClick={logout}
@@ -122,11 +122,11 @@ export default function Layout() {
       <aside className="hidden w-[212px] shrink-0 flex-col gap-0.5 px-2.5 py-2.5 md:flex">
         {/* Marka rozeti */}
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-          <div className="foil-tile grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[7px] font-mono text-xs font-bold">
+          <div className="foil-tile grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[7px] font-mono text-micro font-bold">
             ₺
           </div>
           {/* Yalnızca marka — kullanıcı bilgisi alttaki kartta */}
-          <div className="truncate text-[13px] font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
+          <div className="truncate text-ui font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
         </div>
 
         <nav className="mt-2 flex flex-col gap-0.5">
@@ -143,7 +143,7 @@ export default function Layout() {
 
         {/* Alt blok: saat + ayarlar + kullanıcı kartı */}
         <div className="mt-auto flex flex-col gap-0.5">
-          <div className="tabular px-2.5 pb-1 text-[10px] leading-relaxed text-shell-muted">{clock}</div>
+          <div className="tabular px-2.5 pb-1 text-micro leading-relaxed text-shell-muted">{clock}</div>
           {langButton}
           {userCard}
         </div>
@@ -166,7 +166,7 @@ export default function Layout() {
           className="flex min-h-[56px] flex-1 flex-col items-center justify-center gap-1 px-0.5 text-shell-muted"
         >
           <Menu className="h-[18px] w-[18px] shrink-0" />
-          <span className="w-full truncate text-center text-[10px]">{t('nav.menu')}</span>
+          <span className="w-full truncate text-center text-micro">{t('nav.menu')}</span>
         </button>
       </nav>
 
@@ -178,7 +178,7 @@ export default function Layout() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-2 pb-1">
-              <div className="truncate text-[13px] font-semibold text-shell-fg">{APP_NAME}</div>
+              <div className="truncate text-ui font-semibold text-shell-fg">{APP_NAME}</div>
               <button
                 onClick={() => setMenuOpen(false)}
                 aria-label={t('nav.menuClose')}
@@ -187,7 +187,7 @@ export default function Layout() {
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="tabular px-2.5 pb-1 text-[10px] leading-relaxed text-shell-muted">{clock}</div>
+            <div className="tabular px-2.5 pb-1 text-micro leading-relaxed text-shell-muted">{clock}</div>
             {langButton}
             {userCard}
           </div>

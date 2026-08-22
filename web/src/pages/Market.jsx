@@ -125,9 +125,9 @@ export default function Market() {
           {indices.map((idx) => (
             <div key={idx.symbol} className="relative overflow-hidden rounded-xl border border-border bg-card px-3.5 py-3">
               <span className={`absolute inset-y-0 left-0 w-[3px] ${catOf('Index').dot}`} />
-              <div className="font-mono text-[8.5px] uppercase tracking-[0.1em] text-muted-foreground">{idx.name}</div>
-              <div className="tabular mt-1 text-lg font-semibold tracking-tight text-foreground">{num(idx.price)}</div>
-              <span className={`tabular mt-1.5 inline-flex rounded-full px-2 py-0.5 text-[9.5px] ${idx.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
+              <div className="label text-muted-foreground">{idx.name}</div>
+              <div className="tabular mt-1 text-figure font-semibold tracking-tight text-foreground">{num(idx.price)}</div>
+              <span className={`tabular mt-1.5 inline-flex rounded-full px-2 py-0.5 text-micro ${idx.changePercent >= 0 ? 'bg-up/12 text-up' : 'bg-down/12 text-down'}`}>
                 {pct(idx.changePercent)}
               </span>
               <div className="absolute bottom-2.5 right-2.5">
@@ -140,13 +140,13 @@ export default function Market() {
             accent={pulse.avg >= 0 ? 'bg-up' : 'bg-down'}
             label={t('market.avgChange')}
             value={pct(pulse.avg)}
-            chip={<span className="mt-1.5 inline-flex text-[9.5px] text-muted-foreground">{pulse.total} {t('market.stockCount')}</span>}
+            chip={<span className="mt-1.5 inline-flex text-micro text-muted-foreground">{pulse.total} {t('market.stockCount')}</span>}
           />
           <StatCard
             accent={catOf('Gold').dot}
             label={t('market.nearHigh')}
             value={`${nearHigh.length}`}
-            chip={<span className="mt-1.5 inline-flex text-[9.5px] text-muted-foreground">{t('market.nearHighNote')}</span>}
+            chip={<span className="mt-1.5 inline-flex text-micro text-muted-foreground">{t('market.nearHighNote')}</span>}
           />
         </div>
 
@@ -158,7 +158,7 @@ export default function Market() {
               <span className="bg-border" style={{ width: `${(pulse.flat / (pulse.total || 1)) * 100}%` }} />
               <span className="bg-down" style={{ width: `${(pulse.down / (pulse.total || 1)) * 100}%` }} />
             </div>
-            <div className="mt-3 flex flex-wrap gap-4 text-[12px] text-foreground">
+            <div className="mt-3 flex flex-wrap gap-4 text-ui text-foreground">
               <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-up" />{t('market.rising')} <b className="tabular">{pulse.up}</b></span>
               <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-border" />{t('market.flat')} <b className="tabular">{pulse.flat}</b></span>
               <span className="flex items-center gap-1.5"><i className="h-2 w-2 rounded-sm bg-down" />{t('market.falling')} <b className="tabular">{pulse.down}</b></span>
@@ -171,7 +171,7 @@ export default function Market() {
           <Section title={t('market.volumeLeaders')} meta={t('market.volumeUnit')}>
             <div className="p-2">
               {volumeLeaders.map((s) => (
-                <button key={s.symbol} onClick={() => open(s)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-[12.5px] hover:bg-secondary">
+                <button key={s.symbol} onClick={() => open(s)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-ui hover:bg-secondary">
                   <SymbolBadge symbol={s.symbol} />
                   <span className="font-semibold text-foreground">{s.symbol}</span>
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-border">
@@ -180,14 +180,14 @@ export default function Market() {
                   <span className="tabular w-16 text-right text-muted-foreground">{compact(s.volume)}</span>
                 </button>
               ))}
-              {volumeLeaders.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">—</p>}
+              {volumeLeaders.length === 0 && <p className="py-6 text-center text-micro text-muted-foreground">—</p>}
             </div>
           </Section>
 
           <Section title={t('market.nearHigh')} meta={t('market.nearHighNote')}>
             <div className="p-2">
               {nearHigh.map((s) => (
-                <button key={s.symbol} onClick={() => open(s)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-[12.5px] hover:bg-secondary">
+                <button key={s.symbol} onClick={() => open(s)} className="flex w-full items-center gap-3 rounded-lg px-2 py-1.5 text-ui hover:bg-secondary">
                   <SymbolBadge symbol={s.symbol} />
                   <span className="font-semibold text-foreground">{s.symbol}</span>
                   <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-border">
@@ -196,7 +196,7 @@ export default function Market() {
                   <span className="tabular w-14 text-right text-muted-foreground">%{s.band.toFixed(0)}</span>
                 </button>
               ))}
-              {nearHigh.length === 0 && <p className="py-6 text-center text-xs text-muted-foreground">{t('market.noneNearHigh')}</p>}
+              {nearHigh.length === 0 && <p className="py-6 text-center text-micro text-muted-foreground">{t('market.noneNearHigh')}</p>}
             </div>
           </Section>
         </div>
@@ -212,7 +212,7 @@ export default function Market() {
                   <button
                     key={s.key}
                     onClick={() => setSort(s.key)}
-                    className={`rounded-md px-2 py-1 text-[11px] ${sort === s.key ? 'bg-secondary font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                    className={`rounded-md px-2 py-1 text-micro ${sort === s.key ? 'bg-secondary font-semibold text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                   >
                     {t(s.label)}
                   </button>
@@ -225,7 +225,7 @@ export default function Market() {
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder={t('market.searchPlaceholder')}
                   aria-label={t('market.searchPlaceholder')}
-                  className="w-52 rounded-lg border border-border bg-background py-1.5 pl-8 pr-7 text-[12px] text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
+                  className="w-52 rounded-lg border border-border bg-background py-1.5 pl-8 pr-7 text-ui text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none"
                 />
                 {query && (
                   <button
@@ -241,9 +241,9 @@ export default function Market() {
           }
         >
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-[11.5px]">
+            <table className="w-full text-left text-micro">
               <thead>
-                <tr className="border-b border-border font-mono text-[8.5px] uppercase tracking-[0.09em] text-muted-foreground">
+                <tr className="border-b border-border label text-muted-foreground">
                   <th className="px-4 py-2.5 font-normal">{t('assets.symbol')}</th>
                   <th className="px-4 py-2.5 font-normal">{t('market.company')}</th>
                   <th className="px-4 py-2.5 text-right font-normal">{t('assets.price')}</th>
@@ -286,17 +286,17 @@ export default function Market() {
 
             {sorted.length === 0 && (
               <div className="px-4 py-8 text-center">
-                <p className="text-xs text-muted-foreground">{t('market.notInBist30')}</p>
-                {wideSearching && <p className="mt-2 text-xs text-muted-foreground">{t('common.loading')}</p>}
+                <p className="text-micro text-muted-foreground">{t('market.notInBist30')}</p>
+                {wideSearching && <p className="mt-2 text-micro text-muted-foreground">{t('common.loading')}</p>}
                 {wideResults.length > 0 && (
                   <div className="mx-auto mt-4 max-w-sm space-y-1 text-left">
-                    <div className="font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground">{t('market.wideSearch')}</div>
+                    <div className="label text-muted-foreground">{t('market.wideSearch')}</div>
                     {wideResults.slice(0, 8).map((r) => (
-                      <div key={`${r.symbol}-${r.exchange}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-[12px]">
+                      <div key={`${r.symbol}-${r.exchange}`} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-ui">
                         <SymbolBadge symbol={r.symbol} />
                         <span className="font-semibold text-foreground">{r.symbol}</span>
                         <span className="truncate text-muted-foreground">{r.name}</span>
-                        <span className="tabular ml-auto text-[10px] text-muted-foreground">{r.exchange}</span>
+                        <span className="tabular ml-auto text-micro text-muted-foreground">{r.exchange}</span>
                       </div>
                     ))}
                   </div>
@@ -315,7 +315,7 @@ export default function Market() {
 function SymbolBadge({ symbol }) {
   const cat = catOf('Stock')
   return (
-    <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-md font-mono text-[8px] ${cat.tint} ${cat.text}`}>
+    <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-md font-mono text-micro ${cat.tint} ${cat.text}`}>
       {symbol.slice(0, 2)}
     </span>
   )

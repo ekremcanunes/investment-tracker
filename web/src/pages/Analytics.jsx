@@ -45,15 +45,15 @@ export default function Analytics() {
   return (
     <Page eyebrow={t('nav.sectionGeneral')} title={t('nav.analytics')}>
       {isLoading ? (
-        <div className="text-sm text-muted-foreground">{t('common.loading')}</div>
+        <div className="text-ui text-muted-foreground">{t('common.loading')}</div>
       ) : error ? (
-        <div className="text-sm text-down" role="alert">{t('common.error')}: {error.message}</div>
+        <div className="text-ui text-down" role="alert">{t('common.error')}: {error.message}</div>
       ) : (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {/* Varlık dağılımı */}
           <Section title={t('analytics.allocation')} meta={`${pieData.length} ${t('overview.assetCount')}`}>
             {pieData.length === 0 ? (
-              <p className="py-10 text-center text-sm text-muted-foreground">{t('assets.noAssets')}</p>
+              <p className="py-10 text-center text-ui text-muted-foreground">{t('assets.noAssets')}</p>
             ) : (
               <ResponsiveContainer width="100%" height={300}>
                 <PieChart>

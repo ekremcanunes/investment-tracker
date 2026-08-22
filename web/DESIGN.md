@@ -72,7 +72,24 @@ Sidebar ve auth ekranları koyu; sayfa içeriği bone kalır ve şasinin üstün
 | UI / gövde | **Instrument Sans** | Varsayılan (`--font-sans`) |
 | Rakam / etiket | **Geist Mono** | `.tabular`, `font-mono` |
 
-Self-host (`@fontsource`), CDN yok. Tüm sayısal değerlere `.tabular`. Tablolar/etiketler çoğunlukla `font-mono uppercase tracking-wider`.
+Self-host (`@fontsource`), CDN yok. Tüm sayısal değerlere `.tabular`.
+
+### 3.1 Tip ölçeği — 6 basamak
+
+Ölçek [`index.css`](src/index.css)'te `--text-*` olarak tanımlı. **Ad-hoc boyut yazılmaz** (`text-[11.5px]`, `text-xs`, `text-lg` yok); her metin bu altı adımdan birine oturur.
+
+| Sınıf | px | Nerede |
+|-------|----|--------|
+| `text-micro` | 11 | ikincil mikro metin, çip, rozet |
+| `text-ui` | 13 | **varsayılan** — UI, tablo hücresi, buton, form |
+| `text-body` | 15 | vurgulu gövde, `Section` başlığı |
+| `text-figure` | 18 | KPI / kart değeri |
+| `text-head` | 24 | modal başlığı, auth başlığı, mobil sayfa başlığı |
+| `text-title` | 30 | sayfa başlığı (md+) — display font burada nefes alır |
+
+**`.label`** — mono + uppercase + `0.1em` tracking, 11px. Eyebrow, tablo başlığı, `StatCard` etiketi, sidebar bölüm ayracı: hepsi bu tek sınıf. Elle `font-mono text-[9px] uppercase tracking-[0.1em]` yazılmaz.
+
+> **Dikkat:** ölçek sınıfları Tailwind'in varsayılan adları değil. [`lib/utils.js`](src/lib/utils.js)'teki `cn()` bunları `extendTailwindMerge` ile `font-size` grubuna kaydeder — bildirilmezse tailwind-merge `text-ui`'yi renk sanıp `text-foreground` ile aynı grupta eler ve boyut sessizce 16px'e düşer. Yeni basamak eklenirse **oraya da eklenmeli**.
 
 ---
 
@@ -171,7 +188,9 @@ Kullanıcıya seçtirilen bir tema **yok**. Bunun yerine iki sabit katman var:
 
 ## 8. YAPMA listesi
 
-- ❌ Ad-hoc renk (`gray-950`, `#111` vb.) — sadece token.
+- ❌ Ad-hoc renk (`gray-950`, `#111` vb.) — sadece token. shadcn'den gelen bileşenlerde `gray-*`/`blue-*` kalıntısı varsa token'a çevrilir.
+- ❌ Ad-hoc boyut (`text-[11.5px]`) veya Tailwind varsayılanı (`text-xs`, `text-sm`, `text-lg`) — sadece §3.1 ölçeği.
+- ❌ Elle `font-mono … uppercase … tracking-…` — `.label`.
 - ❌ Rakamı normal fontla — `.tabular`.
 - ❌ Vurgu/marj rengini kâr-zarar için kullanmak.
 - ❌ Kategori rengini kâr/zarar, `up`/`down`'ı kategori için kullanmak.
