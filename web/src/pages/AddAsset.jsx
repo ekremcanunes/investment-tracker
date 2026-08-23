@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguage } from '@/contexts/LanguageContext'
 import { marketApi } from '@/services/api'
-import { useBuyAsset } from '@/hooks/queries'
-import { todayString, toApiDate } from '@/lib/date'
+import { useBuyAsset, usePriceOnDate } from '@/hooks/queries'
+import { todayString, toApiDate, formatDisplayDate } from '@/lib/date'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Page } from '@/components/Page'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label'
 import { MoneyInput } from '@/components/ui/money-input'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
+import { Modal } from '@/components/ui/modal'
+import { deviationOf } from '@/lib/priceDeviation'
 import {
   Select,
   SelectContent,
@@ -18,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowLeft, Search, X } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, Search, X } from 'lucide-react'
 
 const assetTypes = ['Stock', 'Currency', 'Gold']
 const currencySymbols = ['USD', 'EUR', 'GBP']
@@ -26,7 +28,7 @@ const currencies = ['TRY', 'USD']
 
 export default function AddAsset() {
   const navigate = useNavigate()
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const [assetType, setAssetType] = useState('')
   const [symbol, setSymbol] = useState('')
   const [selectedName, setSelectedName] = useState('')
@@ -38,7 +40,29 @@ export default function AddAsset() {
   const [currency, setCurrency] = useState('TRY')
   const [date, setDate] = useState(todayString())
   const [error, setError] = useState(null)
+  const [priceSource, setPriceSource] = useState('auto')
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const buyMutation = useBuyAsset()
+
+  const { data: reference, isFetching: refFetching, isError: refError } = usePriceOnDate(symbol, assetType, date)
+
+  const refPrice = reference?.available
+    ? (currency === 'USD' ? reference.priceInUsd : reference.priceInTry)
+    : null
+  const { ratio, tier } = priceSource === 'manual'
+    ? deviationOf(unitPrice, refPrice)
+    : { ratio: null, tier: 'none' }
+  const pct = ratio != null ? (ratio * 100).toFixed(1) : '0'
+
+  // Tarih/sembol değişince fiyatı doldur — ama YALNIZCA kullanıcı elle
+  // dokunmadıysa. Kullanıcının yazdığı veri kutsal; üstüne yazmıyoruz.
+  useEffect(() => {
+    if (priceSource !== 'auto') return
+    if (!reference?.available) return
+
+    const value = currency === 'USD' ? reference.priceInUsd : reference.priceInTry
+    if (value != null) setUnitPrice(String(value.toFixed(2)))
+  }, [reference, currency, priceSource])
 
   // Hisse araması — debounce (300ms, min 2 karakter). Seçim yapıldıysa arama durur.
   useEffect(() => {
@@ -86,7 +110,9 @@ export default function AddAsset() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e?.preventDefault()
+    if (tier === 'confirm' && !confirmOpen) { setConfirmOpen(true); return }
+    setConfirmOpen(false)
     if (!assetType || !symbol || !quantity || !unitPrice) return
     setError(null)
     try {
@@ -237,6 +263,18 @@ export default function AddAsset() {
               />
             </div>
 
+            {/* Purchase date */}
+            <div className="space-y-1.5">
+              <Label htmlFor="date">{t('assets.purchaseDate')}</Label>
+              <DatePicker
+                id="date"
+                value={date}
+                onChange={(v) => { setDate(v); if (priceSource === 'auto') setUnitPrice('') }}
+                clearable={false}
+                disabledDates={{ after: new Date() }}
+              />
+            </div>
+
             {/* Unit price + currency */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
@@ -248,7 +286,7 @@ export default function AddAsset() {
                   currency={currency}
                   placeholder="0,00"
                   value={unitPrice}
-                  onChange={setUnitPrice}
+                  onChange={(v) => { setUnitPrice(v); setPriceSource('manual') }}
                   required
                 />
               </div>
@@ -267,17 +305,40 @@ export default function AddAsset() {
               </div>
             </div>
 
-            {/* Purchase date */}
-            <div className="space-y-1.5">
-              <Label htmlFor="date">{t('assets.purchaseDate')}</Label>
-              <DatePicker
-                id="date"
-                value={date}
-                onChange={setDate}
-                clearable={false}
-                disabledDates={{ after: new Date() }}
-              />
-            </div>
+            {/* Fiyatın nereden geldiği — kullanıcı hangi sayıya baktığını bilsin */}
+            {refFetching ? (
+              <p className="label text-muted-foreground">{t('assets.priceFetching')}</p>
+            ) : reference && !reference.available ? (
+              <p className="text-micro text-muted-foreground">{t('assets.priceUnavailableOnDate')}</p>
+            ) : reference?.available && priceSource === 'auto' ? (
+              <p className="label text-muted-foreground">
+                {reference.priceKind === 'live'
+                  ? t('assets.priceFromLive')
+                  : t('assets.priceFromClose').replace('{date}', formatDisplayDate(reference.effectiveDate, lang))}
+                {reference.priceKind === 'close' && reference.effectiveDate !== reference.requestedDate && (
+                  <span className="ml-1 normal-case tracking-normal">
+                    · {t('assets.priceFellBack').replace('{requested}', formatDisplayDate(reference.requestedDate, lang))}
+                  </span>
+                )}
+              </p>
+            ) : priceSource === 'manual' && refPrice != null && tier !== 'none' ? (
+              <p className={
+                tier === 'confirm' ? 'flex items-center gap-1.5 text-micro text-margin'
+                : tier === 'warn' ? 'flex items-center gap-1.5 text-micro text-brass'
+                : 'text-micro text-muted-foreground'
+              }>
+                {tier !== 'info' && <AlertTriangle className="h-3 w-3 shrink-0" />}
+                {tier === 'info'
+                  ? t('assets.deviationInfo').replace('{price}', refPrice.toFixed(2))
+                  : t('assets.deviationWarn').replace('{price}', refPrice.toFixed(2)).replace('{pct}', pct)}
+                <button type="button" onClick={() => { setPriceSource('auto'); setUnitPrice('') }}
+                  className="ml-1 underline hover:no-underline">
+                  {t('assets.useThatDayPrice')}
+                </button>
+              </p>
+            ) : refError ? (
+              <p className="text-micro text-muted-foreground">{t('assets.priceFetchError')}</p>
+            ) : null}
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" disabled={buyMutation.isPending || !assetType || !symbol || !quantity || !unitPrice}>
@@ -290,6 +351,29 @@ export default function AddAsset() {
           </form>
         </CardContent>
       </Card>
+
+      <Modal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        title={t('assets.confirmPriceTitle')}
+        subtitle={symbol}
+        actions={
+          <>
+            <button onClick={() => setConfirmOpen(false)}
+              className="w-1/2 border border-foreground py-2.5 font-mono text-micro font-bold uppercase text-foreground hover:bg-secondary">
+              {t('common.cancel')}
+            </button>
+            <button onClick={() => handleSubmit()}
+              className="w-1/2 border border-margin bg-margin py-2.5 font-mono text-micro font-bold uppercase text-white hover:opacity-90">
+              {t('assets.confirmPriceKeep')}
+            </button>
+          </>
+        }
+      >
+        <p className="text-center font-mono text-micro text-muted-foreground">
+          {t('assets.confirmPriceBody').replace('{pct}', pct)}
+        </p>
+      </Modal>
     </Page>
   )
 }

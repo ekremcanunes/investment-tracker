@@ -38,6 +38,18 @@ export function usePriceHistory(symbol, assetType, range) {
   })
 }
 
+// Tarihe göre fiyat — backend cache'li (geçmiş gün 30 gün, bugün 5 dk).
+// Üçlü eksikse sorgu hiç çalışmaz.
+export function usePriceOnDate(symbol, assetType, date) {
+  return useQuery({
+    queryKey: ['price-on-date', symbol, assetType, date],
+    queryFn: () => marketApi.priceOn(symbol, assetType, date).then((r) => r.data),
+    enabled: !!symbol && !!assetType && !!date,
+    staleTime: 60 * 60_000,
+    retry: false,
+  })
+}
+
 // Tüm portföy — tek kaynak; tab'lar bunu client-side filtreler
 export function useHoldings() {
   return useQuery({

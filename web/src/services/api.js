@@ -25,4 +25,6 @@ export const marketApi = {
   overview: () => api.get('/api/market/overview'),
   history: (symbol, assetType, range) =>
     api.get(`/api/market/history/${encodeURIComponent(symbol)}`, { params: { assetType, range } }),
+  priceOn: (symbol, assetType, date) =>
+    api.get(`/api/market/price-on/${encodeURIComponent(symbol)}`, { params: { assetType, date } }),
 }

@@ -68,4 +68,34 @@ public class FrankfurterClient : IFrankfurterClient
             return [];
         }
     }
+
+    public async Task<SortedDictionary<DateOnly, decimal>> GetRateSeriesAsync(
+        string baseCurrency, DateOnly from, DateOnly to)
+    {
+        var map = new SortedDictionary<DateOnly, decimal>();
+        try
+        {
+            var url = $"https://api.frankfurter.dev/v1/{from:yyyy-MM-dd}..{to:yyyy-MM-dd}"
+                    + $"?base={Uri.EscapeDataString(baseCurrency)}&symbols=TRY";
+
+            var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            if (!doc.RootElement.TryGetProperty("rates", out var rates)) return map;
+
+            foreach (var day in rates.EnumerateObject())
+            {
+                if (!DateOnly.TryParseExact(day.Name, "yyyy-MM-dd", out var d)) continue;
+                if (day.Value.TryGetProperty("TRY", out var v) && v.ValueKind == JsonValueKind.Number)
+                    map[d] = v.GetDecimal();
+            }
+            return map;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get rate series for {BaseCurrency}", baseCurrency);
+            return map;
+        }
+    }
 }

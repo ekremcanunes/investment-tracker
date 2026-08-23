@@ -62,4 +62,20 @@ public class MarketServiceClient(HttpClient httpClient, IHttpContextAccessor htt
         var result = await response.Content.ReadFromJsonAsync<PriceHistoryResponse>();
         return result ?? new PriceHistoryResponse();
     }
+
+    public async Task<PriceOnDateResponse> GetPriceOnAsync(string symbol, string assetType, string date)
+    {
+        var url = $"/api/market/price-on/{Uri.EscapeDataString(symbol)}"
+                + $"?assetType={Uri.EscapeDataString(assetType)}&date={Uri.EscapeDataString(date)}";
+        var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+        var cookieHeader = httpContextAccessor.HttpContext?.Request.Headers["Cookie"].ToString();
+        if (!string.IsNullOrEmpty(cookieHeader))
+            request.Headers.Add("Cookie", cookieHeader);
+
+        var response = await httpClient.SendAsync(request);
+        response.EnsureSuccessStatusCode();
+        var result = await response.Content.ReadFromJsonAsync<PriceOnDateResponse>();
+        return result ?? new PriceOnDateResponse();
+    }
 }

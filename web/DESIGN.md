@@ -34,6 +34,8 @@ Uygulamanın görsel dili: **açık/bone, muhasebe defteri** kimliği. Konuya sa
 
 Sınıflar: `bg-background`, `bg-card`, `text-foreground`, `text-muted-foreground`, `border-border`, `text-up`, `text-down`, `bg-brass`, `text-margin`. **Ad-hoc renk yazma.**
 
+**Uyarı rengi:** `brass` = yumuşak uyarı (dikkat çeker, engellemez), `margin` = sert uyarı (onay ister). `up`/`down` yalnızca kâr/zarar, kategori renkleri yalnızca kategori olduğu için uyarı bu ikisine düşer.
+
 ### 2.1 Kategori renkleri
 
 Varlık türünü **ayırt etmek** için. Rozet, halka dilimi, KPI şeridi.
@@ -200,3 +202,4 @@ Kullanıcıya seçtirilen bir tema **yok**. Bunun yerine iki sabit katman var:
 - ❌ Elimizde olmayan piyasa verisini uydurmak veya mock'lamak (bkz. §6.1).
 - ❌ 30 satırlık BIST 30 için sunucuya arama isteği atmak — filtre client-side.
 - ❌ `window.confirm` — ortak `Modal`.
+- ❌ Uyarı için `up`/`down` ya da kategori rengi — uyarı `brass` (yumuşak) / `margin` (sert).

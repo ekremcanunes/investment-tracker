@@ -77,24 +77,41 @@ public class PriceHistoryService : IPriceHistoryService
         return new PriceHistory { Candles = candles, Currency = currency };
     }
 
-    // Altın: GC=F USD/ons → gram TL. Güncel kurla çevrilir; geçmiş kur farkı yansımaz,
-    // seri eğilimi gösterir (bkz. DESIGN.md §6.1).
+    // Altın: GC=F USD/ons → gram TL. Her mum KENDİ GÜNÜNÜN kuruyla çevrilir.
+    // Eskiden tek bir güncel kur kullanılıyordu; eğri şekli doğru çıkıyordu ama
+    // tek bir günün değeri %60'a varan hata veriyordu. Alım formu artık aynı
+    // kavramı sorduğu için iki yer aynı cevabı vermek zorunda (bkz. spec §5).
     private async Task<PriceHistory> GoldHistoryAsync((string Range, string Interval) spec)
     {
         var (candles, _) = await _yahoo.GetCandlesAsync("GC=F", spec.Range, spec.Interval);
-        var usdTry = await _frankfurter.GetExchangeRateAsync("USD");
-        if (usdTry == null) return new PriceHistory();
+        if (candles.Count == 0) return new PriceHistory();
 
-        var factor = usdTry.Value / GramsPerOunce;
+        var first = DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(candles[0].Time).UtcDateTime);
+        var last = DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(candles[^1].Time).UtcDateTime);
+
+        // Serinin başında kur bulunabilsin diye pencereyi geriye doğru genişletiyoruz.
+        var rates = await _frankfurter.GetRateSeriesAsync("USD", first.AddDays(-14), last);
+        if (rates.Count == 0) return new PriceHistory();
+
+        var kept = new List<Candle>(candles.Count);
         foreach (var c in candles)
         {
+            var day = DateOnly.FromDateTime(DateTimeOffset.FromUnixTimeSeconds(c.Time).UtcDateTime);
+
+            // Tarihi <= mum tarihi olan son kur (hafta sonu/tatil aynı kuralla çözülür)
+            var rate = rates.Where(kv => kv.Key <= day).Select(kv => kv.Value).LastOrDefault();
+            if (rate <= 0) continue;   // kuru olmayan mumu uydurmak yerine düşürüyoruz
+
+            var factor = rate / GramsPerOunce;
             c.Open *= factor;
             c.High *= factor;
             c.Low *= factor;
             c.Close *= factor;
             c.Volume = null; // ons hacmi gram TL grafiğinde anlamsız
+            kept.Add(c);
         }
-        return new PriceHistory { Candles = candles, Currency = "TRY" };
+
+        return new PriceHistory { Candles = kept, Currency = "TRY" };
     }
 
     // Döviz: Frankfurter yalnızca günlük kapanış verir → OHLC dört alan da aynı.

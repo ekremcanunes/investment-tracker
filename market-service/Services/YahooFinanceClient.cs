@@ -15,6 +15,10 @@ public record YahooQuote(
     string Currency,
     string Exchange);
 
+// Tarihli günlük kapanış. Bilerek Candle DEĞİL: Candle bugün yalnızca grafik
+// zincirinde kullanılıyor (GetCandlesAsync → PriceHistoryService → PriceChart).
+public record DailyClose(DateOnly Date, decimal Close);
+
 public interface IYahooFinanceClient
 {
     Task<YahooQuote?> GetQuoteAsync(string yahooSymbol);
@@ -24,6 +28,12 @@ public interface IYahooFinanceClient
 
     // OHLC + hacim serisi (grafik). Aynı endpoint; interval aralığa göre seçilir.
     Task<(List<Candle> Candles, string Currency)> GetCandlesAsync(string yahooSymbol, string range, string interval);
+
+    // Belirli bir tarih penceresindeki günlük kapanışlar. GetCloseSeriesAsync'in
+    // tarihli/pencereli kuzeni; range= bugüne göreli olduğu için eski tarihler
+    // için period1/period2 kullanılır.
+    Task<(List<DailyClose> Closes, string Currency)> GetDailyClosesAsync(
+        string yahooSymbol, DateOnly from, DateOnly to);
 }
 
 public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClient> logger) : IYahooFinanceClient
@@ -162,6 +172,54 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to get Yahoo candles for {Symbol}", yahooSymbol);
+            return ([], string.Empty);
+        }
+    }
+
+    public async Task<(List<DailyClose> Closes, string Currency)> GetDailyClosesAsync(
+        string yahooSymbol, DateOnly from, DateOnly to)
+    {
+        try
+        {
+            var p1 = new DateTimeOffset(from.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToUnixTimeSeconds();
+            // +1 gün: period2 dışlayıcı davranabiliyor, hedef gün pencerede kalsın
+            var p2 = new DateTimeOffset(to.AddDays(1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero).ToUnixTimeSeconds();
+
+            var url = $"https://query1.finance.yahoo.com/v8/finance/chart/{Uri.EscapeDataString(yahooSymbol)}"
+                    + $"?interval=1d&period1={p1}&period2={p2}";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("User-Agent", "Mozilla/5.0");
+
+            var response = await httpClient.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            var result = doc.RootElement.GetProperty("chart").GetProperty("result");
+            if (result.ValueKind != JsonValueKind.Array || result.GetArrayLength() == 0)
+                return ([], string.Empty);
+
+            var root = result[0];
+            var stamps = root.GetProperty("timestamp");
+            var closes = root.GetProperty("indicators").GetProperty("quote")[0].GetProperty("close");
+            var currency = root.GetProperty("meta").TryGetProperty("currency", out var c)
+                ? c.GetString() ?? string.Empty : string.Empty;
+
+            var list = new List<DailyClose>(stamps.GetArrayLength());
+            for (var i = 0; i < stamps.GetArrayLength(); i++)
+            {
+                // Tatil/durdurma günlerinde close null gelir → atlanır
+                if (closes[i].ValueKind != JsonValueKind.Number) continue;
+
+                var date = DateOnly.FromDateTime(
+                    DateTimeOffset.FromUnixTimeSeconds(stamps[i].GetInt64()).UtcDateTime);
+                list.Add(new DailyClose(date, closes[i].GetDecimal()));
+            }
+
+            return (list, currency);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Failed to get Yahoo daily closes for {Symbol}", yahooSymbol);
             return ([], string.Empty);
         }
     }

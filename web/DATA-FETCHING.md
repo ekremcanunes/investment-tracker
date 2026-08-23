@@ -51,9 +51,24 @@ flowchart TD
 | [`Overview.jsx`](src/pages/Overview.jsx) | `useDashboard()` | `['dashboard']` | Net varlık + dağılım özeti |
 | [`Assets.jsx`](src/pages/Assets.jsx) (Portföy) | `useHoldings()` + `useSellAsset` + `useUpdateAsset` + `useDeleteAsset` | `['holdings']` | Portföy listesi (3 tab tek fetch'ten filtrelenir) + sat/düzenle/sil |
 | [`Analytics.jsx`](src/pages/Analytics.jsx) | `useHoldings()` | `['holdings']` | Tür dağılımı pie chart (aynı cache'ten, ekstra istek yok) |
-| [`AddAsset.jsx`](src/pages/AddAsset.jsx) | `useBuyAsset()` | — (mutation) | Varlık alımı; sonrası otomatik tazeleme |
+| [`AddAsset.jsx`](src/pages/AddAsset.jsx) | `useBuyAsset()` + `usePriceOnDate()` | — (mutation) · `['price-on-date', symbol, assetType, date]` (query) | Varlık alımı; sonrası otomatik tazeleme · Tarihe göre fiyat otomatik doldurma |
 
 **Önemli:** `Assets` ve `Analytics` aynı `['holdings']` key'ini paylaşır → **tek istek**, ikisi de cache'ten beslenir (dedup).
+
+### Piyasa sorguları (ek)
+
+| Hook | Query key | `staleTime` | Davranış |
+|------|-----------|-------------|----------|
+| `usePriceHistory()` | `['price-history', symbol, assetType, range]` | 5 dk | Grafik veri serisi |
+| `usePriceOnDate()` | `['price-on-date', symbol, assetType, date]` | 1 saat | Tarihe göre tek gün kapanışı |
+| `useSymbolSearch()` | `['symbol-search', q]` | 1 saat | BIST evreninde sembol arama |
+| `useMarketOverview()` | `['market-overview']` | 5 dk | BIST 30 + endeks + döviz/altın |
+
+**`usePriceOnDate` özellikleri:**
+- Sorgu yalnızca `symbol`, `assetType`, `date` hepsi hazırsa çalışır (`enabled` koşulu).
+- `retry: false` — amaçlı. Fiyat çekilemezse form manuel giriş moduna sessizce düşer; tekrar denemek sadece gereksiz gecikme yaratırdı.
+- Backend cache (redis): **geçmiş gün** 30 gün (kapanmış gün bir daha değişmez), **bugün** 5 dk (anlık fiyat volatilliğine saygı).
+- Uç nokta: `GET /api/market/price-on/{symbol}?assetType=Stock&date=2026-06-16` — portfolio-service aracılığıyla, market-service tarafından sunuluyor.
 
 ---
 

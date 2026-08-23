@@ -29,4 +29,13 @@ public class MarketController(IMarketServiceClient marketServiceClient) : Contro
         if (string.IsNullOrWhiteSpace(symbol)) return BadRequest();
         return Ok(await marketServiceClient.GetHistoryAsync(symbol.Trim(), assetType, range));
     }
+
+    // Tarihe göre fiyat — market-service'e geçirilir (nginx tüm /api/'yi buraya yönlendirir)
+    [HttpGet("price-on/{symbol}")]
+    public async Task<ActionResult<PriceOnDateResponse>> PriceOn(string symbol,
+        [FromQuery] string assetType = "Stock", [FromQuery] string? date = null)
+    {
+        if (string.IsNullOrWhiteSpace(symbol) || string.IsNullOrWhiteSpace(date)) return BadRequest();
+        return Ok(await marketServiceClient.GetPriceOnAsync(symbol.Trim(), assetType, date));
+    }
 }
