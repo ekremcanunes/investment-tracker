@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext'
 import { isValidEmail, kratosErrorText } from '../lib/authErrors'
 import { authLabelCls, authInputCls, authSubmitCls } from '../lib/authStyles'
 import { APP_NAME } from '../lib/app'
+import assayMark from '../assets/assay-mark.svg'
 import { Eye, EyeOff } from 'lucide-react'
 
 export default function Register() {
@@ -81,7 +82,7 @@ export default function Register() {
   return (
     <div className="auth-bg flex min-h-screen items-center justify-center p-4">
       <div className="auth-card relative z-10 w-full max-w-[340px] rounded-2xl border border-shell-border bg-shell-panel p-6">
-        <div className="foil-tile grid h-[30px] w-[30px] place-items-center rounded-lg font-mono text-ui font-bold">₺</div>
+        <img src={assayMark} alt="" className="h-[30px] w-[30px]" />
         <h1 className="mt-3.5 font-display text-head font-semibold tracking-tight text-shell-fg">{t('auth.createAccount')}</h1>
         <p className="mt-0.5 text-micro text-shell-muted">{APP_NAME} — {t('auth.createAccountSubtitle')}</p>
 

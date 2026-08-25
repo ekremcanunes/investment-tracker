@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import { APP_NAME } from '@/lib/app'
 import { useAuth } from '@/contexts/AuthContext'
 import { useLanguage } from '@/contexts/LanguageContext'
+import assayMark from '@/assets/assay-mark.svg'
 
 // Canlı sistem tarih/saati (sidebar alt bilgisi)
 function useClock() {
@@ -122,9 +123,7 @@ export default function Layout() {
       <aside className="hidden w-[212px] shrink-0 flex-col gap-0.5 px-2.5 py-2.5 md:flex">
         {/* Marka rozeti */}
         <div className="flex items-center gap-2.5 rounded-lg px-2 py-1.5">
-          <div className="foil-tile grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[7px] font-mono text-micro font-bold">
-            ₺
-          </div>
+          <img src={assayMark} alt="" className="h-[26px] w-[26px] shrink-0" />
           {/* Yalnızca marka — kullanıcı bilgisi alttaki kartta */}
           <div className="truncate text-ui font-semibold leading-tight text-shell-fg">{APP_NAME}</div>
         </div>
