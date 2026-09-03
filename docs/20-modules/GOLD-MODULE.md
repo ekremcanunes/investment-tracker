@@ -80,5 +80,5 @@ flowchart LR
 ## 6. İlgili
 
 - Piyasa verisi mimarisi (Yahoo/Twelve/Frankfurter ayrımı): proje hafızası + kod.
-- Veri çekme (React Query): [`web/DATA-FETCHING.md`](web/DATA-FETCHING.md).
-- Tasarım sistemi: [`web/DESIGN.md`](web/DESIGN.md).
+- Veri çekme (React Query): [`DATA-FETCHING.md`](../10-standards/DATA-FETCHING.md).
+- Tasarım sistemi: [`DESIGN.md`](../10-standards/DESIGN.md).

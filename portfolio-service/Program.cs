@@ -3,8 +3,24 @@ using Microsoft.EntityFrameworkCore;
 using portfolio_service.Data;
 using portfolio_service.Middleware;
 using portfolio_service.Services;
+using Serilog;
+using Serilog.Formatting.Compact;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Log seviyeleri appsettings/env var'dan okunur (bkz. docs/10-standards/LOGGING.md).
+// Container'da JSON, lokal geliştirmede okunabilir metin.
+builder.Services.AddSerilog((services, cfg) =>
+{
+    cfg.ReadFrom.Configuration(builder.Configuration)
+       .ReadFrom.Services(services)
+       .Enrich.FromLogContext();
+
+    if (builder.Environment.IsDevelopment())
+        cfg.WriteTo.Console();
+    else
+        cfg.WriteTo.Console(new CompactJsonFormatter());
+});
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -55,6 +71,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
+app.UseSerilogRequestLogging();
 app.UseCors();
 app.UseMiddleware<KratosMiddleware>();
 app.MapControllers();
