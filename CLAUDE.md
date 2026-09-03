@@ -7,6 +7,7 @@
 - `docs/10-standards/` — bağlayıcı standartlar; ilgili alanda kod yazmadan önce oku:
   - `DESIGN.md` — tasarım sistemi (renk token'ları, tipografi, veri dürüstlüğü). UI değişikliğinden önce oku; ad-hoc renk/tip boyutu yasak.
   - `DATA-FETCHING.md` — React Query veri çekme kuralları.
+  - `PIPELINE-SECURITY.md` — pipeline güvenlik standardı (planlama aşamasında; CI/CD veya güvenlik işine dokunmadan önce oku).
   - `LOGGING.md` — loglama standardı (Serilog, stdout+JSON, seviye politikası, hassas veri yasağı, docker rotasyonu, AWS maliyet kontrolü). Log yazmadan veya log altyapısına dokunmadan önce oku.
 - `docs/20-modules/` — modül tasarımları (`GOLD-MODULE.md` — altın modülü).
 - `docs/30-operations/` — operasyon (`COMMANDS.md` — Docker, Redis, Kratos, psql, EF Core, hata ayıklama sırası).
