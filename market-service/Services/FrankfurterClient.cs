@@ -35,7 +35,7 @@ public class FrankfurterClient : IFrankfurterClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get exchange rate for {BaseCurrency}", baseCurrency);
+            _logger.LogError(ex, "Failed to get exchange rate for {BaseCurrency}", LogSanitizer.ForLog(baseCurrency));
             return null;
         }
     }
@@ -64,7 +64,7 @@ public class FrankfurterClient : IFrankfurterClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get series for {BaseCurrency}", baseCurrency);
+            _logger.LogError(ex, "Failed to get series for {BaseCurrency}", LogSanitizer.ForLog(baseCurrency));
             return [];
         }
     }
@@ -94,7 +94,7 @@ public class FrankfurterClient : IFrankfurterClient
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get rate series for {BaseCurrency}", baseCurrency);
+            _logger.LogError(ex, "Failed to get rate series for {BaseCurrency}", LogSanitizer.ForLog(baseCurrency));
             return map;
         }
     }
