@@ -71,7 +71,7 @@ public class TwelveDataClient(HttpClient httpClient, IConfiguration configuratio
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to search symbols for {Query}", query);
+            logger.LogError(ex, "Failed to search symbols for {Query}", LogSanitizer.ForLog(query));
             return [];
         }
     }

@@ -61,7 +61,7 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
 
             if (!TryGetDecimal(meta, "regularMarketPrice", out var price))
             {
-                logger.LogWarning("No price in Yahoo response for {Symbol}", yahooSymbol);
+                logger.LogWarning("No price in Yahoo response for {Symbol}", LogSanitizer.ForLog(yahooSymbol));
                 return null;
             }
 
@@ -82,7 +82,7 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get Yahoo quote for {Symbol}", yahooSymbol);
+            logger.LogError(ex, "Failed to get Yahoo quote for {Symbol}", LogSanitizer.ForLog(yahooSymbol));
             return null;
         }
     }
@@ -113,7 +113,7 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get Yahoo series for {Symbol}", yahooSymbol);
+            logger.LogError(ex, "Failed to get Yahoo series for {Symbol}", LogSanitizer.ForLog(yahooSymbol));
             return [];
         }
     }
@@ -171,7 +171,7 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get Yahoo candles for {Symbol}", yahooSymbol);
+            logger.LogError(ex, "Failed to get Yahoo candles for {Symbol}", LogSanitizer.ForLog(yahooSymbol));
             return ([], string.Empty);
         }
     }
@@ -219,7 +219,7 @@ public class YahooFinanceClient(HttpClient httpClient, ILogger<YahooFinanceClien
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to get Yahoo daily closes for {Symbol}", yahooSymbol);
+            logger.LogError(ex, "Failed to get Yahoo daily closes for {Symbol}", LogSanitizer.ForLog(yahooSymbol));
             return ([], string.Empty);
         }
     }
